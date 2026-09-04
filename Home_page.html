@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Beating the Burnout | Student wellbeing dashboard</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			--paper: #f5f7f2;
+			--surface: #ffffff;
+			--ink: #19251f;
+			--muted: #718078;
+			--line: #dfe7df;
+			--mint: #d8f2e4;
+			--mint-strong: #61bc8d;
+			--blue: #dfeef6;
+			--yellow: #f7e9b4;
+			--coral: #f4d8cc;
+			--shadow: 0 18px 45px rgba(38, 68, 52, .08);
+		}
+
+		* { box-sizing: border-box; }
+		body {
+			margin: 0;
+			color: var(--ink);
+			background: var(--paper);
+			font-family: "DM Sans", sans-serif;
+			letter-spacing: 0;
+		}
+		button, input, select { font: inherit; }
+		button { cursor: pointer; }
+		.app-shell { display: flex; min-height: 100vh; }
+		.sidebar {
+			width: 244px; padding: 28px 20px; background: #eef4ed;
+			border-right: 1px solid var(--line); display: flex; flex-direction: column;
+		}
+		.brand { display: flex; align-items: center; gap: 10px; margin: 0 12px 48px; }
+		.brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: #cbead6; font-size: 16px; }
+		.brand-name { font-family: "Space Grotesk", sans-serif; font-size: 15px; font-weight: 700; line-height: 1.05; }
+		.brand-name span { display: block; color: var(--mint-strong); font-size: 11px; font-weight: 600; margin-top: 3px; }
+		.nav-label { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 0 12px 10px; }
+		.nav { display: grid; gap: 5px; }
+		.nav button { border: 0; background: transparent; color: #65746b; border-radius: 10px; padding: 11px 12px; text-align: left; font-size: 13px; font-weight: 600; }
+		.nav button::before { display: inline-block; width: 25px; color: #8fa198; }
+		.nav button[data-icon="grid"]::before { content: "▦"; }
+		.nav button[data-icon="tasks"]::before { content: "✓"; }
+		.nav button[data-icon="heart"]::before { content: "♡"; }
+		.nav button[data-icon="chart"]::before { content: "↗"; }
+		.nav button.active, .nav button:hover { background: var(--surface); color: var(--ink); box-shadow: 0 5px 14px rgba(31, 60, 43, .05); }
+		.nav button.active::before { color: var(--mint-strong); }
+		.sidebar-bottom { margin-top: auto; border-top: 1px solid var(--line); padding-top: 18px; }
+		.privacy { display: flex; gap: 8px; color: var(--muted); font-size: 11px; line-height: 1.45; padding: 0 12px 18px; }
+		.privacy strong { display: block; color: var(--ink); font-size: 12px; margin-bottom: 2px; }
+		.theme-toggle { width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); padding: 10px 12px; border-radius: 9px; text-align: left; font-size: 12px; }
+		.theme-toggle:hover { border-color: var(--mint-strong); color: var(--ink); }
+
+		main { width: min(1220px, 100%); margin: 0 auto; padding: 35px 46px 54px; }
+		.topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 30px; }
+		.eyebrow { color: #69a381; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; }
+		h1, h2, h3, p { margin-top: 0; }
+		h1 { font-family: "Space Grotesk", sans-serif; font-size: clamp(26px, 3vw, 38px); line-height: 1.05; letter-spacing: -.04em; margin-bottom: 9px; }
+		.intro { color: var(--muted); font-size: 14px; }
+		.date-wrap { display: flex; align-items: center; gap: 13px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+		.avatar { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 50%; background: var(--ink); color: #d8f2e4; font-weight: 700; }
+		.dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); gap: 20px; }
+		.card { background: var(--surface); border: 1px solid rgba(211, 225, 214, .8); border-radius: 14px; box-shadow: var(--shadow); }
+		.capacity-card { padding: 25px; min-height: 296px; position: relative; overflow: hidden; background: #f0f7f0; }
+		.capacity-card::after { content: ""; position: absolute; width: 250px; height: 250px; right: -85px; bottom: -118px; border-radius: 50%; border: 1px solid rgba(97, 188, 141, .24); box-shadow: 0 0 0 24px rgba(97, 188, 141, .08), 0 0 0 48px rgba(97, 188, 141, .04); }
+		.card-heading { display: flex; justify-content: space-between; gap: 15px; align-items: flex-start; }
+		.card-kicker { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+		h2 { font-family: "Space Grotesk", sans-serif; font-size: 21px; letter-spacing: -.03em; margin: 5px 0 0; }
+		.status { display: inline-flex; align-items: center; gap: 6px; background: #dff4e5; color: #2b8054; border-radius: 999px; padding: 6px 10px; font-size: 11px; font-weight: 700; }
+		.status::before { content: ""; width: 6px; height: 6px; background: #54b77f; border-radius: 50%; }
+		.capacity-body { display: flex; align-items: center; gap: 35px; margin-top: 30px; }
+		.ring { width: 145px; height: 145px; border-radius: 50%; background: conic-gradient(var(--mint-strong) 0 78%, #dbe9de 78% 100%); display: grid; place-items: center; flex: 0 0 auto; position: relative; }
+		.ring::before { content: ""; width: 111px; height: 111px; border-radius: 50%; background: #f0f7f0; position: absolute; }
+		.ring-content { position: relative; text-align: center; }
+		.ring strong { display: block; font-family: "Space Grotesk", sans-serif; font-size: 35px; letter-spacing: -.06em; }
+		.ring small { color: var(--muted); font-size: 10px; }
+		.capacity-copy { max-width: 260px; }
+		.capacity-copy strong { font-family: "Space Grotesk", sans-serif; font-size: 16px; }
+		.capacity-copy p { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 8px 0 0; }
+		.trend-card { padding: 24px 25px 18px; min-height: 296px; }
+		.trend-meta { display: flex; justify-content: space-between; align-items: end; margin: 24px 0 8px; }
+		.trend-meta strong { font-family: "Space Grotesk", sans-serif; font-size: 27px; }
+		.trend-meta span { color: #489a6e; font-size: 11px; font-weight: 700; }
+		.chart { display: flex; height: 137px; align-items: end; gap: 12px; border-bottom: 1px solid var(--line); background: repeating-linear-gradient(to bottom, transparent 0 33px, #edf1ed 34px); padding: 8px 4px 0; }
+		.bar-item { height: 100%; flex: 1; display: flex; align-items: end; justify-content: center; gap: 5px; }
+		.bar { width: 9px; border-radius: 6px 6px 0 0; background: #c5ded0; min-height: 13px; }
+		.bar.second { background: #8ac9a7; }
+		.bar.current { background: var(--ink); }
+		.bar-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; margin-top: 8px; padding: 0 3px; }
+		.section-title { display: flex; justify-content: space-between; align-items: center; margin: 31px 0 14px; }
+		.section-title h2 { font-size: 18px; }
+		.text-button { border: 0; color: #4c9a6c; background: transparent; font-size: 12px; font-weight: 700; }
+		.domain-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+		.domain { padding: 15px 14px; min-height: 112px; border-radius: 11px; }
+		.domain:nth-child(1) { background: var(--blue); } .domain:nth-child(2) { background: var(--yellow); } .domain:nth-child(3) { background: var(--coral); } .domain:nth-child(4) { background: var(--mint); } .domain:nth-child(5) { background: #e6e2f0; }
+		.domain-top { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; }
+		.domain-icon { font-size: 17px; }
+		.domain b { display: block; font-family: "Space Grotesk", sans-serif; font-size: 22px; margin-top: 18px; }
+		.domain small { color: #64746b; font-size: 10px; }
+		.lower-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 20px; }
+		.task-card, .checkin-card { padding: 22px 24px; }
+		.task-list { display: grid; gap: 10px; margin-top: 17px; }
+		.task { display: flex; align-items: center; gap: 11px; padding: 9px 0; border-bottom: 1px solid #edf0ed; }
+		.task:last-child { border: 0; }
+		.check { width: 18px; height: 18px; border: 1.5px solid #9cb0a2; border-radius: 5px; background: transparent; }
+		.check.checked { background: var(--mint-strong); border-color: var(--mint-strong); color: white; font-size: 12px; display: grid; place-items: center; }
+		.task-info { flex: 1; min-width: 0; }
+		.task-info strong { display: block; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+		.task-info small { color: var(--muted); font-size: 10px; }
+		.tag { border-radius: 4px; padding: 4px 6px; color: #567467; background: #eef4ed; font-size: 10px; font-weight: 700; }
+		.add-task { width: 100%; border: 1px dashed #a9c7b2; border-radius: 8px; color: #4c9a6c; background: transparent; padding: 10px; font-size: 12px; font-weight: 700; margin-top: 10px; }
+		.add-task:hover { background: #f2faf4; }
+		.checkin-card { background: var(--ink); color: white; position: relative; overflow: hidden; }
+		.checkin-card::after { content: ""; position: absolute; width: 160px; height: 160px; right: -70px; top: -68px; border-radius: 50%; border: 1px solid #517465; box-shadow: 0 0 0 18px rgba(113, 177, 139, .11), 0 0 0 37px rgba(113, 177, 139, .06); }
+		.checkin-card .card-kicker { color: #94b8a1; }
+		.checkin-card h2 { color: white; max-width: 220px; }
+		.mood-row { display: flex; justify-content: space-between; gap: 5px; margin: 28px 0 20px; }
+		.mood { width: 39px; height: 39px; border: 1px solid #40584b; border-radius: 50%; background: transparent; color: #bdd2c4; font-size: 18px; }
+		.mood:hover, .mood.selected { background: var(--mint-strong); border-color: var(--mint-strong); color: var(--ink); }
+		.checkin-cta { border: 0; background: #d9f1df; color: #224c34; padding: 10px 14px; border-radius: 7px; font-size: 11px; font-weight: 700; }
+		.timer-card { padding: 22px 24px; background: #fff8e8; border-color: #f0dfb0; }
+		.timer-card h2 { max-width: 240px; }
+		.timer-options { display: flex; gap: 7px; margin: 18px 0 12px; }
+		.timer-option { border: 1px solid #e3cf96; border-radius: 7px; background: transparent; color: #8a6f27; padding: 7px 9px; font-size: 11px; font-weight: 700; }
+		.timer-option.active, .timer-option:hover { background: #e9c965; border-color: #e9c965; color: #3d3216; }
+		.timer-display { font-family: "Space Grotesk", sans-serif; font-size: 42px; letter-spacing: -.05em; color: #493d1d; }
+		.timer-actions { display: flex; gap: 8px; margin-top: 10px; }
+		.timer-actions button { border: 0; border-radius: 7px; padding: 9px 13px; font-size: 11px; font-weight: 700; }
+		.timer-start { background: var(--ink); color: white; } .timer-reset { background: #f2e5bf; color: #715c24; }
+		.recovery { display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--line); margin-top: 20px; padding-top: 18px; }
+		.recovery-icon { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 9px; background: var(--yellow); color: #745f19; font-size: 19px; }
+		.recovery strong { display: block; font-size: 12px; }
+		.recovery small { color: var(--muted); font-size: 10px; }
+		.modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(20, 35, 27, .38); z-index: 5; place-items: center; padding: 18px; }
+		.modal-backdrop.show { display: grid; }
+		.modal { width: min(430px, 100%); background: var(--surface); border-radius: 14px; padding: 25px; box-shadow: 0 25px 70px rgba(0,0,0,.2); }
+		.modal h2 { margin-bottom: 20px; }
+		.form-row { display: grid; gap: 7px; margin-bottom: 14px; }
+		.form-row label { color: var(--muted); font-size: 11px; font-weight: 700; }
+		.form-row input, .form-row select { width: 100%; border: 1px solid var(--line); border-radius: 7px; padding: 10px; color: var(--ink); background: var(--paper); }
+		.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+		.modal-actions button { border: 0; border-radius: 7px; padding: 10px 14px; font-size: 12px; font-weight: 700; }
+		.cancel { background: #edf1ed; color: var(--muted); } .save { background: var(--ink); color: white; }
+		body.night { --paper: #18221d; --surface: #233128; --ink: #edf7ef; --muted: #a4b6a9; --line: #35463b; --mint: #294f3b; --blue: #29414b; --yellow: #564c2d; --coral: #553b35; --shadow: none; }
+		body.night .sidebar, body.night .capacity-card { background: #1e2b23; } body.night .ring::before { background: #1e2b23; } body.night .status { background: #284a36; color: #aee0bd; } body.night .nav button.active { background: var(--surface); } body.night .tag { background: #304239; color: #b3cabb; }
+		@media (max-width: 930px) { .sidebar { width: 200px; } main { padding: 30px 26px; } .domain-grid { grid-template-columns: repeat(3, 1fr); } .lower-grid { grid-template-columns: 1fr; } }
+		@media (max-width: 680px) { .app-shell { display: block; } .sidebar { width: 100%; height: auto; padding: 16px 16px 12px; border-right: 0; border-bottom: 1px solid var(--line); } .brand { margin: 0 0 15px; } .nav-label, .sidebar-bottom { display: none; } .nav { display: flex; gap: 4px; overflow-x: auto; } .nav button { padding: 8px 10px; white-space: nowrap; font-size: 11px; } .nav button::before { width: 16px; } main { padding: 26px 16px 35px; } .topbar { margin-bottom: 24px; } .date-wrap { display: none; } .dashboard-grid { display: block; } .trend-card { margin-top: 14px; } .capacity-body { gap: 20px; } .ring { width: 125px; height: 125px; } .ring::before { width: 96px; height: 96px; } .ring strong { font-size: 29px; } .domain-grid { grid-template-columns: repeat(2, 1fr); } .domain:last-child { grid-column: span 2; } .section-title { margin-top: 24px; } }
+		@media (max-width: 400px) { .capacity-card, .trend-card, .task-card, .checkin-card { padding: 18px; } .capacity-body { align-items: flex-start; flex-direction: column; } .capacity-copy { max-width: none; } }
+	</style>
+</head>
+<body>
+	<div class="app-shell">
+		<aside class="sidebar">
+			<div class="brand"><div class="brand-mark">+</div><div class="brand-name">beating the burnout<span>student wellbeing</span></div></div>
+			<div class="nav-label">Your space</div>
+			<nav class="nav" aria-label="Primary navigation">
+				<button class="active" data-icon="grid">Overview</button>
+				<button data-icon="tasks">My tasks</button>
+				<button data-icon="heart">Wellbeing</button>
+				<button data-icon="chart">Trends</button>
+				<button data-icon="heart" data-scroll="focus">Focus</button>
+			</nav>
+			<div class="sidebar-bottom">
+				<div class="privacy"><span>◎</span><div><strong>Your space is private</strong>Your data stays on this device.</div></div>
+				<button class="theme-toggle" id="themeToggle">◐ &nbsp; Switch to night mode</button>
+			</div>
+		</aside>
+
+		<main>
+			<header class="topbar">
+				<div><div class="eyebrow">Saturday, 05 September</div><h1>Good morning, Alex.</h1><p class="intro">Here’s your week at a glance. Let’s make room for what matters.</p></div>
+				<div class="date-wrap"><span>Week 36</span><div class="avatar">A</div></div>
+			</header>
+
+			<section class="dashboard-grid" aria-label="Workload overview">
+				<article class="card capacity-card">
+					<div class="card-heading"><div><div class="card-kicker">This week's capacity</div><h2>You have room to breathe.</h2></div><div class="status">Balanced</div></div>
+					<div class="capacity-body"><div class="ring"><div class="ring-content"><strong>78%</strong><small>of capacity</small></div></div><div class="capacity-copy"><strong>A steady week so far</strong><p>You’re carrying a little less than last week. Protect a pocket of unplanned time for yourself.</p></div></div>
+				</article>
+				<article class="card trend-card">
+					<div class="card-heading"><div><div class="card-kicker">Load over time</div><h2>A gentle downward trend</h2></div></div>
+					<div class="trend-meta"><strong>− 8%</strong><span>from last week</span></div>
+					<div class="chart" aria-label="Weekly load chart"><div class="bar-item"><i class="bar" style="height: 55%"></i><i class="bar second" style="height: 43%"></i></div><div class="bar-item"><i class="bar" style="height: 61%"></i><i class="bar second" style="height: 50%"></i></div><div class="bar-item"><i class="bar" style="height: 72%"></i><i class="bar second" style="height: 66%"></i></div><div class="bar-item"><i class="bar" style="height: 64%"></i><i class="bar second" style="height: 61%"></i></div><div class="bar-item"><i class="bar" style="height: 79%"></i><i class="bar second" style="height: 68%"></i></div><div class="bar-item"><i class="bar current" style="height: 62%"></i><i class="bar current" style="height: 55%"></i></div></div>
+					<div class="bar-labels"><span>Apr 7</span><span>Apr 14</span><span>Apr 21</span><span>Now</span></div>
+				</article>
+			</section>
+
+			<div class="section-title"><h2>Where your energy is going</h2><button class="text-button">View details →</button></div>
+			<section class="domain-grid" aria-label="Life category workload">
+				<article class="domain"><div class="domain-top"><span>Academic</span><span class="domain-icon">✎</span></div><b>42%</b><small>3 tasks · 8h 30m</small></article>
+				<article class="domain"><div class="domain-top"><span>Work</span><span class="domain-icon">▣</span></div><b>18%</b><small>2 shifts · 6h</small></article>
+				<article class="domain"><div class="domain-top"><span>Social</span><span class="domain-icon">♡</span></div><b>8%</b><small>1 plan · 2h</small></article>
+				<article class="domain"><div class="domain-top"><span>Health</span><span class="domain-icon">⌁</span></div><b>7%</b><small>2 habits · 1h</small></article>
+				<article class="domain"><div class="domain-top"><span>Errands</span><span class="domain-icon">□</span></div><b>3%</b><small>1 task · 45m</small></article>
+			</section>
+
+			<section class="lower-grid">
+				<article class="card task-card">
+					<div class="card-heading"><div><div class="card-kicker">Your focus for today</div><h2>Three things are enough.</h2></div><span class="card-kicker">1 / 3 done</span></div>
+					<div class="task-list" id="taskList">
+						<div class="task"><button class="check checked" aria-label="Mark essay outline incomplete">✓</button><div class="task-info"><strong>Finish essay outline</strong><small>Academic · due today</small></div><span class="tag">High effort</span></div>
+						<div class="task"><button class="check" aria-label="Mark work shift complete"></button><div class="task-info"><strong>Pack for work shift</strong><small>Work · due 5:00 PM</small></div><span class="tag">Quick win</span></div>
+						<div class="task"><button class="check" aria-label="Mark grocery run complete"></button><div class="task-info"><strong>Pick up groceries</strong><small>Errands · due tomorrow</small></div><span class="tag">Low effort</span></div>
+					</div>
+					<button class="add-task" id="addTask">+ Add a task</button>
+				</article>
+				<article class="card checkin-card">
+					<div class="card-kicker">A moment for you</div><h2>How are you holding up today?</h2>
+					<div class="mood-row" role="group" aria-label="Mood check in"><button class="mood" aria-label="Very low">☹</button><button class="mood" aria-label="Low">◔</button><button class="mood" aria-label="Okay">•</button><button class="mood" aria-label="Good">◡</button><button class="mood" aria-label="Great">☺</button></div>
+					<button class="checkin-cta" id="checkin">Log how I feel</button>
+					<div class="recovery"><div class="recovery-icon">☼</div><div><strong>Make space for a reset</strong><small>Try a 5-minute walk before your next task.</small></div></div>
+				</article>
+				<article class="card timer-card" id="focus">
+					<div class="card-kicker">Work-rest timer</div><h2>Protect your attention.</h2>
+					<div class="timer-options" role="group" aria-label="Timer mode"><button class="timer-option active" data-minutes="25">25 / 5</button><button class="timer-option" data-minutes="90">90 / 20</button></div>
+					<div class="timer-display" id="timerDisplay">25:00</div>
+					<div class="timer-actions"><button class="timer-start" id="timerStart">Start focus</button><button class="timer-reset" id="timerReset">Reset</button></div>
+				</article>
+			</section>
+		</main>
+	</div>
+
+	<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+		<form class="modal" id="taskForm"><h2 id="modalTitle">Add a task</h2><div class="form-row"><label for="taskName">What needs doing?</label><input id="taskName" required placeholder="e.g. Read chapter 4"></div><div class="form-row"><label for="taskCategory">Which part of life?</label><select id="taskCategory"><option>Academic</option><option>Work</option><option>Social</option><option>Health</option><option>Errands</option></select></div><div class="form-row"><label for="taskEffort">Mental effort</label><select id="taskEffort"><option>Quick win</option><option>Medium effort</option><option>High effort</option></select></div><div class="modal-actions"><button type="button" class="cancel" id="cancelModal">Cancel</button><button class="save" type="submit">Add to today</button></div></form>
+	</div>
+
+	<script>
+		const body = document.body;
+		const modal = document.getElementById('modalBackdrop');
+		const taskName = document.getElementById('taskName');
+		let timerSeconds = 25 * 60;
+		let timerInterval = null;
+		let timerPhase = 'focus';
+		const timerDisplay = document.getElementById('timerDisplay');
+		const timerStart = document.getElementById('timerStart');
+		const formatTimer = () => String(Math.floor(timerSeconds / 60)).padStart(2, '0') + ':' + String(timerSeconds % 60).padStart(2, '0');
+		const updateTimer = () => { timerDisplay.textContent = formatTimer(); timerStart.textContent = timerInterval ? 'Pause ' + timerPhase : 'Start ' + timerPhase; };
+		const stopTimer = () => { clearInterval(timerInterval); timerInterval = null; updateTimer(); };
+		document.getElementById('themeToggle').addEventListener('click', () => {
+			body.classList.toggle('night');
+			document.getElementById('themeToggle').textContent = body.classList.contains('night') ? '☀  Switch to day mode' : '◐  Switch to night mode';
+		});
+		document.getElementById('addTask').addEventListener('click', () => { modal.classList.add('show'); taskName.focus(); });
+		document.getElementById('cancelModal').addEventListener('click', () => modal.classList.remove('show'));
+		modal.addEventListener('click', (event) => { if (event.target === modal) modal.classList.remove('show'); });
+		document.getElementById('taskForm').addEventListener('submit', (event) => {
+			event.preventDefault();
+			const category = document.getElementById('taskCategory').value;
+			const effort = document.getElementById('taskEffort').value;
+			const task = document.createElement('div');
+			task.className = 'task';
+			task.innerHTML = '<button class="check" aria-label="Mark task complete"></button><div class="task-info"><strong></strong><small>' + category + ' · added just now</small></div><span class="tag">' + effort + '</span>';
+			task.querySelector('strong').textContent = taskName.value;
+			task.querySelector('.check').addEventListener('click', (event) => { event.currentTarget.classList.toggle('checked'); event.currentTarget.textContent = event.currentTarget.classList.contains('checked') ? '✓' : ''; });
+			document.getElementById('taskList').appendChild(task);
+			modal.classList.remove('show'); taskName.value = '';
+		});
+		document.querySelectorAll('.check').forEach((check) => check.addEventListener('click', (event) => { event.currentTarget.classList.toggle('checked'); event.currentTarget.textContent = event.currentTarget.classList.contains('checked') ? '✓' : ''; }));
+		document.querySelectorAll('.mood').forEach((mood) => mood.addEventListener('click', (event) => { document.querySelectorAll('.mood').forEach((item) => item.classList.remove('selected')); event.currentTarget.classList.add('selected'); document.getElementById('checkin').textContent = 'Check-in saved'; }));
+		document.querySelectorAll('.timer-option').forEach((option) => option.addEventListener('click', (event) => { stopTimer(); timerPhase = 'focus'; timerSeconds = Number(event.currentTarget.dataset.minutes) * 60; document.querySelectorAll('.timer-option').forEach((item) => item.classList.remove('active')); event.currentTarget.classList.add('active'); updateTimer(); }));
+		timerStart.addEventListener('click', () => { if (timerInterval) { stopTimer(); return; } timerInterval = setInterval(() => { timerSeconds -= 1; if (timerSeconds <= 0) { stopTimer(); timerPhase = timerPhase === 'focus' ? 'rest' : 'focus'; timerSeconds = timerPhase === 'rest' ? 5 * 60 : Number(document.querySelector('.timer-option.active').dataset.minutes) * 60; } updateTimer(); }, 1000); updateTimer(); });
+		document.getElementById('timerReset').addEventListener('click', () => { stopTimer(); timerPhase = 'focus'; timerSeconds = Number(document.querySelector('.timer-option.active').dataset.minutes) * 60; updateTimer(); });
+		document.querySelector('[data-scroll="focus"]').addEventListener('click', () => document.getElementById('focus').scrollIntoView({ behavior: 'smooth', block: 'center' }));
+		updateTimer();
+	</script>
+</body>
+</html>
