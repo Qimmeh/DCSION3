@@ -1,0 +1,14 @@
+Dockerfile
+README.md
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+.pytest_cache
+venv
+.venv
+env
+.env
+.git
+.gitignore
+frontend/
