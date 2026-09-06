@@ -3,10 +3,22 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Beating the Burnout | Student wellbeing dashboard</title>
+	<title>DCSION3 | Student wellbeing dashboard</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					fontFamily: { sans: ['Manrope', 'sans-serif'], display: ['Sora', 'sans-serif'] },
+					colors: { forest: '#19251f', sage: '#61bc8d', paper: '#f5f7f2' },
+					boxShadow: { soft: '0 18px 45px rgba(38, 68, 52, .08)' }
+				}
+			}
+		}
+	</script>
 	<style>
 		:root {
 			--paper: #f5f7f2;
@@ -26,20 +38,24 @@
 		body {
 			margin: 0;
 			color: var(--ink);
-			background: var(--paper);
-			font-family: "DM Sans", sans-serif;
+			background:
+				radial-gradient(circle at 78% -10%, rgba(216, 242, 228, .9), transparent 31rem),
+				linear-gradient(135deg, #f8faf5 0%, var(--paper) 52%, #f1f6f1 100%);
+			font-family: "Manrope", sans-serif;
 			letter-spacing: 0;
 		}
 		button, input, select { font: inherit; }
 		button { cursor: pointer; }
 		.app-shell { display: flex; min-height: 100vh; }
 		.sidebar {
-			width: 244px; padding: 28px 20px; background: #eef4ed;
+			width: 244px; padding: 28px 20px; background: linear-gradient(180deg, #edf5ee 0%, #e7f0e8 100%);
 			border-right: 1px solid var(--line); display: flex; flex-direction: column;
+			position: relative; overflow: hidden;
 		}
+		.sidebar::after { content: ""; position: absolute; width: 170px; height: 170px; left: -105px; bottom: 110px; border: 1px solid rgba(97, 188, 141, .2); border-radius: 50%; box-shadow: 0 0 0 22px rgba(97, 188, 141, .06), 0 0 0 44px rgba(97, 188, 141, .04); pointer-events: none; }
 		.brand { display: flex; align-items: center; gap: 10px; margin: 0 12px 48px; }
 		.brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: #cbead6; font-size: 16px; }
-		.brand-name { font-family: "Space Grotesk", sans-serif; font-size: 15px; font-weight: 700; line-height: 1.05; }
+		.brand-name { font-family: "Sora", sans-serif; font-size: 15px; font-weight: 700; line-height: 1.05; }
 		.brand-name span { display: block; color: var(--mint-strong); font-size: 11px; font-weight: 600; margin-top: 3px; }
 		.nav-label { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 0 12px 10px; }
 		.nav { display: grid; gap: 5px; }
@@ -57,35 +73,36 @@
 		.theme-toggle { width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); padding: 10px 12px; border-radius: 9px; text-align: left; font-size: 12px; }
 		.theme-toggle:hover { border-color: var(--mint-strong); color: var(--ink); }
 
-		main { width: min(1220px, 100%); margin: 0 auto; padding: 35px 46px 54px; }
-		.topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 30px; }
+		main { width: min(1220px, 100%); margin: 0 auto; padding: 42px 46px 60px; }
+		.topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 34px; position: relative; }
+		.topbar::after { content: ""; position: absolute; right: 76px; top: -12px; width: 58px; height: 58px; border: 1px solid rgba(97, 188, 141, .24); border-radius: 50%; box-shadow: 0 0 0 10px rgba(97, 188, 141, .07); pointer-events: none; }
 		.eyebrow { color: #69a381; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; }
 		h1, h2, h3, p { margin-top: 0; }
-		h1 { font-family: "Space Grotesk", sans-serif; font-size: clamp(26px, 3vw, 38px); line-height: 1.05; letter-spacing: -.04em; margin-bottom: 9px; }
+		h1 { font-family: "Sora", sans-serif; font-size: clamp(26px, 3vw, 38px); line-height: 1.05; letter-spacing: -.04em; margin-bottom: 9px; }
 		.intro { color: var(--muted); font-size: 14px; }
 		.date-wrap { display: flex; align-items: center; gap: 13px; color: var(--muted); font-size: 12px; white-space: nowrap; }
 		.avatar { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 50%; background: var(--ink); color: #d8f2e4; font-weight: 700; }
 		.dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); gap: 20px; }
-		.card { background: var(--surface); border: 1px solid rgba(211, 225, 214, .8); border-radius: 14px; box-shadow: var(--shadow); }
-		.capacity-card { padding: 25px; min-height: 296px; position: relative; overflow: hidden; background: #f0f7f0; }
+		.card { background: rgba(255, 255, 255, .88); border: 1px solid rgba(211, 225, 214, .8); border-radius: 16px; box-shadow: var(--shadow); }
+		.capacity-card { padding: 27px; min-height: 296px; position: relative; overflow: hidden; background: linear-gradient(135deg, #f1f9f2 0%, #e6f3e9 100%); }
 		.capacity-card::after { content: ""; position: absolute; width: 250px; height: 250px; right: -85px; bottom: -118px; border-radius: 50%; border: 1px solid rgba(97, 188, 141, .24); box-shadow: 0 0 0 24px rgba(97, 188, 141, .08), 0 0 0 48px rgba(97, 188, 141, .04); }
 		.card-heading { display: flex; justify-content: space-between; gap: 15px; align-items: flex-start; }
 		.card-kicker { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-		h2 { font-family: "Space Grotesk", sans-serif; font-size: 21px; letter-spacing: -.03em; margin: 5px 0 0; }
+		h2 { font-family: "Sora", sans-serif; font-size: 21px; letter-spacing: -.03em; margin: 5px 0 0; }
 		.status { display: inline-flex; align-items: center; gap: 6px; background: #dff4e5; color: #2b8054; border-radius: 999px; padding: 6px 10px; font-size: 11px; font-weight: 700; }
 		.status::before { content: ""; width: 6px; height: 6px; background: #54b77f; border-radius: 50%; }
 		.capacity-body { display: flex; align-items: center; gap: 35px; margin-top: 30px; }
 		.ring { width: 145px; height: 145px; border-radius: 50%; background: conic-gradient(var(--mint-strong) 0 78%, #dbe9de 78% 100%); display: grid; place-items: center; flex: 0 0 auto; position: relative; }
 		.ring::before { content: ""; width: 111px; height: 111px; border-radius: 50%; background: #f0f7f0; position: absolute; }
 		.ring-content { position: relative; text-align: center; }
-		.ring strong { display: block; font-family: "Space Grotesk", sans-serif; font-size: 35px; letter-spacing: -.06em; }
+		.ring strong { display: block; font-family: "Sora", sans-serif; font-size: 35px; letter-spacing: -.06em; }
 		.ring small { color: var(--muted); font-size: 10px; }
 		.capacity-copy { max-width: 260px; }
-		.capacity-copy strong { font-family: "Space Grotesk", sans-serif; font-size: 16px; }
+		.capacity-copy strong { font-family: "Sora", sans-serif; font-size: 16px; }
 		.capacity-copy p { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 8px 0 0; }
-		.trend-card { padding: 24px 25px 18px; min-height: 296px; }
+		.trend-card { padding: 26px 25px 18px; min-height: 296px; background: rgba(255, 255, 255, .94); }
 		.trend-meta { display: flex; justify-content: space-between; align-items: end; margin: 24px 0 8px; }
-		.trend-meta strong { font-family: "Space Grotesk", sans-serif; font-size: 27px; }
+		.trend-meta strong { font-family: "Sora", sans-serif; font-size: 27px; }
 		.trend-meta span { color: #489a6e; font-size: 11px; font-weight: 700; }
 		.chart { display: flex; height: 137px; align-items: end; gap: 12px; border-bottom: 1px solid var(--line); background: repeating-linear-gradient(to bottom, transparent 0 33px, #edf1ed 34px); padding: 8px 4px 0; }
 		.bar-item { height: 100%; flex: 1; display: flex; align-items: end; justify-content: center; gap: 5px; }
@@ -97,11 +114,12 @@
 		.section-title h2 { font-size: 18px; }
 		.text-button { border: 0; color: #4c9a6c; background: transparent; font-size: 12px; font-weight: 700; }
 		.domain-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-		.domain { padding: 15px 14px; min-height: 112px; border-radius: 11px; }
+		.domain { padding: 16px 15px; min-height: 112px; border-radius: 12px; transition: transform .2s ease, box-shadow .2s ease; }
+		.domain:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(38, 68, 52, .09); }
 		.domain:nth-child(1) { background: var(--blue); } .domain:nth-child(2) { background: var(--yellow); } .domain:nth-child(3) { background: var(--coral); } .domain:nth-child(4) { background: var(--mint); } .domain:nth-child(5) { background: #e6e2f0; }
 		.domain-top { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; }
 		.domain-icon { font-size: 17px; }
-		.domain b { display: block; font-family: "Space Grotesk", sans-serif; font-size: 22px; margin-top: 18px; }
+		.domain b { display: block; font-family: "Sora", sans-serif; font-size: 22px; margin-top: 18px; }
 		.domain small { color: #64746b; font-size: 10px; }
 		.lower-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 20px; }
 		.task-card, .checkin-card { padding: 22px 24px; }
@@ -116,7 +134,7 @@
 		.tag { border-radius: 4px; padding: 4px 6px; color: #567467; background: #eef4ed; font-size: 10px; font-weight: 700; }
 		.add-task { width: 100%; border: 1px dashed #a9c7b2; border-radius: 8px; color: #4c9a6c; background: transparent; padding: 10px; font-size: 12px; font-weight: 700; margin-top: 10px; }
 		.add-task:hover { background: #f2faf4; }
-		.checkin-card { background: var(--ink); color: white; position: relative; overflow: hidden; }
+		.checkin-card { background: linear-gradient(145deg, #1d3026 0%, #14231b 100%); color: white; position: relative; overflow: hidden; }
 		.checkin-card::after { content: ""; position: absolute; width: 160px; height: 160px; right: -70px; top: -68px; border-radius: 50%; border: 1px solid #517465; box-shadow: 0 0 0 18px rgba(113, 177, 139, .11), 0 0 0 37px rgba(113, 177, 139, .06); }
 		.checkin-card .card-kicker { color: #94b8a1; }
 		.checkin-card h2 { color: white; max-width: 220px; }
@@ -129,7 +147,7 @@
 		.timer-options { display: flex; gap: 7px; margin: 18px 0 12px; }
 		.timer-option { border: 1px solid #e3cf96; border-radius: 7px; background: transparent; color: #8a6f27; padding: 7px 9px; font-size: 11px; font-weight: 700; }
 		.timer-option.active, .timer-option:hover { background: #e9c965; border-color: #e9c965; color: #3d3216; }
-		.timer-display { font-family: "Space Grotesk", sans-serif; font-size: 42px; letter-spacing: -.05em; color: #493d1d; }
+		.timer-display { font-family: "Sora", sans-serif; font-size: 42px; letter-spacing: -.05em; color: #493d1d; }
 		.timer-actions { display: flex; gap: 8px; margin-top: 10px; }
 		.timer-actions button { border: 0; border-radius: 7px; padding: 9px 13px; font-size: 11px; font-weight: 700; }
 		.timer-start { background: var(--ink); color: white; } .timer-reset { background: #f2e5bf; color: #715c24; }
@@ -152,14 +170,68 @@
 		@media (max-width: 930px) { .sidebar { width: 200px; } main { padding: 30px 26px; } .domain-grid { grid-template-columns: repeat(3, 1fr); } .lower-grid { grid-template-columns: 1fr; } }
 		@media (max-width: 680px) { .app-shell { display: block; } .sidebar { width: 100%; height: auto; padding: 16px 16px 12px; border-right: 0; border-bottom: 1px solid var(--line); } .brand { margin: 0 0 15px; } .nav-label, .sidebar-bottom { display: none; } .nav { display: flex; gap: 4px; overflow-x: auto; } .nav button { padding: 8px 10px; white-space: nowrap; font-size: 11px; } .nav button::before { width: 16px; } main { padding: 26px 16px 35px; } .topbar { margin-bottom: 24px; } .date-wrap { display: none; } .dashboard-grid { display: block; } .trend-card { margin-top: 14px; } .capacity-body { gap: 20px; } .ring { width: 125px; height: 125px; } .ring::before { width: 96px; height: 96px; } .ring strong { font-size: 29px; } .domain-grid { grid-template-columns: repeat(2, 1fr); } .domain:last-child { grid-column: span 2; } .section-title { margin-top: 24px; } }
 		@media (max-width: 400px) { .capacity-card, .trend-card, .task-card, .checkin-card { padding: 18px; } .capacity-body { align-items: flex-start; flex-direction: column; } .capacity-copy { max-width: none; } }
+
+		/* Warm, health-app inspired visual layer */
+		:root { --paper: #f5f6fa; --surface: #ffffff; --ink: #17191d; --muted: #7d8188; --line: #e6e7eb; --mint-strong: #f37b32; --yellow: #ffd66b; --shadow: 0 12px 30px rgba(32, 36, 45, .07); }
+		body { background: linear-gradient(180deg, #fbe4d2 0 132px, #f5f6fa 300px); color: var(--ink); }
+		.sidebar { background: #fff7f0; border-color: #f0e1d5; }
+		.brand-mark { background: #f37b32; color: white; }
+		.brand-name span, .eyebrow, .text-button { color: #ed7130; }
+		.nav button { color: #777b82; }
+		.nav button.active, .nav button:hover { color: var(--ink); box-shadow: 0 5px 14px rgba(208, 111, 49, .1); }
+		.nav button.active::before { color: #f37b32; }
+		.card { border-color: #e7e8eb; box-shadow: var(--shadow); }
+		.capacity-card { background: linear-gradient(135deg, #fff2e6 0%, #fffaf5 100%); }
+		.capacity-card::after { border-color: rgba(243, 123, 50, .23); box-shadow: 0 0 0 24px rgba(243, 123, 50, .07), 0 0 0 48px rgba(243, 123, 50, .035); }
+		.status { background: #ffeadb; color: #d86124; }
+		.status::before { background: #f37b32; }
+		.ring { background: conic-gradient(#f37b32 0 78%, #f8d8c1 78% 100%); }
+		.ring::before { background: #fff9f3; }
+		.trend-meta span { color: #e56d2b; }
+		.bar { background: #f7c8a8; }
+		.bar.second { background: #f39a5e; }
+		.bar.current { background: #f37b32; }
+		.domain:nth-child(1) { background: #e3f0fb; } .domain:nth-child(2) { background: #fff0b9; } .domain:nth-child(3) { background: #f8dcd1; } .domain:nth-child(4) { background: #d9f1e6; } .domain:nth-child(5) { background: #e8e3f3; }
+		.checkin-card { background: linear-gradient(145deg, #25302d 0%, #17201e 100%); }
+		.checkin-cta { background: #ffdfc8; color: #bd5720; }
+		.timer-card { background: #fff8e9; border-color: #f1dfac; }
+		.timer-option.active, .timer-option:hover { background: #f4c657; border-color: #f4c657; }
+		.timer-start { background: #f37b32; }
+		.timer-reset { background: #f8e9bd; }
+		.add-task { border-color: #edb48d; color: #e46c2c; }
+		.add-task:hover { background: #fff4eb; }
+		.recovery-icon { background: #ffe4a5; color: #bd761b; }
+		.mobile-bottom-nav { display: none; }
+		@media (max-width: 680px) {
+			body { background: linear-gradient(180deg, #fbe4d2 0 164px, #f5f6fa 320px); padding-bottom: 74px; }
+			.sidebar { display: none !important; }
+			main { padding: 0 16px 30px; }
+			.topbar { margin: 0 -16px 24px; padding: 34px 20px 26px; background: linear-gradient(180deg, #fbe4d2, #f8e9df); border-radius: 0 0 28px 28px; }
+			.topbar::after { right: 28px; top: 22px; border-color: rgba(243, 123, 50, .24); box-shadow: 0 0 0 10px rgba(243, 123, 50, .07); }
+			h1 { font-size: 29px; max-width: 280px; }
+			.intro { max-width: 320px; color: #75777c; }
+			.dashboard-grid { display: block; }
+			.capacity-card { margin-top: 0; border-radius: 22px; }
+			.trend-card { margin-top: 14px; border-radius: 22px; }
+			.section-title { margin-top: 28px; }
+			.section-title h2 { font-size: 18px; }
+			.domain { border-radius: 18px; }
+			.lower-grid { display: block; }
+			.task-card, .checkin-card, .timer-card { margin-top: 14px; border-radius: 22px; }
+			.mobile-bottom-nav { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; z-index: 10; right: 0; bottom: 0; left: 0; padding: 10px 18px calc(10px + env(safe-area-inset-bottom)); background: rgba(255, 255, 255, .95); border-top: 1px solid #e8e8eb; box-shadow: 0 -8px 24px rgba(32, 36, 45, .08); }
+			.mobile-bottom-nav button { border: 0; background: transparent; color: #a0a2a7; font-size: 10px; font-weight: 700; }
+			.mobile-bottom-nav button span { display: grid; place-items: center; width: 34px; height: 27px; margin: 0 auto 3px; border-radius: 14px; font-size: 18px; }
+			.mobile-bottom-nav button.active { color: #f0732c; }
+			.mobile-bottom-nav button.active span { background: #ffeadb; }
+		}
 	</style>
 </head>
-<body>
-	<div class="app-shell">
-		<aside class="sidebar">
-			<div class="brand"><div class="brand-mark">+</div><div class="brand-name">beating the burnout<span>student wellbeing</span></div></div>
+	<body class="!bg-[#f5f6fa] !text-[#17191d] font-sans antialiased">
+	<div class="app-shell flex min-h-screen max-md:block">
+		<aside class="sidebar flex w-full shrink-0 flex-col !border-[#f0e1d5] !bg-[#fff7f0] px-5 py-7 md:w-64">
+			<div class="brand mb-12 flex items-center gap-2.5 px-3"><div class="brand-mark grid h-8 w-8 shrink-0 place-items-center rounded-full !bg-[#f37b32] !text-white">+</div><div class="brand-name font-display text-[15px] font-bold">DCSION3<span>student wellbeing</span></div></div>
 			<div class="nav-label">Your space</div>
-			<nav class="nav" aria-label="Primary navigation">
+			<nav class="nav flex gap-1 overflow-x-auto md:grid" aria-label="Primary navigation">
 				<button class="active" data-icon="grid">Overview</button>
 				<button data-icon="tasks">My tasks</button>
 				<button data-icon="heart">Wellbeing</button>
@@ -172,18 +244,18 @@
 			</div>
 		</aside>
 
-		<main>
-			<header class="topbar">
+		<main class="mx-auto w-full max-w-[1220px] px-4 py-7 md:px-12 md:py-10">
+			<header class="topbar mb-8 flex items-start justify-between gap-5">
 				<div><div class="eyebrow">Saturday, 05 September</div><h1>Good morning, Alex.</h1><p class="intro">Here’s your week at a glance. Let’s make room for what matters.</p></div>
 				<div class="date-wrap"><span>Week 36</span><div class="avatar">A</div></div>
 			</header>
 
-			<section class="dashboard-grid" aria-label="Workload overview">
-				<article class="card capacity-card">
+			<section class="dashboard-grid grid gap-5 max-md:block lg:grid-cols-[1.2fr_.8fr]" aria-label="Workload overview">
+				<article class="card capacity-card !min-h-[296px] overflow-hidden rounded-2xl !border-[#e7e8eb] !bg-gradient-to-br !from-[#fff2e6] !to-[#fffaf5] !p-7 shadow-soft">
 					<div class="card-heading"><div><div class="card-kicker">This week's capacity</div><h2>You have room to breathe.</h2></div><div class="status">Balanced</div></div>
 					<div class="capacity-body"><div class="ring"><div class="ring-content"><strong>78%</strong><small>of capacity</small></div></div><div class="capacity-copy"><strong>A steady week so far</strong><p>You’re carrying a little less than last week. Protect a pocket of unplanned time for yourself.</p></div></div>
 				</article>
-				<article class="card trend-card">
+				<article class="card trend-card !min-h-[296px] rounded-2xl !border-[#e7e8eb] !bg-white/95 !p-6 shadow-soft">
 					<div class="card-heading"><div><div class="card-kicker">Load over time</div><h2>A gentle downward trend</h2></div></div>
 					<div class="trend-meta"><strong>− 8%</strong><span>from last week</span></div>
 					<div class="chart" aria-label="Weekly load chart"><div class="bar-item"><i class="bar" style="height: 55%"></i><i class="bar second" style="height: 43%"></i></div><div class="bar-item"><i class="bar" style="height: 61%"></i><i class="bar second" style="height: 50%"></i></div><div class="bar-item"><i class="bar" style="height: 72%"></i><i class="bar second" style="height: 66%"></i></div><div class="bar-item"><i class="bar" style="height: 64%"></i><i class="bar second" style="height: 61%"></i></div><div class="bar-item"><i class="bar" style="height: 79%"></i><i class="bar second" style="height: 68%"></i></div><div class="bar-item"><i class="bar current" style="height: 62%"></i><i class="bar current" style="height: 55%"></i></div></div>
@@ -191,17 +263,17 @@
 				</article>
 			</section>
 
-			<div class="section-title"><h2>Where your energy is going</h2><button class="text-button">View details →</button></div>
-			<section class="domain-grid" aria-label="Life category workload">
-				<article class="domain"><div class="domain-top"><span>Academic</span><span class="domain-icon">✎</span></div><b>42%</b><small>3 tasks · 8h 30m</small></article>
-				<article class="domain"><div class="domain-top"><span>Work</span><span class="domain-icon">▣</span></div><b>18%</b><small>2 shifts · 6h</small></article>
-				<article class="domain"><div class="domain-top"><span>Social</span><span class="domain-icon">♡</span></div><b>8%</b><small>1 plan · 2h</small></article>
-				<article class="domain"><div class="domain-top"><span>Health</span><span class="domain-icon">⌁</span></div><b>7%</b><small>2 habits · 1h</small></article>
-				<article class="domain"><div class="domain-top"><span>Errands</span><span class="domain-icon">□</span></div><b>3%</b><small>1 task · 45m</small></article>
+			<div class="section-title flex items-center justify-between"><h2>Where your energy is going</h2><button class="text-button">View details →</button></div>
+			<section class="domain-grid grid grid-cols-2 gap-2.5 md:grid-cols-3 lg:grid-cols-5" aria-label="Life category workload">
+				<article class="domain !rounded-xl !bg-[#e3f0fb] !p-4"><div class="domain-top"><span>Academic</span><span class="domain-icon">✎</span></div><b>42%</b><small>3 tasks · 8h 30m</small></article>
+				<article class="domain !rounded-xl !bg-[#fff0b9] !p-4"><div class="domain-top"><span>Work</span><span class="domain-icon">▣</span></div><b>18%</b><small>2 shifts · 6h</small></article>
+				<article class="domain !rounded-xl !bg-[#f8dcd1] !p-4"><div class="domain-top"><span>Social</span><span class="domain-icon">♡</span></div><b>8%</b><small>1 plan · 2h</small></article>
+				<article class="domain !rounded-xl !bg-[#d9f1e6] !p-4"><div class="domain-top"><span>Health</span><span class="domain-icon">⌁</span></div><b>7%</b><small>2 habits · 1h</small></article>
+				<article class="domain !rounded-xl !bg-[#e8e3f3] !p-4"><div class="domain-top"><span>Errands</span><span class="domain-icon">□</span></div><b>3%</b><small>1 task · 45m</small></article>
 			</section>
 
-			<section class="lower-grid">
-				<article class="card task-card">
+			<section class="lower-grid grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
+				<article class="card task-card !rounded-2xl !border-[#e7e8eb] !bg-white/90 !p-6 shadow-soft">
 					<div class="card-heading"><div><div class="card-kicker">Your focus for today</div><h2>Three things are enough.</h2></div><span class="card-kicker">1 / 3 done</span></div>
 					<div class="task-list" id="taskList">
 						<div class="task"><button class="check checked" aria-label="Mark essay outline incomplete">✓</button><div class="task-info"><strong>Finish essay outline</strong><small>Academic · due today</small></div><span class="tag">High effort</span></div>
@@ -210,13 +282,13 @@
 					</div>
 					<button class="add-task" id="addTask">+ Add a task</button>
 				</article>
-				<article class="card checkin-card">
+				<article class="card checkin-card !rounded-2xl !border-[#21382b] !p-6 shadow-soft">
 					<div class="card-kicker">A moment for you</div><h2>How are you holding up today?</h2>
 					<div class="mood-row" role="group" aria-label="Mood check in"><button class="mood" aria-label="Very low">☹</button><button class="mood" aria-label="Low">◔</button><button class="mood" aria-label="Okay">•</button><button class="mood" aria-label="Good">◡</button><button class="mood" aria-label="Great">☺</button></div>
 					<button class="checkin-cta" id="checkin">Log how I feel</button>
 					<div class="recovery"><div class="recovery-icon">☼</div><div><strong>Make space for a reset</strong><small>Try a 5-minute walk before your next task.</small></div></div>
 				</article>
-				<article class="card timer-card" id="focus">
+				<article class="card timer-card !rounded-2xl !border-[#f1dfac] !p-6 shadow-soft" id="focus">
 					<div class="card-kicker">Work-rest timer</div><h2>Protect your attention.</h2>
 					<div class="timer-options" role="group" aria-label="Timer mode"><button class="timer-option active" data-minutes="25">25 / 5</button><button class="timer-option" data-minutes="90">90 / 20</button></div>
 					<div class="timer-display" id="timerDisplay">25:00</div>
@@ -225,6 +297,12 @@
 			</section>
 		</main>
 	</div>
+	<nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+		<button class="active"><span>♥</span>Today</button>
+		<button><span>◒</span>Tasks</button>
+		<button><span>◌</span>Wellbeing</button>
+		<button><span>◉</span>Profile</button>
+	</nav>
 
 	<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
 		<form class="modal" id="taskForm"><h2 id="modalTitle">Add a task</h2><div class="form-row"><label for="taskName">What needs doing?</label><input id="taskName" required placeholder="e.g. Read chapter 4"></div><div class="form-row"><label for="taskCategory">Which part of life?</label><select id="taskCategory"><option>Academic</option><option>Work</option><option>Social</option><option>Health</option><option>Errands</option></select></div><div class="form-row"><label for="taskEffort">Mental effort</label><select id="taskEffort"><option>Quick win</option><option>Medium effort</option><option>High effort</option></select></div><div class="modal-actions"><button type="button" class="cancel" id="cancelModal">Cancel</button><button class="save" type="submit">Add to today</button></div></form>
