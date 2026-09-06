@@ -31,7 +31,29 @@ def checkin():
                 note=form.note.data,
             ))
         db.session.commit()
-        flash("Check-in saved.", "success")
+        
+        # ALGORITHM: If stress is high, push today's moveable tasks to tomorrow
+        if form.stress.data > 7:
+            from app.models import Task
+            from datetime import timedelta
+            
+            today = date.today()
+            moveable_tasks = current_user.tasks.filter(
+                Task.deadline == today,
+                Task.is_moveable == True,
+                Task.status != 'done'
+            ).all()
+            
+            if moveable_tasks:
+                for t in moveable_tasks:
+                    t.deadline = today + timedelta(days=1)
+                db.session.commit()
+                flash(f"Algorithm detected high stress! Automatically pushed {len(moveable_tasks)} moveable task(s) to tomorrow.", "info")
+            else:
+                flash("Check-in saved. Note: High stress detected, but no moveable tasks found to reschedule today.", "warning")
+        else:
+            flash("Check-in saved.", "success")
+            
         return redirect(url_for("main.dashboard"))
 
     history = current_user.checkins.order_by(CheckIn.date.desc()).limit(14).all()
