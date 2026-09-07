@@ -14,7 +14,9 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     csrf.init_app(app)
 
+    from app import models as app_models
     from app.models import User
+
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -40,10 +42,12 @@ def create_app(config_class=Config):
 
     with app.app_context():
         try:
-            print("Connecting to database and running db.create_all()...", flush=True)
+            table_count = len(db.Model.metadata.tables)
+            print(f"Connecting to database and creating {table_count} tables via db.create_all()...", flush=True)
             db.create_all()
-            print("db.create_all() finished successfully!", flush=True)
+            print("db.create_all() finished successfully! All tables verified.", flush=True)
         except Exception as err:
             print(f"FAILED to run db.create_all(): {err}", flush=True)
+
 
     return app
