@@ -187,6 +187,81 @@
 			.mobile-bottom-nav button.active { color: #f0732c; }
 			.mobile-bottom-nav button.active span { background: #ffeadb; }
 		}
+
+		/* ===== Refined dark mode — warm charcoal + orange ===== */
+		body.night {
+			--paper: #15100c; --surface: #211a13; --surface-2: #2b2117; --ink: #f7ede0; --muted: #b9a891;
+			--line: #3c2f21; --shadow: 0 24px 60px rgba(0,0,0,.55);
+			background:
+				radial-gradient(circle at 80% -8%, rgba(255, 143, 77, .16), transparent 30rem),
+				linear-gradient(165deg, #1a130d 0%, #14100c 55%, #100c09 100%) !important;
+			color: var(--ink);
+		}
+		body.night .sidebar { background: linear-gradient(180deg, #1d160f 0%, #17110c 100%) !important; border-color: var(--line) !important; }
+		body.night .sidebar::after { border-color: rgba(255, 143, 77, .18); box-shadow: 0 0 0 22px rgba(255, 143, 77, .07), 0 0 0 44px rgba(255, 143, 77, .035); }
+		body.night .brand-name span, body.night .eyebrow { color: #ff9a5c; }
+		body.night .nav button { color: #a99a89; }
+		body.night .nav button.active, body.night .nav button:hover { background: var(--surface); color: var(--ink); box-shadow: 0 5px 16px rgba(0, 0, 0, .35); }
+		body.night .nav button::before { color: #b9a891; }
+		body.night .nav button.active::before { color: #ff8f4d; }
+		body.night .avatar { background: #ff8f4d; color: #2b1608; }
+		body.night .privacy strong { color: var(--ink); }
+		body.night .theme-toggle { background: var(--surface); border-color: var(--line); color: var(--muted); }
+		body.night .theme-toggle:hover { border-color: #ff8f4d; color: var(--ink); }
+		body.night .card { background: rgba(33, 26, 19, .92); border-color: var(--line) !important; box-shadow: var(--shadow); }
+		body.night .mood-btn, body.night .stress-btn { background: #1c150f; border-color: #3a2d20; color: var(--muted); }
+		body.night .mood-btn:hover, body.night .stress-btn:hover { border-color: #ff8f4d; }
+		body.night .mood-btn.selected, body.night .stress-btn.selected { background: rgba(255, 143, 77, .16) !important; border-color: #ff8f4d !important; color: #ffb27a !important; }
+		body.night .checkin-cta { background: #ff8f4d !important; color: #2b1608; }
+		body.night .checkin-cta.saved { background: #4c9a6c !important; color: white; }
+		body.night .week-day span.dot { background: #241d16; }
+		body.night .nudge-card { background: linear-gradient(145deg, #241d17 0%, #171310 100%); }
+		body.night .nudge-card::after { border-color: #5a4530; box-shadow: 0 0 0 18px rgba(255, 143, 77, .1), 0 0 0 37px rgba(255, 143, 77, .05); }
+		body.night .nudge-card .card-kicker { color: #d8b48c; }
+		body.night .nudge-tag { background: rgba(255, 255, 255, .1); color: #ffdcc0; }
+		body.night .nudge-item { color: #e9dcc9; }
+		body.night .nudge-item .nudge-icon { background: rgba(255, 255, 255, .1); }
+		body.night .timer-card { background: linear-gradient(160deg, #241c14 0%, #1a140e 100%) !important; border-color: #3a2d20 !important; }
+		body.night .timer-option { border-color: #4a3c2c; color: #d8b877; }
+		body.night .timer-option.active, body.night .timer-option:hover { background: #ff8f4d !important; border-color: #ff8f4d !important; color: #2b1608; }
+		body.night .timer-display { color: #f2e2c8; }
+		body.night .timer-start { background: #ff8f4d !important; }
+		body.night .timer-reset { background: #3a2d20 !important; color: #d8c7b3; }
+		body.night .quote-card { background: linear-gradient(135deg, #241d17 0%, #1a1510 100%) !important; }
+		body.night .quote-hint { color: var(--muted); }
+		body.night .quote-next { background: var(--surface); border-color: var(--line); color: var(--muted); }
+		body.night .quote-next:hover { border-color: #ff8f4d !important; color: #ff9a5c !important; }
+		body.night .boundary-item, body.night .boundary-script { background: #1c150f; border-color: #3a2d20; }
+		body.night .boundary-item p { color: var(--muted); }
+		body.night .copy-btn { background: var(--surface); border-color: var(--line); color: var(--muted); }
+		body.night .copy-btn.copied { border-color: #ff8f4d !important; color: #ff9a5c !important; }
+		body.night .mobile-bottom-nav { background: rgba(23, 17, 12, .95) !important; border-color: var(--line) !important; }
+		body.night .mobile-bottom-nav button { color: #8c7c68; }
+		body.night .mobile-bottom-nav button.active { color: #ff8f4d !important; }
+		body.night .mobile-bottom-nav button.active span { background: rgba(255, 143, 77, .16) !important; }
+
+
+		/* ===== Collapsible sidebar / hamburger menu ===== */
+		.hamburger-btn { display: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); width: 38px; height: 38px; border-radius: 9px; font-size: 15px; align-items: center; justify-content: center; flex: 0 0 auto; margin-right: 14px; cursor: pointer; }
+		.hamburger-btn:hover { border-color: var(--mint-strong); color: var(--mint-strong); }
+		.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 12, 9, .45); z-index: 15; }
+		body.sidebar-open .sidebar-overlay { display: block; }
+		body.night .sidebar-overlay { background: rgba(0, 0, 0, .6); }
+		@media (max-width: 930px) {
+			.hamburger-btn { display: inline-flex; }
+			.sidebar {
+				display: flex !important; position: fixed !important; top: 0; left: 0; bottom: 0; height: 100vh;
+				width: 260px !important; max-width: 82vw; flex-direction: column !important; padding: 24px 20px !important;
+				border-right: 1px solid var(--line) !important; border-bottom: 0 !important; z-index: 20;
+				transform: translateX(-100%); transition: transform .25s ease; box-shadow: 0 20px 60px rgba(0,0,0,.28); overflow-y: auto;
+			}
+			.sidebar .nav-label, .sidebar .sidebar-bottom { display: block !important; }
+			.sidebar .nav { display: grid !important; gap: 5px !important; overflow-x: visible !important; }
+			.sidebar .brand { margin: 0 0 40px !important; }
+			body.sidebar-open .sidebar { transform: translateX(0); }
+			.topbar { margin-top: 2px; }
+		}
+
 	</style>
 </head>
 <body class="!bg-gradient-to-b !from-[#fbe4d2] !via-[#f5f6fa] !to-[#f5f6fa] font-sans antialiased">
@@ -205,9 +280,11 @@
 				<button class="theme-toggle" id="themeToggle">◐ &nbsp; Switch to night mode</button>
 			</div>
 		</aside>
+		<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 		<main class="mx-auto w-full max-w-[1220px] px-4 py-7 md:px-12 md:py-10">
 			<header class="topbar">
+				<button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">☰</button>
 				<div>
 					<div class="eyebrow">Wellbeing &amp; recovery</div>
 					<h1>Take care of the person doing the work.</h1>
@@ -507,6 +584,13 @@
 		// ---- init ----
 		renderWeekStrip();
 		updateTimer();
+			const hamburgerBtn = document.getElementById('hamburgerBtn');
+		const sidebarOverlay = document.getElementById('sidebarOverlay');
+		function closeSidebar() { document.body.classList.remove('sidebar-open'); }
+		hamburgerBtn.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+		sidebarOverlay.addEventListener('click', closeSidebar);
+		document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSidebar(); });
+		document.querySelectorAll('.sidebar .nav button').forEach((btn) => btn.addEventListener('click', () => { if (window.innerWidth <= 930) closeSidebar(); }));
 	</script>
 </body>
 </html>
