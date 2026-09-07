@@ -1,0 +1,21 @@
+from flask_wtf import FlaskForm
+from wtforms import StringField, TextAreaField, IntegerField, FloatField, DateField, SelectField, SubmitField, BooleanField
+from wtforms.validators import DataRequired, Optional
+
+class TaskForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[Optional()])
+    category = SelectField('Category', validators=[DataRequired()])
+    deadline = DateField('Deadline', validators=[Optional()])
+    importance = IntegerField('Importance (1-10)', validators=[Optional()])
+    effort_hours = FloatField('Effort (Hours)', validators=[Optional()])
+    effort_mental = IntegerField('Mental Effort (1-10)', validators=[Optional()])
+    parent_id = SelectField('Parent Task', coerce=int, validators=[Optional()])
+    is_moveable = BooleanField('Is Moveable?', default=True)
+    submit = SubmitField('Save Task')
+
+class CheckInForm(FlaskForm):
+    mood = IntegerField('Mood (1-10)', validators=[DataRequired()])
+    stress = IntegerField('Stress (1-10)', validators=[DataRequired()])
+    note = TextAreaField('Note', validators=[Optional()])
+    submit = SubmitField('Check In')
