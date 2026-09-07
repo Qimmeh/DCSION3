@@ -60,6 +60,31 @@ def not_found(e):
 def internal_error(e):
     return jsonify({"error": "Internal server error"}), 500
 
+@api_bp.route("/health", methods=["GET"])
+def health():
+    from app.extensions import db
+    from sqlalchemy import inspect
+    db_status = "unknown"
+    tables = []
+    error = None
+    try:
+        db.create_all()
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        db_status = "connected"
+    except Exception as e:
+        db_status = "error"
+        error = str(e)
+
+    return jsonify({
+        "status": "online",
+        "database": db_status,
+        "table_count": len(tables),
+        "tables": tables,
+        "error": error
+    })
+
 
 # Import and attach route handlers
 from app.api import workload_api, activities_api, simulation_api, ghost_api, recovery_api
+
