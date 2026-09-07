@@ -38,6 +38,11 @@ def create_app(config_class=Config):
         return {"current_user": current_user}
 
     with app.app_context():
-        db.create_all()
+        try:
+            print("Connecting to database and running db.create_all()...", flush=True)
+            db.create_all()
+            print("db.create_all() finished successfully!", flush=True)
+        except Exception as err:
+            print(f"FAILED to run db.create_all(): {err}", flush=True)
 
-    return app
+    return app
