@@ -88,6 +88,16 @@
 		.avatar { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 50%; background: var(--ink); color: #d8f2e4; font-weight: 700; }
 
 		.dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); gap: 20px; margin-bottom: 6px; }
+		.overview-strip { display: flex; align-items: center; gap: 18px; padding: 18px 22px; margin-bottom: 20px; flex-wrap: wrap; }
+		.overview-item { display: flex; align-items: baseline; gap: 9px; }
+		.overview-item .ov-label { color: var(--muted); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+		.overview-item strong { font-family: "Sora", sans-serif; font-size: 22px; letter-spacing: -.03em; }
+		.ov-status { font-size: 10.5px; font-weight: 700; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+		.ov-status.green { background: #dff4e5; color: #2b8054; }
+		.ov-status.yellow { background: #fbead0; color: #93701c; }
+		.ov-status.red { background: #fbe2dc; color: #c1503a; }
+		.overview-divider { width: 1px; align-self: stretch; background: var(--line); }
+		.overview-insight { flex: 1; min-width: 220px; color: var(--muted); font-size: 12.5px; line-height: 1.5; margin: 0; }
 		.card { background: rgba(255, 255, 255, .88); border: 1px solid rgba(211, 225, 214, .8); border-radius: 16px; box-shadow: var(--shadow); }
 		.capacity-card { padding: 27px; position: relative; overflow: hidden; background: linear-gradient(135deg, #f1f9f2 0%, #e6f3e9 100%); transition: background .3s ease; }
 		.capacity-card::after { content: ""; position: absolute; width: 250px; height: 250px; right: -85px; bottom: -118px; border-radius: 50%; border: 1px solid rgba(97, 188, 141, .24); box-shadow: 0 0 0 24px rgba(97, 188, 141, .08), 0 0 0 48px rgba(97, 188, 141, .04); }
@@ -167,6 +177,9 @@
 		.badge-delegated { background: #e6e2f0; color: #5b4f8a; }
 
 		.domain-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+		.domain-bar-track { height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .55); margin-top: 10px; overflow: hidden; }
+		.domain-bar-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+		.domain-status-label { display: block; font-size: 9.5px; font-weight: 700; margin-top: 6px; letter-spacing: .02em; }
 		.domain { padding: 16px 15px; min-height: 106px; border-radius: 12px; transition: transform .2s ease, box-shadow .2s ease; }
 		.domain:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(38, 68, 52, .09); }
 		.domain[data-domain="Academic"] { background: var(--blue); }
@@ -208,8 +221,49 @@
 
 		.modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(20, 35, 27, .38); z-index: 5; place-items: center; padding: 18px; }
 		.modal-backdrop.show { display: grid; }
-		.modal { width: min(430px, 100%); background: var(--surface); border-radius: 14px; padding: 25px; box-shadow: 0 25px 70px rgba(0,0,0,.2); }
+		.modal { width: min(430px, 100%); background: var(--surface); border-radius: 14px; padding: 25px; box-shadow: 0 25px 70px rgba(0,0,0,.2); max-height: 88vh; overflow-y: auto; }
 		.modal h2 { margin-bottom: 20px; max-width: none; }
+
+		.input-tabs { display: flex; gap: 5px; background: #f0f2ef; border-radius: 10px; padding: 4px; margin-bottom: 18px; }
+		.input-tab { flex: 1; border: 0; background: transparent; color: var(--muted); font-size: 11px; font-weight: 700; padding: 8px 6px; border-radius: 7px; text-align: center; }
+		.input-tab.active { background: var(--surface); color: var(--ink); box-shadow: 0 3px 8px rgba(38, 68, 52, .1); }
+		.tab-panel { display: none; }
+		.tab-panel.active { display: block; }
+
+		.nl-textarea { width: 100%; border: 1px solid var(--line); border-radius: 9px; padding: 11px 12px; color: var(--ink); background: var(--paper); resize: vertical; min-height: 76px; }
+		.nl-examples { color: var(--muted); font-size: 10.5px; margin: 6px 0 0; line-height: 1.5; }
+		.nl-row { display: flex; gap: 8px; margin-top: 12px; }
+		.mic-btn { flex: 0 0 auto; width: 40px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--muted); font-size: 15px; }
+		.mic-btn.listening { border-color: #c1503a; color: #c1503a; background: #fbe9e4; }
+		.parse-btn { flex: 1; border: 0; border-radius: 9px; background: var(--ink); color: white; font-size: 12.5px; font-weight: 700; }
+		.nl-preview { margin-top: 16px; border: 1px dashed #a9c7b2; border-radius: 10px; padding: 13px 14px; background: #f6faf6; }
+		.nl-preview.hidden { display: none; }
+		.nl-preview-title { font-size: 11px; font-weight: 700; color: #4c9a6c; margin-bottom: 10px; }
+		.nl-preview-note { color: var(--muted); font-size: 10.5px; margin: 8px 0 0; }
+
+		.dropzone { border: 1.5px dashed #a9c7b2; border-radius: 12px; padding: 26px 16px; text-align: center; color: var(--muted); font-size: 12.5px; background: #f6faf6; cursor: pointer; }
+		.dropzone:hover { border-color: var(--mint-strong); }
+		.dropzone strong { display: block; color: var(--ink); font-size: 13px; margin-bottom: 4px; }
+		.tt-preview-strip { display: none; align-items: center; gap: 10px; margin-top: 12px; font-size: 11.5px; color: var(--muted); }
+		.tt-preview-strip.show { display: flex; }
+		.tt-preview-strip img { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+		.extract-btn { width: 100%; border: 0; border-radius: 9px; background: var(--ink); color: white; font-size: 12.5px; font-weight: 700; padding: 11px; margin-top: 12px; }
+		.extract-btn:disabled { opacity: .5; }
+		.tt-status { color: var(--muted); font-size: 11.5px; margin-top: 10px; display: none; }
+		.tt-status.show { display: block; }
+		.tt-results { display: none; gap: 8px; margin-top: 14px; }
+		.tt-results.show { display: grid; }
+		.tt-item { display: flex; align-items: flex-start; gap: 9px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 11px; background: #fbfdfb; }
+		.tt-item input[type="checkbox"] { margin-top: 3px; accent-color: var(--mint-strong); }
+		.tt-item-fields { flex: 1; display: grid; gap: 5px; }
+		.tt-item-fields input, .tt-item-fields select { border: 1px solid var(--line); border-radius: 6px; padding: 6px 7px; font-size: 11.5px; background: var(--surface); }
+		.tt-item-row { display: flex; gap: 5px; }
+		.tt-confirm-btn { width: 100%; border: 0; border-radius: 9px; background: var(--mint-strong); color: white; font-size: 12.5px; font-weight: 700; padding: 11px; margin-top: 12px; }
+
+		.duration-readout { color: var(--muted); font-size: 10.5px; margin-top: 4px; }
+		.task-source-icon { margin-right: 5px; opacity: .7; }
+		.tag-fixed { background: #eef2f0; color: #4c5c53; }
+		.tag-flexible { background: #f3ecd9; color: #93701c; }
 		.form-row { display: grid; gap: 7px; margin-bottom: 14px; }
 		.form-row.split { grid-template-columns: 1fr 1fr; display: grid; gap: 12px; margin-bottom: 0; }
 		.form-row label { color: var(--muted); font-size: 11px; font-weight: 700; }
@@ -230,6 +284,12 @@
 		body.night .priority-quadrant, body.night .assist-item { background: #1c2721; border-color: #2c3a32; }
 		body.night .assist-card { background: #241d1a; border-color: #3d2e26; }
 		body.night .cap-note { background: #22291f; }
+		body.night .input-tabs { background: #182018; }
+		body.night .input-tab.active { background: #233128; }
+		body.night .nl-textarea, body.night .dropzone, body.night .nl-preview, body.night .tt-item, body.night .tt-item-fields input, body.night .tt-item-fields select { background: #1c2721; border-color: #2c3a32; color: var(--ink); }
+		body.night .tag-fixed, body.night .tag-due { background: #2b352f; color: #b9c6be; }
+		body.night .overview-divider { background: #2c3a32; }
+		body.night .domain-bar-track { background: rgba(255,255,255,.12); }
 
 		@media (max-width: 930px) { .sidebar { width: 200px; } main { padding: 30px 26px; } .domain-grid { grid-template-columns: repeat(3, 1fr); } .dashboard-grid { grid-template-columns: 1fr; } }
 		@media (max-width: 680px) {
@@ -286,6 +346,132 @@
 			.topbar { background: linear-gradient(180deg, #fbe4d2, #f8e9df); border-radius: 0 0 28px 28px; }
 			.topbar::after { right: 28px; top: 22px; border-color: rgba(243, 123, 50, .24); box-shadow: 0 0 0 10px rgba(243, 123, 50, .07); }
 		}
+
+		/* ===== Refined dark mode — warm charcoal + orange ===== */
+		body.night {
+			--paper: #15100c; --surface: #211a13; --surface-2: #2b2117; --ink: #f7ede0; --muted: #b9a891;
+			--line: #3c2f21; --mint: #3a2c1c; --mint-strong: #ff8f4d; --blue: #1f2c3a; --yellow: #3a2f16;
+			--coral: #3a2620; --violet: #241f34; --shadow: 0 24px 60px rgba(0,0,0,.55);
+			background:
+				radial-gradient(circle at 80% -8%, rgba(255, 143, 77, .16), transparent 30rem),
+				linear-gradient(165deg, #1a130d 0%, #14100c 55%, #100c09 100%) !important;
+			color: var(--ink);
+		}
+		body.night .sidebar { background: linear-gradient(180deg, #1d160f 0%, #17110c 100%) !important; border-color: var(--line) !important; }
+		body.night .sidebar::after { border-color: rgba(255, 143, 77, .18); box-shadow: 0 0 0 22px rgba(255, 143, 77, .07), 0 0 0 44px rgba(255, 143, 77, .035); }
+		body.night .brand-name span, body.night .eyebrow { color: #ff9a5c; }
+		body.night .nav button { color: #a99a89; }
+		body.night .nav button.active, body.night .nav button:hover { background: var(--surface); color: var(--ink); box-shadow: 0 5px 16px rgba(0, 0, 0, .35); }
+		body.night .nav button::before { color: #b9a891; }
+		body.night .nav button.active::before { color: var(--mint-strong); }
+		body.night .avatar { background: var(--mint-strong); color: #2b1608; }
+		body.night .privacy strong { color: var(--ink); }
+		body.night .theme-toggle { background: var(--surface); border-color: var(--line); color: var(--muted); }
+		body.night .theme-toggle:hover { border-color: var(--mint-strong); color: var(--ink); }
+		body.night .card { background: rgba(33, 26, 19, .92); border-color: var(--line) !important; box-shadow: var(--shadow); }
+		body.night .capacity-card { background: linear-gradient(135deg, #241a10 0%, #1a130d 100%) !important; }
+		body.night .capacity-card::after { border-color: rgba(255, 143, 77, .22); box-shadow: 0 0 0 24px rgba(255, 143, 77, .08), 0 0 0 48px rgba(255, 143, 77, .04); }
+		body.night .status { background: rgba(255, 143, 77, .16); color: #ffb27a; }
+		body.night .status::before { background: var(--mint-strong); }
+		body.night .ring { background: conic-gradient(var(--mint-strong) 0 78%, #3c2f21 78% 100%); }
+		body.night .ring::before { background: #1e170f; }
+		body.night .capacity-scale span { background: #3c2f21; }
+		body.night .capacity-scale span.on-green { background: #54b77f; }
+		body.night .capacity-scale span.on-yellow { background: #e3b23c; }
+		body.night .capacity-scale span.on-red { background: #dd6a4d; }
+		body.night .trend-meta span.up { color: #ff8a6a; }
+		body.night .trend-meta span.down { color: #6cc696; }
+		body.night .bar { background: #4a3a26; }
+		body.night .bar.current { background: var(--mint-strong); }
+		body.night .overview-strip { background: rgba(33, 26, 19, .92); border-color: var(--line) !important; }
+		body.night .overview-divider { background: var(--line); }
+		body.night .ov-status.green { background: rgba(84, 183, 127, .18); color: #7cd9a4; }
+		body.night .ov-status.yellow { background: rgba(227, 178, 60, .18); color: #f0c862; }
+		body.night .ov-status.red { background: rgba(221, 106, 77, .18); color: #ff9276; }
+		body.night .domain[data-domain="Academic"] { background: #1f2c3a; }
+		body.night .domain[data-domain="Work"] { background: #3a2f16; }
+		body.night .domain[data-domain="Social"] { background: #3a241d; }
+		body.night .domain[data-domain="Health"] { background: #17322a; }
+		body.night .domain[data-domain="Errands"] { background: #241f34; }
+		body.night .domain small { color: #b9a891; }
+		body.night .domain-bar-track { background: rgba(255, 255, 255, .12); }
+		body.night .priority-quadrant.q-urgent-important { border-color: #5a3324; background: #2a1c15; }
+		body.night .priority-quadrant.q-important { border-color: #2c3a2f; background: #1a2119; }
+		body.night .priority-quadrant.q-deferrable { border-color: #4a3d1e; background: #2a2213; }
+		body.night .priority-quadrant.q-optional { border-color: var(--line); background: #1c1712; }
+		body.night .quadrant-item { background: rgba(255, 255, 255, .04); }
+		body.night .assist-card { border-color: #5a3324 !important; background: #2a1c15 !important; }
+		body.night .assist-card .card-kicker { color: #e0a37f; }
+		body.night .assist-item { background: #211a13; border-color: #4a3324; }
+		body.night .assist-btn { background: var(--surface); border-color: var(--line); color: var(--muted); }
+		body.night .assist-btn:hover { border-color: #ff8a6a; color: #ff8a6a; }
+		body.night .cap-note { background: #1e1811; color: var(--muted); }
+		body.night .cap-note.cap-over { background: #2e1c15; color: #ff9276; }
+		body.night .cap-note.cap-over strong { color: #ff9276; }
+		body.night .filter-chip { background: var(--surface); border-color: var(--line); color: var(--muted); }
+		body.night .filter-chip.active, body.night .filter-chip:hover { border-color: var(--mint-strong) !important; color: var(--ink) !important; background: rgba(255, 143, 77, .12) !important; }
+		body.night .task { background: #1c150f; border-color: #3a2d20; }
+		body.night .task.deferred, body.night .task.delegated { opacity: .55; }
+		body.night .badge-deferred { background: rgba(227, 178, 60, .18); color: #f0c862; }
+		body.night .badge-delegated { background: rgba(139, 116, 216, .18); color: #c3b3f0; }
+		body.night .tag-time, body.night .tag-due, body.night .tag-fixed { background: #2b2117; color: #cbb9a2; }
+		body.night .tag-quick { background: rgba(84, 183, 127, .18); color: #7cd9a4; }
+		body.night .tag-medium, body.night .tag-flexible { background: rgba(227, 178, 60, .18); color: #f0c862; }
+		body.night .tag-high { background: rgba(221, 106, 77, .18); color: #ff9276; }
+		body.night .remove-task { color: #6b5d4d; }
+		body.night .remove-task:hover { color: #ff8a6a; }
+		body.night .split-task { border-color: var(--line); color: var(--muted); }
+		body.night .split-task:hover { border-color: var(--mint-strong); color: var(--ink); }
+		body.night .add-task { border-color: rgba(255, 143, 77, .4) !important; color: #ff9a5c !important; }
+		body.night .add-task:hover { background: rgba(255, 143, 77, .08) !important; }
+		body.night .empty-state { color: var(--muted); }
+		body.night .modal { background: var(--surface); box-shadow: 0 30px 80px rgba(0, 0, 0, .65); }
+		body.night .input-tabs { background: #17120d; }
+		body.night .input-tab { color: var(--muted); }
+		body.night .input-tab.active { background: var(--surface); color: var(--ink); box-shadow: 0 3px 8px rgba(0, 0, 0, .4); }
+		body.night .nl-textarea, body.night .dropzone, body.night .nl-preview, body.night .tt-item, body.night .tt-item-fields input, body.night .tt-item-fields select {
+			background: #1c150f; border-color: #3a2d20; color: var(--ink);
+		}
+		body.night .dropzone:hover { border-color: var(--mint-strong); }
+		body.night .dropzone strong { color: var(--ink); }
+		body.night .mic-btn { background: var(--surface); border-color: var(--line); color: var(--muted); }
+		body.night .mic-btn.listening { border-color: #ff8a6a; color: #ff8a6a; background: #2e1c15; }
+		body.night .parse-btn, body.night .extract-btn { background: var(--mint-strong) !important; color: #2b1608; }
+		body.night .nl-preview-title { color: #7cd9a4; }
+		body.night .tt-confirm-btn { background: var(--mint-strong); color: #2b1608; }
+		body.night .tt-status { color: var(--muted); }
+		body.night .form-row input, body.night .form-row select { background: #2a2118; border-color: var(--line); color: var(--ink); }
+		body.night .form-row input:focus, body.night .form-row select:focus { outline: none; border-color: var(--mint-strong); box-shadow: 0 0 0 3px rgba(255, 143, 77, .15); }
+		body.night .duration-readout, body.night .form-hint, body.night .nl-examples, body.night .nl-preview-note { color: var(--muted); }
+		body.night .cancel { background: #2a2118; color: var(--muted); }
+		body.night .save { background: var(--mint-strong) !important; color: #2b1608; }
+		body.night .mobile-bottom-nav { background: rgba(23, 17, 12, .95) !important; border-color: var(--line) !important; }
+		body.night .mobile-bottom-nav button { color: #8c7c68; }
+		body.night .mobile-bottom-nav button.active { color: var(--mint-strong) !important; }
+		body.night .mobile-bottom-nav button.active span { background: rgba(255, 143, 77, .16) !important; }
+
+
+		/* ===== Collapsible sidebar / hamburger menu ===== */
+		.hamburger-btn { display: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); width: 38px; height: 38px; border-radius: 9px; font-size: 15px; align-items: center; justify-content: center; flex: 0 0 auto; margin-right: 14px; cursor: pointer; }
+		.hamburger-btn:hover { border-color: var(--mint-strong); color: var(--mint-strong); }
+		.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 12, 9, .45); z-index: 15; }
+		body.sidebar-open .sidebar-overlay { display: block; }
+		body.night .sidebar-overlay { background: rgba(0, 0, 0, .6); }
+		@media (max-width: 930px) {
+			.hamburger-btn { display: inline-flex; }
+			.sidebar {
+				display: flex !important; position: fixed !important; top: 0; left: 0; bottom: 0; height: 100vh;
+				width: 260px !important; max-width: 82vw; flex-direction: column !important; padding: 24px 20px !important;
+				border-right: 1px solid var(--line) !important; border-bottom: 0 !important; z-index: 20;
+				transform: translateX(-100%); transition: transform .25s ease; box-shadow: 0 20px 60px rgba(0,0,0,.28); overflow-y: auto;
+			}
+			.sidebar .nav-label, .sidebar .sidebar-bottom { display: block !important; }
+			.sidebar .nav { display: grid !important; gap: 5px !important; overflow-x: visible !important; }
+			.sidebar .brand { margin: 0 0 40px !important; }
+			body.sidebar-open .sidebar { transform: translateX(0); }
+			.topbar { margin-top: 2px; }
+		}
+
 	</style>
 </head>
 <body class="!bg-gradient-to-b !from-[#fbe4d2] !via-[#f5f6fa] !to-[#f5f6fa] font-sans antialiased">
@@ -305,9 +491,11 @@
 				<button class="theme-toggle" id="themeToggle">◐ &nbsp; Switch to night mode</button>
 			</div>
 		</aside>
+		<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 		<main class="mx-auto w-full max-w-[1220px] px-4 py-7 md:px-12 md:py-10">
 			<header class="topbar">
+				<button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">☰</button>
 				<div>
 					<div class="eyebrow">Multi-domain workload</div>
 					<h1>Your task load, in focus.</h1>
@@ -316,10 +504,18 @@
 				<div class="date-wrap"><span>Week 36</span><div class="avatar">A</div></div>
 			</header>
 
+			<section class="overview-strip card" id="overviewStrip" aria-label="Load overview">
+				<div class="overview-item"><span class="ov-label">Today</span><strong id="dailyPercentDisplay">—</strong><span class="ov-status" id="dailyStatusPill">—</span></div>
+				<div class="overview-divider"></div>
+				<div class="overview-item"><span class="ov-label">This week</span><strong id="weeklyPercentDisplay">—</strong><span class="ov-status" id="weeklyStatusPill">—</span></div>
+				<div class="overview-divider"></div>
+				<p class="overview-insight" id="overviewInsight">Add a task to see where your load actually sits.</p>
+			</section>
+
 			<section class="dashboard-grid grid gap-5 max-md:block lg:grid-cols-[1.2fr_.8fr]" aria-label="Capacity overview">
 				<article class="card capacity-card !rounded-2xl !border-[#e7e8eb] !bg-gradient-to-br !from-[#fff2e6] !to-[#fffaf5] !p-7 shadow-soft" id="capacityCard">
 					<div class="card-heading">
-						<div><div class="card-kicker">This week's capacity</div><h2 id="capacityHeadline">Approaching your limit.</h2></div>
+						<div><div class="card-kicker">Weekly workload</div><h2 id="capacityHeadline">Approaching your limit.</h2></div>
 						<div class="status" id="statusPill">Overloaded</div>
 					</div>
 					<div class="capacity-body">
@@ -339,7 +535,7 @@
 			</section>
 
 			<div class="section-title">
-				<div><h2>Where your load is going</h2><p>Split by weighted effort, not just headcount of tasks.</p></div>
+				<div><h2>5-Dimension Dashboard</h2><p>Real-time load, 0–100%, across every part of your life — not just a share of the total.</p></div>
 			</div>
 			<section class="domain-grid" id="domainGrid" aria-label="Life category workload"></section>
 
@@ -381,23 +577,78 @@
 	</nav>
 
 	<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-		<form class="modal" id="taskForm">
-			<h2 id="modalTitle">Add a task</h2>
-			<div class="form-row"><label for="taskName">What needs doing?</label><input id="taskName" required placeholder="e.g. Read chapter 4"></div>
-			<div class="form-row split">
-				<div><label for="taskCategory">Which part of life?</label>
-					<select id="taskCategory"><option>Academic</option><option>Work</option><option>Social</option><option>Health</option><option>Errands</option></select>
+		<div class="modal">
+			<h2 id="modalTitle">Add an activity</h2>
+
+			<div class="input-tabs" role="tablist" aria-label="Ways to add an activity">
+				<button class="input-tab active" data-tab="nl" type="button">🗣 Natural language</button>
+				<button class="input-tab" data-tab="import" type="button">📷 Import timetable</button>
+				<button class="input-tab" data-tab="manual" type="button">✎ Manual entry</button>
+			</div>
+
+			<!-- Natural language input -->
+			<section class="tab-panel active" id="panel-nl">
+				<textarea class="nl-textarea" id="nlInput" placeholder="e.g. &quot;3-hour group meeting on Thursday&quot; or &quot;10am–12pm part-time on Saturday&quot;"></textarea>
+				<p class="nl-examples">Type it the way you'd say it — day, time, and duration are picked out automatically. You can edit anything before adding it.</p>
+				<div class="nl-row">
+					<button type="button" class="mic-btn" id="nlMicBtn" title="Speak instead of typing">🎤</button>
+					<button type="button" class="parse-btn" id="nlParseBtn">Parse activity</button>
 				</div>
-				<div><label for="taskPriority">Priority</label><select id="taskPriority"><option value="high">High priority</option><option value="low">Low priority</option></select></div>
-			</div>
-			<div class="form-row split" style="margin-top: 14px;">
-				<div><label for="taskDeadline">Deadline</label><input id="taskDeadline" type="date"></div>
-				<div><label for="taskMinutes">Time estimate (minutes)</label><input id="taskMinutes" type="number" min="5" step="5" required placeholder="e.g. 60"></div>
-			</div>
-			<div class="form-row" style="margin-top: 14px;"><label for="taskEffort">Mental effort</label><select id="taskEffort"><option value="quick">Quick win</option><option value="medium">Medium effort</option><option value="high">High effort</option></select></div>
-			<p class="form-hint">Tasks are auto-sorted into Urgent &amp; Important / Important, Not Urgent / Deferrable / Optional based on deadline and priority. Capacity is calculated from time × effort weight across every open task.</p>
-			<div class="modal-actions"><button type="button" class="cancel" id="cancelModal">Cancel</button><button class="save" type="submit">Add to this week</button></div>
-		</form>
+				<div class="nl-preview hidden" id="nlPreview">
+					<div class="nl-preview-title">Here's what I found — check it over:</div>
+					<div class="form-row"><label for="nlTitle">Title</label><input id="nlTitle"></div>
+					<div class="form-row split">
+						<div><label for="nlCategory">Category</label><select id="nlCategory"><option>Academic</option><option>Work</option><option>Social</option><option>Health</option><option>Errands</option></select></div>
+						<div><label for="nlDay">Day</label><select id="nlDay"></select></div>
+					</div>
+					<div class="form-row split" style="margin-top: 12px;">
+						<div><label for="nlStart">Start time</label><input id="nlStart" type="time"></div>
+						<div><label for="nlEnd">End time</label><input id="nlEnd" type="time"></div>
+					</div>
+					<p class="duration-readout" id="nlDurationReadout"></p>
+					<p class="nl-preview-note">Natural-language parsing here is a lightweight demo — a production build would call a real NLP or date-parsing service for reliability.</p>
+					<div class="modal-actions"><button type="button" class="save" id="nlAddBtn" style="width: 100%;">Add this activity</button></div>
+				</div>
+			</section>
+
+			<!-- Timetable screenshot import -->
+			<section class="tab-panel" id="panel-import">
+				<div class="dropzone" id="ttDropzone"><strong>Upload a timetable screenshot</strong>Click to choose a photo of your class or shift schedule</div>
+				<input type="file" accept="image/*" id="ttFileInput" style="display: none;">
+				<div class="tt-preview-strip" id="ttPreviewStrip"><img id="ttThumb" alt=""><span id="ttFileName"></span></div>
+				<button type="button" class="extract-btn" id="ttExtractBtn" disabled>Extract activities</button>
+				<p class="tt-status" id="ttStatus">Reading your timetable…</p>
+				<div class="tt-results" id="ttResults"></div>
+				<button type="button" class="tt-confirm-btn" id="ttConfirmBtn" style="display: none;">Add selected to this week</button>
+				<p class="nl-preview-note">This demo extracts a sample schedule rather than reading your actual photo — a production build would run OCR/AI over the upload to pull out real days, times, and course names.</p>
+			</section>
+
+			<!-- Manual entry -->
+			<section class="tab-panel" id="panel-manual">
+				<form id="taskForm">
+					<div class="form-row"><label for="taskName">What needs doing?</label><input id="taskName" placeholder="e.g. Read chapter 4"></div>
+					<div class="form-row split">
+						<div><label for="taskCategory">Which part of life?</label>
+							<select id="taskCategory"><option>Academic</option><option>Work</option><option>Social</option><option>Health</option><option>Errands</option></select>
+						</div>
+						<div><label for="taskPriority">Priority</label><select id="taskPriority"><option value="high">High priority</option><option value="low">Low priority</option></select></div>
+					</div>
+					<div class="form-row split" style="margin-top: 14px;">
+						<div><label for="taskStart">Start time</label><input id="taskStart" type="time"></div>
+						<div><label for="taskEnd">End time</label><input id="taskEnd" type="time"></div>
+					</div>
+					<p class="duration-readout" id="manualDurationReadout">Leave start/end blank to enter a time estimate instead.</p>
+					<div class="form-row" id="manualMinutesRow" style="margin-top: 10px;"><label for="taskMinutes">Time estimate (minutes)</label><input id="taskMinutes" type="number" min="5" step="5" placeholder="e.g. 60"></div>
+					<div class="form-row split" style="margin-top: 14px;">
+						<div><label for="taskDeadline">Deadline / date</label><input id="taskDeadline" type="date"></div>
+						<div><label for="taskFixed">Fixed or flexible?</label><select id="taskFixed"><option value="fixed">Fixed time</option><option value="flexible">Flexible</option></select></div>
+					</div>
+					<div class="form-row" style="margin-top: 14px;"><label for="taskEffort">Intensity (mental effort)</label><select id="taskEffort"><option value="quick">Quick win</option><option value="medium">Medium effort</option><option value="high">High effort</option></select></div>
+					<p class="form-hint">Tasks are auto-sorted into Urgent &amp; Important / Important, Not Urgent / Deferrable / Optional based on deadline and priority. Capacity is calculated from time × effort weight across every open task.</p>
+					<div class="modal-actions"><button type="button" class="cancel" id="cancelModal">Cancel</button><button class="save" type="submit">Add to this week</button></div>
+				</form>
+			</section>
+		</div>
 	</div>
 
 	<script>
@@ -408,13 +659,14 @@
 			high:   { label: 'High effort',   weight: 1.8, tagClass: 'tag-high' },
 		};
 		const DOMAINS = [
-			{ name: 'Academic', icon: '✎' },
-			{ name: 'Work',     icon: '▣' },
-			{ name: 'Social',   icon: '♡' },
-			{ name: 'Health',   icon: '⌁' },
-			{ name: 'Errands',  icon: '□' },
+			{ name: 'Academic', icon: '✎', threshold: 330 },
+			{ name: 'Work',     icon: '▣', threshold: 300 },
+			{ name: 'Social',   icon: '♡', threshold: 150 },
+			{ name: 'Health',   icon: '⌁', threshold: 120 },
+			{ name: 'Errands',  icon: '□', threshold: 90 },
 		];
 		const CAPACITY_THRESHOLD_MINUTES = 942; // weighted minutes that equal "100% of a sustainable week"
+		const DAILY_CAPACITY_THRESHOLD_MINUTES = 610; // weighted minutes that equal "100% of a sustainable day"
 		const TREND_HISTORY = [58, 64, 71, 80, 88]; // past five weeks, "Now" is computed live
 		const CORE_TASKS_PER_DAY = 3;
 		const SPLIT_MINUTES_THRESHOLD = 90; // tasks at or above this (and not "quick") are offered a split
@@ -565,16 +817,47 @@
 			capNote.innerHTML = 'Aim for <strong>' + CORE_TASKS_PER_DAY + ' core tasks</strong> per day — not 10 unfinished ones. ' +
 				'<strong>' + dueToday + '</strong> ' + (dueToday === 1 ? 'task is' : 'tasks are') + ' due today.';
 
-			// domain grid
+			// domain grid — real 0-100%+ load per domain, not a share of the total
 			const domainGrid = document.getElementById('domainGrid');
-			domainGrid.innerHTML = DOMAINS.map(d => {
+			const domainStats = DOMAINS.map(d => {
 				const domainTasks = open.filter(t => t.category === d.name);
 				const domainWeighted = domainTasks.reduce((s, t) => s + weightedMinutes(t), 0);
 				const domainMinutes = domainTasks.reduce((s, t) => s + t.minutes, 0);
-				const share = totalWeighted ? Math.round((domainWeighted / totalWeighted) * 100) : 0;
-				const taskWord = domainTasks.length === 1 ? 'task' : 'tasks';
-				return '<article class="domain" data-domain="' + d.name + '"><div class="domain-top"><span>' + d.name + '</span><span class="domain-icon">' + d.icon + '</span></div><b>' + share + '%</b><small>' + domainTasks.length + ' ' + taskWord + ' · ' + formatTime(domainMinutes) + '</small></article>';
+				const domainPct = Math.round((domainWeighted / d.threshold) * 100);
+				return { ...d, count: domainTasks.length, minutes: domainMinutes, pct: domainPct, status: statusFor(domainPct) };
+			});
+			domainGrid.innerHTML = domainStats.map(d => {
+				const taskWord = d.count === 1 ? 'task' : 'tasks';
+				const barWidth = Math.min(d.pct, 100);
+				return '<article class="domain" data-domain="' + d.name + '"><div class="domain-top"><span>' + d.name + '</span><span class="domain-icon">' + d.icon + '</span></div>' +
+					'<b>' + d.pct + '%</b><small>' + d.count + ' ' + taskWord + ' · ' + formatTime(d.minutes) + '</small>' +
+					'<span class="domain-status-label" style="color:' + d.status.fg + '">' + d.status.label + '</span>' +
+					'<div class="domain-bar-track"><div class="domain-bar-fill" style="width:' + barWidth + '%;background:' + d.status.ring + '"></div></div></article>';
 			}).join('');
+
+			// overview strip: today vs. this week, plus a plain-language read of where the load is
+			const dailyWeighted = open.filter(t => daysUntil(t.deadline) === 0).reduce((s, t) => s + weightedMinutes(t), 0);
+			const dailyPct = Math.round((dailyWeighted / DAILY_CAPACITY_THRESHOLD_MINUTES) * 100);
+			const dailyStatus = statusFor(dailyPct);
+			document.getElementById('dailyPercentDisplay').textContent = dailyPct + '%';
+			const dailyPill = document.getElementById('dailyStatusPill');
+			dailyPill.textContent = dailyStatus.label;
+			dailyPill.className = 'ov-status ' + dailyStatus.key;
+			document.getElementById('weeklyPercentDisplay').textContent = pct + '%';
+			const weeklyPill = document.getElementById('weeklyStatusPill');
+			weeklyPill.textContent = status.label;
+			weeklyPill.className = 'ov-status ' + status.key;
+
+			const heaviest = domainStats.reduce((a, b) => (b.pct > a.pct ? b : a), domainStats[0]);
+			const insight = document.getElementById('overviewInsight');
+			if (!open.length) {
+				insight.textContent = 'Add a task to see where your load actually sits.';
+			} else if (heaviest.pct === 0) {
+				insight.textContent = "You're at " + dailyPct + '% today and ' + pct + '% for the week — nothing is concentrated in one area right now.';
+			} else {
+				insight.textContent = heaviest.name + ' is carrying the most load right now (' + heaviest.pct + '%). ' +
+					"You're at " + dailyPct + '% today and ' + pct + '% for the week' + (pct > dailyPct ? " — the week is heavier than today alone." : '.');
+			}
 
 			// task list
 			const visible = activeFilter === 'All' ? tasks : tasks.filter(t => t.category === activeFilter);
@@ -583,16 +866,19 @@
 			if (!visible.length) {
 				list.innerHTML = '<div class="empty-state">Nothing here yet. Add a task to see it reflected in your capacity.</div>';
 			} else {
+				const SOURCE_ICON = { nl: '🗣', import: '📷', manual: '✎' };
 				list.innerHTML = visible.map(t => {
 					const e = EFFORT[t.effort];
 					const canSplit = !t.done && !t.deferred && !t.delegated && t.effort !== 'quick' && t.minutes >= SPLIT_MINUTES_THRESHOLD;
 					const statusBadge = t.deferred ? '<span class="badge-status badge-deferred">Moved to next week</span>'
 						: t.delegated ? '<span class="badge-status badge-delegated">Delegated</span>' : '';
+					const sourceIcon = SOURCE_ICON[t.source] ? '<span class="task-source-icon" title="Added via ' + t.source + '">' + SOURCE_ICON[t.source] + '</span>' : '';
+					const fixedTag = t.fixed ? '<span class="tag ' + (t.fixed === 'fixed' ? 'tag-fixed' : 'tag-flexible') + '">' + (t.fixed === 'fixed' ? 'Fixed' : 'Flexible') + '</span>' : '';
 					return '<div class="task' + (t.done ? ' done' : '') + (t.deferred ? ' deferred' : '') + (t.delegated ? ' delegated' : '') + '" data-id="' + t.id + '">' +
 						'<button class="check' + (t.done ? ' checked' : '') + '" aria-label="Mark ' + t.name + (t.done ? ' incomplete' : ' complete') + '">' + (t.done ? '✓' : '') + '</button>' +
-						'<div class="task-info"><strong>' + t.name + '</strong><small>' + t.category + ' · ' + dueLabel(t.deadline) + '</small></div>' +
+						'<div class="task-info"><strong>' + sourceIcon + t.name + '</strong><small>' + t.category + ' · ' + dueLabel(t.deadline) + '</small></div>' +
 						'<div class="tag-group">' + statusBadge +
-							'<span class="tag tag-time">' + formatTime(t.minutes) + '</span><span class="tag ' + e.tagClass + '">' + e.label + '</span>' +
+							'<span class="tag tag-time">' + formatTime(t.minutes) + '</span><span class="tag ' + e.tagClass + '">' + e.label + '</span>' + fixedTag +
 							(canSplit ? '<button class="split-task" data-action="split">Split</button>' : '') +
 						'</div>' +
 						'<button class="remove-task" aria-label="Remove ' + t.name + '">×</button>' +
@@ -671,23 +957,287 @@
 
 		const modal = document.getElementById('modalBackdrop');
 		const taskName = document.getElementById('taskName');
-		document.getElementById('addTask').addEventListener('click', () => { modal.classList.add('show'); taskName.focus(); });
+
+		document.getElementById('addTask').addEventListener('click', () => { modal.classList.add('show'); switchTab('nl'); });
 		document.getElementById('cancelModal').addEventListener('click', () => modal.classList.remove('show'));
 		modal.addEventListener('click', (event) => { if (event.target === modal) modal.classList.remove('show'); });
+
+		// ---- tab switching ----
+		function switchTab(tab) {
+			document.querySelectorAll('.input-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+			document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+			if (tab === 'nl') document.getElementById('nlInput').focus();
+			if (tab === 'manual') taskName.focus();
+		}
+		document.querySelectorAll('.input-tab').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+		// ---- helper: minutes between two HH:MM times ----
+		function minutesBetween(start, end) {
+			if (!start || !end) return null;
+			const [sh, sm] = start.split(':').map(Number), [eh, em] = end.split(':').map(Number);
+			let diff = (eh * 60 + em) - (sh * 60 + sm);
+			if (diff < 0) diff += 24 * 60; // crosses midnight
+			return diff;
+		}
+
+		// ---- manual entry: live duration readout, toggle minutes field ----
+		const manualStart = document.getElementById('taskStart'), manualEnd = document.getElementById('taskEnd');
+		const manualMinutesRow = document.getElementById('manualMinutesRow');
+		function updateManualDuration() {
+			const mins = minutesBetween(manualStart.value, manualEnd.value);
+			const readout = document.getElementById('manualDurationReadout');
+			if (mins !== null) { readout.textContent = 'Duration: ' + formatTime(mins); manualMinutesRow.style.display = 'none'; }
+			else { readout.textContent = 'Leave start/end blank to enter a time estimate instead.'; manualMinutesRow.style.display = 'block'; }
+		}
+		manualStart.addEventListener('input', updateManualDuration);
+		manualEnd.addEventListener('input', updateManualDuration);
+
 		document.getElementById('taskForm').addEventListener('submit', (event) => {
 			event.preventDefault();
+			const name = taskName.value.trim();
+			if (!name) { taskName.focus(); return; }
+			const timedMinutes = minutesBetween(manualStart.value, manualEnd.value);
+			const minutes = timedMinutes !== null ? timedMinutes : Math.max(5, Number(document.getElementById('taskMinutes').value) || 5);
 			tasks.push({
 				id: nextId++,
-				name: taskName.value,
+				name,
 				category: document.getElementById('taskCategory').value,
-				minutes: Math.max(5, Number(document.getElementById('taskMinutes').value) || 5),
+				minutes,
 				effort: document.getElementById('taskEffort').value,
 				priority: document.getElementById('taskPriority').value,
 				deadline: document.getElementById('taskDeadline').value || null,
+				fixed: document.getElementById('taskFixed').value,
+				source: 'manual',
 				done: false, deferred: false, delegated: false,
 			});
 			modal.classList.remove('show');
 			event.target.reset();
+			updateManualDuration();
+			render();
+		});
+
+		// ---- natural language input ----
+		const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+		const nlDaySelect = document.getElementById('nlDay');
+		nlDaySelect.innerHTML = WEEKDAYS.map(d => '<option>' + d + '</option>').join('');
+
+		function nextDateForWeekday(weekdayName) {
+			const targetIdx = WEEKDAYS.indexOf(weekdayName);
+			if (targetIdx === -1) return isoDateFromToday(0);
+			const today = new Date();
+			let diff = (targetIdx - today.getDay() + 7) % 7;
+			return isoDateFromToday(diff);
+		}
+
+		const CATEGORY_KEYWORDS = [
+			{ category: 'Work',     words: ['work', 'shift', 'job', 'part-time', 'part time', 'intern', 'office'] },
+			{ category: 'Health',   words: ['gym', 'workout', 'run', 'jog', 'therapy', 'doctor', 'dentist', 'yoga', 'badminton', 'training'] },
+			{ category: 'Errands',  words: ['grocery', 'groceries', 'errand', 'laundry', 'bank', 'pickup', 'pick up', 'dry clean'] },
+			{ category: 'Academic', words: ['class', 'lecture', 'seminar', 'tutorial', 'study', 'assignment', 'exam', 'coursework', 'meeting', 'project', 'lab', 'group'] },
+		];
+		function guessCategory(text) {
+			const lower = text.toLowerCase();
+			for (const group of CATEGORY_KEYWORDS) {
+				if (group.words.some(w => lower.includes(w))) return group.category;
+			}
+			return 'Social';
+		}
+
+		function to24Hour(h, m, meridiem) {
+			h = Number(h); m = m ? Number(m) : 0;
+			if (meridiem) {
+				const mer = meridiem.toLowerCase();
+				if (mer === 'pm' && h !== 12) h += 12;
+				if (mer === 'am' && h === 12) h = 0;
+			}
+			return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+		}
+
+		function parseActivityText(text) {
+			const result = { title: text.trim(), category: 'Social', day: WEEKDAYS[new Date().getDay()], start: '', end: '', minutes: null };
+			let remaining = text;
+
+			// day of week
+			const dayMatch = text.match(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i);
+			if (dayMatch) {
+				result.day = dayMatch[0][0].toUpperCase() + dayMatch[0].slice(1).toLowerCase();
+				remaining = remaining.replace(new RegExp('\\s*on\\s*' + dayMatch[0], 'i'), '').replace(new RegExp(dayMatch[0], 'i'), '');
+			}
+
+			// time range, e.g. "10am-12pm", "10:00–12:00", "10 to 11:30pm"
+			const rangeMatch = text.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*[-–—]|(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s+to\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i)
+				|| text.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*[-–—]\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+			if (rangeMatch) {
+				const full = rangeMatch[0];
+				const parts = full.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/gi);
+				if (parts && parts.length >= 2) {
+					const p1 = parts[0].match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+					const p2 = parts[1].match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+					let mer1 = p1[3], mer2 = p2[3];
+					if (!mer1 && mer2) mer1 = mer2; // infer "10-12pm" -> both pm-ish context, closest guess
+					result.start = to24Hour(p1[1], p1[2], mer1);
+					result.end = to24Hour(p2[1], p2[2], mer2);
+					result.minutes = minutesBetween(result.start, result.end);
+				}
+				remaining = remaining.replace(full, '');
+			} else {
+				// duration only, e.g. "3-hour", "2h", "90 minutes"
+				const durMatch = text.match(/(\d+(?:\.\d+)?)\s*-?\s*(hour|hr|h)\b/i) || text.match(/(\d+)\s*(minute|min)s?\b/i);
+				if (durMatch) {
+					const value = parseFloat(durMatch[1]);
+					result.minutes = /h/i.test(durMatch[2]) ? Math.round(value * 60) : Math.round(value);
+					remaining = remaining.replace(durMatch[0], '');
+				}
+			}
+
+			result.category = guessCategory(text);
+			remaining = remaining.replace(/^\s*[-,]?\s*/, '').replace(/\s{2,}/g, ' ').trim();
+			if (remaining) result.title = remaining.charAt(0).toUpperCase() + remaining.slice(1);
+			if (!result.title) result.title = 'New activity';
+			return result;
+		}
+
+		document.getElementById('nlParseBtn').addEventListener('click', () => {
+			const text = document.getElementById('nlInput').value.trim();
+			if (!text) return;
+			const parsed = parseActivityText(text);
+			document.getElementById('nlTitle').value = parsed.title;
+			document.getElementById('nlCategory').value = parsed.category;
+			document.getElementById('nlDay').value = parsed.day;
+			document.getElementById('nlStart').value = parsed.start;
+			document.getElementById('nlEnd').value = parsed.end;
+			const readout = document.getElementById('nlDurationReadout');
+			readout.textContent = parsed.minutes ? 'Duration: ' + formatTime(parsed.minutes) : "Couldn't find a time — feel free to fill it in.";
+			document.getElementById('nlPreview').classList.remove('hidden');
+		});
+
+		document.getElementById('nlAddBtn').addEventListener('click', () => {
+			const title = document.getElementById('nlTitle').value.trim();
+			if (!title) return;
+			const start = document.getElementById('nlStart').value, end = document.getElementById('nlEnd').value;
+			const minutes = minutesBetween(start, end) || 60;
+			tasks.push({
+				id: nextId++,
+				name: title,
+				category: document.getElementById('nlCategory').value,
+				minutes,
+				effort: 'medium',
+				priority: 'low',
+				deadline: nextDateForWeekday(document.getElementById('nlDay').value),
+				fixed: start && end ? 'fixed' : 'flexible',
+				source: 'nl',
+				done: false, deferred: false, delegated: false,
+			});
+			modal.classList.remove('show');
+			document.getElementById('nlInput').value = '';
+			document.getElementById('nlPreview').classList.add('hidden');
+			render();
+		});
+
+		// speech-to-text (falls back gracefully if unsupported)
+		const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+		const micBtn = document.getElementById('nlMicBtn');
+		if (SpeechRecognition) {
+			const recognition = new SpeechRecognition();
+			recognition.lang = 'en-US';
+			recognition.interimResults = false;
+			let listening = false;
+			micBtn.addEventListener('click', () => {
+				if (listening) { recognition.stop(); return; }
+				recognition.start();
+			});
+			recognition.addEventListener('start', () => { listening = true; micBtn.classList.add('listening'); });
+			recognition.addEventListener('end', () => { listening = false; micBtn.classList.remove('listening'); });
+			recognition.addEventListener('result', (event) => {
+				document.getElementById('nlInput').value = event.results[0][0].transcript;
+			});
+		} else {
+			micBtn.disabled = true;
+			micBtn.title = 'Voice input is not supported in this browser';
+		}
+
+		// ---- timetable screenshot import (demo: simulated extraction) ----
+		const ttDropzone = document.getElementById('ttDropzone');
+		const ttFileInput = document.getElementById('ttFileInput');
+		const ttExtractBtn = document.getElementById('ttExtractBtn');
+		const ttStatus = document.getElementById('ttStatus');
+		const ttResults = document.getElementById('ttResults');
+		const ttConfirmBtn = document.getElementById('ttConfirmBtn');
+		let ttExtracted = [];
+
+		ttDropzone.addEventListener('click', () => ttFileInput.click());
+		ttFileInput.addEventListener('change', () => {
+			const file = ttFileInput.files[0];
+			if (!file) return;
+			document.getElementById('ttThumb').src = URL.createObjectURL(file);
+			document.getElementById('ttFileName').textContent = file.name;
+			document.getElementById('ttPreviewStrip').classList.add('show');
+			ttExtractBtn.disabled = false;
+			ttResults.classList.remove('show');
+			ttConfirmBtn.style.display = 'none';
+		});
+
+		const SAMPLE_TIMETABLE = [
+			{ title: 'Software Engineering Lecture', category: 'Academic', day: 'Monday', start: '09:00', end: '11:00' },
+			{ title: 'Part-time Retail Shift', category: 'Work', day: 'Wednesday', start: '14:00', end: '18:00' },
+			{ title: 'Badminton Club Training', category: 'Health', day: 'Friday', start: '17:00', end: '18:30' },
+		];
+
+		ttExtractBtn.addEventListener('click', () => {
+			ttStatus.classList.add('show');
+			ttExtractBtn.disabled = true;
+			setTimeout(() => {
+				ttStatus.classList.remove('show');
+				ttExtracted = SAMPLE_TIMETABLE.map((item, i) => ({ ...item, id: 'tt' + i, include: true }));
+				renderTtResults();
+				ttResults.classList.add('show');
+				ttConfirmBtn.style.display = 'block';
+			}, 1100);
+		});
+
+		function renderTtResults() {
+			ttResults.innerHTML = ttExtracted.map(item => (
+				'<div class="tt-item" data-id="' + item.id + '">' +
+					'<input type="checkbox" data-field="include" ' + (item.include ? 'checked' : '') + '>' +
+					'<div class="tt-item-fields">' +
+						'<input data-field="title" value="' + item.title + '">' +
+						'<div class="tt-item-row">' +
+							'<select data-field="category"><option' + (item.category === 'Academic' ? ' selected' : '') + '>Academic</option><option' + (item.category === 'Work' ? ' selected' : '') + '>Work</option><option' + (item.category === 'Social' ? ' selected' : '') + '>Social</option><option' + (item.category === 'Health' ? ' selected' : '') + '>Health</option><option' + (item.category === 'Errands' ? ' selected' : '') + '>Errands</option></select>' +
+							'<select data-field="day">' + WEEKDAYS.map(d => '<option' + (d === item.day ? ' selected' : '') + '>' + d + '</option>').join('') + '</select>' +
+						'</div>' +
+						'<div class="tt-item-row"><input type="time" data-field="start" value="' + item.start + '"><input type="time" data-field="end" value="' + item.end + '"></div>' +
+					'</div>' +
+				'</div>'
+			)).join('');
+		}
+		ttResults.addEventListener('input', (event) => {
+			const row = event.target.closest('.tt-item');
+			if (!row) return;
+			const item = ttExtracted.find(i => i.id === row.dataset.id);
+			const field = event.target.dataset.field;
+			if (!item || !field) return;
+			item[field] = field === 'include' ? event.target.checked : event.target.value;
+		});
+
+		ttConfirmBtn.addEventListener('click', () => {
+			ttExtracted.filter(i => i.include).forEach(item => {
+				tasks.push({
+					id: nextId++,
+					name: item.title,
+					category: item.category,
+					minutes: minutesBetween(item.start, item.end) || 60,
+					effort: 'medium',
+					priority: 'high',
+					deadline: nextDateForWeekday(item.day),
+					fixed: 'fixed',
+					source: 'import',
+					recurring: true,
+					done: false, deferred: false, delegated: false,
+				});
+			});
+			modal.classList.remove('show');
+			ttExtracted = []; ttResults.innerHTML = ''; ttResults.classList.remove('show'); ttConfirmBtn.style.display = 'none';
+			ttFileInput.value = ''; document.getElementById('ttPreviewStrip').classList.remove('show'); ttExtractBtn.disabled = true;
 			render();
 		});
 
@@ -700,6 +1250,13 @@
 		document.querySelector('[data-scroll="tasks"]').addEventListener('click', () => document.querySelector('.task-card').scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
 		render();
+			const hamburgerBtn = document.getElementById('hamburgerBtn');
+		const sidebarOverlay = document.getElementById('sidebarOverlay');
+		function closeSidebar() { document.body.classList.remove('sidebar-open'); }
+		hamburgerBtn.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+		sidebarOverlay.addEventListener('click', closeSidebar);
+		document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSidebar(); });
+		document.querySelectorAll('.sidebar .nav button').forEach((btn) => btn.addEventListener('click', () => { if (window.innerWidth <= 930) closeSidebar(); }));
 	</script>
 </body>
 </html>
