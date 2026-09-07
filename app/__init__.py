@@ -6,8 +6,9 @@ from app.extensions import db, login_manager, csrf
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder="../frontend", static_folder="../frontend")
     app.config.from_object(config_class)
+
 
     db.init_app(app)
     login_manager.init_app(app)
