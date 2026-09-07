@@ -72,9 +72,46 @@
 		.privacy-note { display: flex; gap: 8px; color: var(--muted); font-size: 10.5px; line-height: 1.5; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
 		.privacy-note strong { display: block; color: var(--ink); font-size: 11.5px; margin-bottom: 2px; }
 		@media (max-width: 420px) { .card { padding: 28px 22px; } .form-row.split { grid-template-columns: 1fr; } }
+
+		.theme-toggle-auth { position: fixed; top: 20px; right: 20px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); display: grid; place-items: center; font-size: 15px; box-shadow: 0 8px 20px rgba(32, 36, 45, .08); }
+		.theme-toggle-auth:hover { border-color: var(--accent); color: var(--accent); }
+
+		/* ===== Refined dark mode — warm charcoal + orange ===== */
+		body.night {
+			--paper: #15100c; --surface: #211a13; --ink: #f7ede0; --muted: #b9a891; --line: #3c2f21;
+			--accent: #ff8f4d; --accent-soft: #3a2416; --shadow: 0 24px 60px rgba(0,0,0,.55);
+			background:
+				radial-gradient(circle at 50% -10%, rgba(255, 143, 77, .16), transparent 26rem),
+				linear-gradient(180deg, #1a130d 0 280px, #100c09 520px) !important;
+		}
+		body.night .brand-mark { background: var(--accent); }
+		body.night .brand-name span { color: var(--accent); }
+		body.night .card { background: var(--surface); border-color: var(--line); box-shadow: var(--shadow); }
+		body.night .card::after { border-color: rgba(255, 143, 77, .22); box-shadow: 0 0 0 20px rgba(255, 143, 77, .08), 0 0 0 40px rgba(255, 143, 77, .04); }
+		body.night .subtext, body.night .hint, body.night .quote-hint { color: var(--muted); }
+		body.night .form-row label { color: var(--muted); }
+		body.night .form-row input { background: #2a2118; border-color: var(--line); color: var(--ink); }
+		body.night .form-row input:focus { border-color: var(--accent); background: #2f2419; }
+		body.night .remember { color: var(--muted); }
+		body.night .link { color: var(--accent); }
+		body.night .submit-btn { background: var(--accent) !important; color: #2b1608; }
+		body.night .submit-btn:hover { background: #ff9e63 !important; }
+		body.night .divider { color: var(--muted); }
+		body.night .divider::before, body.night .divider::after { background: var(--line); }
+		body.night .google-btn { background: #241c14; border-color: var(--line); color: var(--ink); }
+		body.night .google-btn:hover { border-color: #4a3a28; background: #2a2118; }
+		body.night .foot { color: var(--muted); }
+		body.night .privacy-note { border-color: var(--line); }
+		body.night .privacy-note strong { color: var(--ink); }
+		body.night .terms { color: var(--muted); }
+		body.night .strength span { background: var(--line); }
+		body.night .error-text { color: #ff9276; }
+		@media (max-width: 420px) { .theme-toggle-auth { top: 14px; right: 14px; } }
+
 	</style>
 </head>
 	<body class="!bg-gradient-to-b !from-[#fbe4d2] !via-[#f5f6fa] !to-[#f5f6fa] font-sans antialiased">
+	<button class="theme-toggle-auth" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">◐</button>
 	<div class="wrap w-full max-w-[400px]">
 		<div class="brand mb-7 flex items-center justify-center gap-2.5">
 			<div class="brand-mark grid h-9 w-9 place-items-center rounded-full !bg-[#f37b32] text-white">+</div>
@@ -122,6 +159,11 @@
 	</div>
 
 	<script>
+		document.getElementById('themeToggle').addEventListener('click', () => {
+			document.body.classList.toggle('night');
+			document.getElementById('themeToggle').textContent = document.body.classList.contains('night') ? '☀' : '◐';
+		});
+
 		const passwordInput = document.getElementById('password');
 		const strengthBar = document.getElementById('strengthBar');
 		const strengthHint = document.getElementById('strengthHint');
