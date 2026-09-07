@@ -23,11 +23,15 @@ def create_app(config_class=Config):
     from app.main import bp as main_bp
     from app.tasks import bp as tasks_bp
     from app.wellbeing import bp as wellbeing_bp
+    from app.api import api_bp
+
+    csrf.exempt(api_bp)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(tasks_bp)
     app.register_blueprint(wellbeing_bp)
+    app.register_blueprint(api_bp)
 
     @app.context_processor
     def inject_globals():
