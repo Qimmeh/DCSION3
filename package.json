@@ -27,5 +27,8 @@
     "@capacitor/android": "^8.5.1",
     "@capacitor/cli": "^8.5.1",
     "@capacitor/core": "^8.5.1"
+  },
+  "engines": {
+    "node": ">=22.0.0 <23.0.0"
   }
 }
