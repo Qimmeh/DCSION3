@@ -250,68 +250,6 @@
 				<div class="date-wrap"><span>Week 36</span><div class="avatar">A</div></div>
 			</header>
 
-			<!-- Mobile Homescreen Gadget Live Component & Controller -->
-			<section class="mb-8" aria-label="Mobile Homescreen Gadget">
-				<div class="flex items-center justify-between mb-3">
-					<div class="flex items-center gap-2">
-						<span class="inline-block w-2.5 h-2.5 rounded-full bg-[#61bc8d] animate-pulse"></span>
-						<h2 class="text-xs font-bold uppercase tracking-wider text-[#69a381]">Android Homescreen Gadget</h2>
-					</div>
-					<span class="text-xs text-[#718078]">Live native AppWidget controller</span>
-				</div>
-				<div class="gadget-card rounded-[22px] bg-[#19251f] text-[#f0fdf4] p-5 shadow-2xl border border-[#2d4238] max-w-xl">
-					<!-- Gadget Header -->
-					<div class="flex items-center justify-between pb-3 border-b border-[#24372e]">
-						<div class="flex items-center gap-2">
-							<div class="w-6 h-6 rounded-full bg-[#61bc8d] text-[#19251f] font-bold text-xs flex items-center justify-center">D3</div>
-							<span class="font-display text-xs font-bold text-[#61bc8d] tracking-wide">DCSION3 AMBIENT</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<span id="gadgetBurnoutBadge" class="bg-[#24372e] text-[#4ade80] text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-[#344d40]">
-								<span class="w-1.5 h-1.5 rounded-full bg-[#4ade80]" id="gadgetBurnoutDot"></span>
-								<span id="gadgetBurnoutText">Low Risk</span>
-							</span>
-							<span id="gadgetBatteryBadge" class="bg-[#24372e] text-white text-[11px] font-bold px-2.5 py-1 rounded-full border border-[#344d40]">
-								🔋 <span id="gadgetBatteryPct">85</span>% <span id="gadgetBatteryStatus" class="text-[#61bc8d]">Healthy</span>
-							</span>
-						</div>
-					</div>
-
-					<!-- Gadget Content: Metrics & Focus Task -->
-					<div class="py-4 flex items-center gap-4">
-						<div class="bg-[#22332b] rounded-xl p-3 text-center min-w-[75px] border border-[#2a3f35]">
-							<div id="gadgetLoadValue" class="font-display text-2xl font-extrabold text-[#61bc8d] leading-none">68%</div>
-							<div class="text-[10px] text-[#9dbbaa] font-semibold mt-1 uppercase tracking-wider">Cap Load</div>
-						</div>
-						<div class="flex-1 min-w-0">
-							<div class="text-[10px] uppercase font-bold text-[#688a78] tracking-wider mb-0.5">CURRENT FOCUS BLOCK</div>
-							<div id="gadgetFocusTitle" class="text-sm font-bold text-white truncate">Deep Work: System Architecture</div>
-							<div id="gadgetFocusTime" class="text-xs text-[#9dbbaa] mt-0.5 flex items-center gap-1">
-								<span>⏱ 14:00 – 15:30</span>
-								<span class="text-[#61bc8d] font-semibold">(90 min)</span>
-							</div>
-						</div>
-					</div>
-
-					<!-- Gadget Quick Actions (One-Tap Controls) -->
-					<div class="grid grid-cols-3 gap-2 pt-2 border-t border-[#24372e]">
-						<button id="gadgetBtnExtend" type="button" class="bg-[#2a4035] hover:bg-[#344f42] text-xs font-semibold py-2 px-2.5 rounded-lg border border-[#3d594b] transition flex items-center justify-center gap-1">
-							<span>+30m</span>
-							<span class="text-[10px] text-[#9dbbaa]">Extend</span>
-						</button>
-						<button id="gadgetBtnRest" type="button" class="bg-[#2a4035] hover:bg-[#344f42] text-xs font-semibold py-2 px-2.5 rounded-lg border border-[#3d594b] transition flex items-center justify-center gap-1">
-							<span>☕</span>
-							<span>Take Rest</span>
-						</button>
-						<button id="gadgetBtnSync" type="button" class="bg-[#2a4035] hover:bg-[#344f42] text-xs font-bold text-[#61bc8d] py-2 px-2.5 rounded-lg border border-[#3d594b] transition flex items-center justify-center gap-1">
-							<span>↻</span>
-							<span>Sync Widget</span>
-						</button>
-					</div>
-					<div id="gadgetToast" class="text-[11px] text-[#61bc8d] text-center pt-2 hidden">✓ Native widget updated successfully</div>
-				</div>
-			</section>
-
 			<section class="dashboard-grid grid gap-5 max-md:block lg:grid-cols-[1.2fr_.8fr]" aria-label="Workload overview">
 				<article class="card capacity-card !min-h-[296px] overflow-hidden rounded-2xl !border-[#e7e8eb] !bg-gradient-to-br !from-[#fff2e6] !to-[#fffaf5] !p-7 shadow-soft">
 					<div class="card-heading"><div><div class="card-kicker">This week's capacity</div><h2>You have room to breathe.</h2></div><div class="status">Balanced</div></div>
@@ -409,8 +347,8 @@
 		document.querySelector('[data-scroll="focus"]').addEventListener('click', () => document.getElementById('focus').scrollIntoView({ behavior: 'smooth', block: 'center' }));
 		updateTimer();
 
-		// Ambient Gadget State & Sync Engine
-		let gadgetState = {
+		// Silent Native Homescreen Widget Sync Engine (No in-app UI gadget)
+		let widgetSnapshot = {
 			batteryCapacity: 85,
 			batteryStatus: 'Healthy',
 			burnoutRiskLevel: 'Low',
@@ -420,111 +358,38 @@
 			focusTime: '14:00 - 15:30 (90 min session)'
 		};
 
-		async function syncAmbientWidget(stateUpdates = {}) {
-			gadgetState = { ...gadgetState, ...stateUpdates };
-			
-			// Update DOM elements
-			const pEl = document.getElementById('gadgetBatteryPct');
-			const sEl = document.getElementById('gadgetBatteryStatus');
-			const bText = document.getElementById('gadgetBurnoutText');
-			const bBadge = document.getElementById('gadgetBurnoutBadge');
-			const bDot = document.getElementById('gadgetBurnoutDot');
-			const loadEl = document.getElementById('gadgetLoadValue');
-			const fTitle = document.getElementById('gadgetFocusTitle');
-			const fTime = document.getElementById('gadgetFocusTime');
-
-			if (pEl) pEl.textContent = gadgetState.batteryCapacity;
-			if (sEl) sEl.textContent = gadgetState.batteryStatus;
-			if (bText) bText.textContent = gadgetState.burnoutRiskLevel + ' Risk';
-			if (loadEl) loadEl.textContent = gadgetState.capacityLoad + '%';
-			if (fTitle) fTitle.textContent = gadgetState.focusTitle;
-			if (fTime) fTime.textContent = gadgetState.focusTime;
-
-			if (bDot && bBadge && bText) {
-				if (gadgetState.burnoutRiskLevel === 'Critical') {
-					bDot.className = 'w-1.5 h-1.5 rounded-full bg-[#f87171]';
-					bBadge.className = 'bg-[#3b2020] text-[#f87171] text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-[#5c2e2e]';
-				} else if (gadgetState.burnoutRiskLevel === 'High') {
-					bDot.className = 'w-1.5 h-1.5 rounded-full bg-[#fb923c]';
-					bBadge.className = 'bg-[#3b2d20] text-[#fb923c] text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-[#5c402e]';
-				} else if (gadgetState.burnoutRiskLevel === 'Moderate') {
-					bDot.className = 'w-1.5 h-1.5 rounded-full bg-[#facc15]';
-					bBadge.className = 'bg-[#38331d] text-[#facc15] text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-[#544c29]';
-				} else {
-					bDot.className = 'w-1.5 h-1.5 rounded-full bg-[#4ade80]';
-					bBadge.className = 'bg-[#24372e] text-[#4ade80] text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-[#344d40]';
-				}
-			}
-
-			// Sync to Native Android Homescreen Widget via Capacitor bridge
+		async function syncHomescreenWidget(updates = {}) {
+			widgetSnapshot = { ...widgetSnapshot, ...updates };
 			if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AmbientWidget) {
 				try {
-					await window.Capacitor.Plugins.AmbientWidget.updateWidgetData(gadgetState);
+					await window.Capacitor.Plugins.AmbientWidget.updateWidgetData(widgetSnapshot);
 				} catch (err) {
-					console.log('Native widget bridge sync error:', err);
+					console.log('Native widget sync error:', err);
 				}
 			}
-
-			// Show feedback toast
-			const toast = document.getElementById('gadgetToast');
-			if (toast) {
-				toast.classList.remove('hidden');
-				setTimeout(() => toast.classList.add('hidden'), 2500);
-			}
 		}
 
-		// Wire up gadget buttons
-		const btnExtend = document.getElementById('gadgetBtnExtend');
-		if (btnExtend) {
-			btnExtend.addEventListener('click', () => {
-				const newLoad = Math.min(100, gadgetState.capacityLoad + 5);
-				syncAmbientWidget({
-					capacityLoad: newLoad,
-					focusTime: '⏱ Extended (+30 min focus)'
-				});
-			});
-		}
-
-		const btnRest = document.getElementById('gadgetBtnRest');
-		if (btnRest) {
-			btnRest.addEventListener('click', () => {
-				const newBattery = Math.min(100, gadgetState.batteryCapacity + 5);
-				syncAmbientWidget({
-					batteryCapacity: newBattery,
-					focusTitle: 'Recovery Break (Ambient Reset)',
-					focusTime: '☕ 15 min rest session'
-				});
-			});
-		}
-
-		const btnSync = document.getElementById('gadgetBtnSync');
-		if (btnSync) {
-			btnSync.addEventListener('click', () => {
-				syncAmbientWidget();
-			});
-		}
-
-		// Fetch from backend API if available
-		async function fetchBackendState() {
+		// Initial sync with backend state if available
+		async function fetchStateForHomescreenWidget() {
 			try {
 				const batteryRes = await fetch('/api/v1/battery/today');
 				if (batteryRes.ok) {
 					const data = await batteryRes.json();
-					gadgetState.batteryCapacity = Math.round(data.current_capacity || 85);
-					gadgetState.batteryStatus = data.status_badge || 'Healthy';
+					widgetSnapshot.batteryCapacity = Math.round(data.current_capacity || 85);
+					widgetSnapshot.batteryStatus = data.status_badge || 'Healthy';
 				}
 				const burnoutRes = await fetch('/api/v1/burnout-risk');
 				if (burnoutRes.ok) {
 					const bData = await burnoutRes.json();
-					gadgetState.burnoutRiskLevel = bData.risk_level || 'Low';
-					gadgetState.burnoutRiskScore = bData.risk_score || 18;
+					widgetSnapshot.burnoutRiskLevel = bData.risk_level || 'Low';
+					widgetSnapshot.burnoutRiskScore = bData.risk_score || 18;
 				}
-				syncAmbientWidget();
+				syncHomescreenWidget();
 			} catch (e) {
-				syncAmbientWidget();
+				syncHomescreenWidget();
 			}
 		}
-		fetchBackendState();
+		fetchStateForHomescreenWidget();
 	</script>
 </body>
 </html>
