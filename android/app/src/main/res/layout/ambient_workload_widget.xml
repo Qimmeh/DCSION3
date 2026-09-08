@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- Top Header Row: Brand & Status Badges -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_brand_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="DCSION3"
+            android:textColor="@color/widget_mint"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_burnout_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/widget_badge_bg"
+            android:text="● Low Risk"
+            android:textColor="@color/widget_risk_low"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_battery_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/widget_badge_bg"
+            android:text="🔋 85% Healthy"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Center Section: Metrics & Current/Upcoming Focus Block -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- Capacity Load Metric Card -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/widget_badge_bg"
+            android:gravity="center"
+            android:minWidth="68dp"
+            android:orientation="vertical"
+            android:padding="6dp">
+
+            <TextView
+                android:id="@+id/widget_load_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="68%"
+                android:textColor="@color/widget_mint"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_load_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cap Load"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Focus Activity Details -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_focus_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NEXT FOCUS"
+                android:textColor="@color/widget_text_muted"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_focus_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Deep Work: System Architecture"
+                android:textColor="@color/widget_text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_focus_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="14:00 - 15:30 (90 min session)"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom Action Controls -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/widget_btn_extend"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_button_bg"
+            android:gravity="center"
+            android:text="+30m"
+            android:textAllCaps="false"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/widget_btn_rest"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_button_bg"
+            android:gravity="center"
+            android:text="Take Rest"
+            android:textAllCaps="false"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/widget_btn_open"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_button_bg"
+            android:gravity="center"
+            android:text="Open ↗"
+            android:textAllCaps="false"
+            android:textColor="@color/widget_mint"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>
