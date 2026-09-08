@@ -108,3 +108,67 @@ def get_workload_week():
         "week_ending": today.isoformat(),
         "weekly_workload": weekly_calc,
     })
+
+
+@api_bp.route("/workload/forecast", methods=["GET"])
+@require_user
+def get_workload_forecast():
+    """
+    Returns a forward 7 to 14 day lookahead horizon forecasting
+    workload scores, battery drain, and capacity loads.
+    """
+    from collections import defaultdict
+    from app.engine.forecaster import forecast_horizon
+
+    user = g.current_api_user
+    today = date.today()
+
+    days_param = request.args.get("days", 7)
+    try:
+        days = int(days_param)
+    except (TypeError, ValueError):
+        days = 7
+    days = max(1, min(days, 14))
+
+    horizon_end = today + timedelta(days=days)
+    start_dt = datetime.combine(today, datetime.min.time())
+    end_dt = datetime.combine(horizon_end, datetime.max.time())
+
+    activities = Activity.query.filter(
+        Activity.user_id == user.id,
+        Activity.start_time >= start_dt,
+        Activity.start_time <= end_dt,
+        Activity.status != "cancelled"
+    ).order_by(Activity.start_time.asc()).all()
+
+    # Group activities by date
+    acts_by_date = defaultdict(list)
+    for act in activities:
+        if act.start_time:
+            acts_by_date[act.start_time.date()].append(act.to_dict())
+
+    profile = Profile.query.filter_by(user_id=user.id).first()
+    target_sleep = profile.target_sleep_hours if profile else 8.0
+    weights = profile.dimension_weights if profile else None
+
+    # Get current battery snapshot for today if available
+    today_snap = BatterySnapshot.query.filter_by(user_id=user.id, date=today).first()
+    init_battery = today_snap.current_battery if today_snap else 85.0
+    init_debt = today_snap.recovery_debt if today_snap else 0.0
+
+    forecast = forecast_horizon(
+        start_date=today,
+        days=days,
+        activities_by_date=acts_by_date,
+        initial_battery=init_battery,
+        initial_debt=init_debt,
+        target_sleep=target_sleep,
+        assumed_daily_sleep=target_sleep,
+        dimension_weights=weights,
+    )
+
+    return jsonify({
+        "status": "success",
+        "forecast": forecast
+    })
+

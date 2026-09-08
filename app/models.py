@@ -1,4 +1,4 @@
-﻿"""
+"""
 Ambient Workload Manager - Core Database Models
 ================================================
 Comprehensive, flexible, and production-grade SQLAlchemy ORM models
@@ -52,6 +52,14 @@ class User(UserMixin, db.Model):
     workload_events = db.relationship('WorkloadEvent', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     workload_snapshots = db.relationship('WorkloadSnapshot', backref='user', lazy='dynamic', cascade='all, delete-orphan')
 
+    # Battery & Recovery Subsystem
+    battery_snapshots = db.relationship('BatterySnapshot', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    recovery_records = db.relationship('RecoveryRecord', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+
+    # Smart Scheduler & Recommendations
+    recommendations = db.relationship('Recommendation', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    activity_dependencies = db.relationship('ActivityDependency', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+
     # Capacity Simulator & Ghost Schedules
     commitments = db.relationship('Commitment', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     ghost_changes = db.relationship('GhostChange', backref='user', lazy='dynamic', cascade='all, delete-orphan')
@@ -102,6 +110,12 @@ class Profile(db.Model):
     preferred_study_end = db.Column(db.Time, default=time(21, 0))
     typical_commute_minutes = db.Column(db.Integer, default=30)
 
+    # Sleep & Recovery Configuration (Sections 4.3, 6.10, 7.6)
+    target_sleep_hours = db.Column(db.Float, default=8.0) # Configurable baseline 6-10 h
+    minimum_sleep_hours = db.Column(db.Float, default=6.0) # Protected non-negotiable floor
+    preferred_sleep_start = db.Column(db.Time, default=time(23, 0))
+    preferred_sleep_end = db.Column(db.Time, default=time(7, 0))
+
     # Learned Personalization Parameters
     task_extension_rate = db.Column(db.Float, default=1.0) # e.g. 1.8x if coding usually runs long
     intervention_style = db.Column(db.String(20), default='balanced') # 'gentle', 'balanced', 'strict'
@@ -132,6 +146,10 @@ class Profile(db.Model):
             "preferred_study_start": self.preferred_study_start.strftime("%H:%M") if self.preferred_study_start else None,
             "preferred_study_end": self.preferred_study_end.strftime("%H:%M") if self.preferred_study_end else None,
             "typical_commute_minutes": self.typical_commute_minutes,
+            "target_sleep_hours": self.target_sleep_hours,
+            "minimum_sleep_hours": self.minimum_sleep_hours,
+            "preferred_sleep_start": self.preferred_sleep_start.strftime("%H:%M") if self.preferred_sleep_start else None,
+            "preferred_sleep_end": self.preferred_sleep_end.strftime("%H:%M") if self.preferred_sleep_end else None,
             "task_extension_rate": self.task_extension_rate,
             "intervention_style": self.intervention_style,
             "assumed_complete_enabled": self.assumed_complete_enabled,
@@ -301,6 +319,18 @@ class Activity(db.Model):
     is_fixed = db.Column(db.Boolean, default=False) # True for exams/lectures; False for flexible study
     deadline = db.Column(db.DateTime, index=True)
 
+    # Smart Todo & Timeline Scheduler Attributes (Section 6.2)
+    estimated_effort_minutes = db.Column(db.Integer, default=60)
+    remaining_effort_minutes = db.Column(db.Integer, default=60)
+    minimum_block_minutes = db.Column(db.Integer, default=30)
+    maximum_block_minutes = db.Column(db.Integer, default=180)
+    splittable = db.Column(db.Boolean, default=True)
+    flexibility = db.Column(db.String(20), default='movable') # fixed, movable, shortenable, cancelable
+    consequence_cost = db.Column(db.Float, default=2.0) # 1.0 (very low) to 10.0 (extreme/prohibited)
+    recommended_finish_date = db.Column(db.DateTime)
+    preferred_windows = db.Column(db.JSON, default=list) # e.g. ["morning", "afternoon"]
+    safety_buffer_minutes = db.Column(db.Integer, default=60)
+
     # Location & Friction
     location_id = db.Column(db.Integer, db.ForeignKey('locations.id', ondelete='SET NULL'))
     location_name = db.Column(db.String(150))
@@ -324,6 +354,8 @@ class Activity(db.Model):
     subtasks = db.relationship('Activity', backref=db.backref('parent', remote_side=[id]), lazy='dynamic')
     workload_events = db.relationship('WorkloadEvent', backref='activity', lazy='dynamic', cascade='all, delete-orphan')
     errand_detail = db.relationship('ErrandDetail', backref='activity', uselist=False, cascade='all, delete-orphan')
+    dependencies_out = db.relationship('ActivityDependency', foreign_keys='ActivityDependency.predecessor_id', backref='predecessor', lazy='dynamic', cascade='all, delete-orphan')
+    dependencies_in = db.relationship('ActivityDependency', foreign_keys='ActivityDependency.successor_id', backref='successor', lazy='dynamic', cascade='all, delete-orphan')
 
     __table_args__ = (
         db.Index('idx_activity_user_dates', 'user_id', 'start_time', 'end_time'),
@@ -347,6 +379,16 @@ class Activity(db.Model):
             "priority": self.priority,
             "is_fixed": self.is_fixed,
             "deadline": self.deadline.isoformat() if self.deadline else None,
+            "estimated_effort_minutes": self.estimated_effort_minutes,
+            "remaining_effort_minutes": self.remaining_effort_minutes,
+            "minimum_block_minutes": self.minimum_block_minutes,
+            "maximum_block_minutes": self.maximum_block_minutes,
+            "splittable": self.splittable,
+            "flexibility": self.flexibility,
+            "consequence_cost": self.consequence_cost,
+            "recommended_finish_date": self.recommended_finish_date.isoformat() if self.recommended_finish_date else None,
+            "preferred_windows": self.preferred_windows or [],
+            "safety_buffer_minutes": self.safety_buffer_minutes,
             "location_name": self.location_name,
             "travel_time_minutes": self.travel_time_minutes,
             "is_clusterable": self.is_clusterable,
@@ -602,6 +644,100 @@ class GhostChangeItem(db.Model):
         }
 
 
+class ActivityDependency(db.Model):
+    """
+    Dependency relationship between activities/tasks (e.g. task B must start after task A finishes).
+    """
+    __tablename__ = 'activity_dependencies'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    predecessor_id = db.Column(db.Integer, db.ForeignKey('activities.id', ondelete='CASCADE'), nullable=False, index=True)
+    successor_id = db.Column(db.Integer, db.ForeignKey('activities.id', ondelete='CASCADE'), nullable=False, index=True)
+    dependency_type = db.Column(db.String(30), default='finish_to_start') # finish_to_start, start_to_start
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "predecessor_id": self.predecessor_id,
+            "successor_id": self.successor_id,
+            "dependency_type": self.dependency_type
+        }
+
+
+class Recommendation(db.Model):
+    """
+    Smart Timeline or Survival Plan recommendation awaiting user approval.
+    """
+    __tablename__ = 'recommendations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+
+    title = db.Column(db.String(150), nullable=False)
+    category = db.Column(db.String(50), default='rebalance') # timeline, survival_plan, rebalance, recovery
+    summary = db.Column(db.Text)
+    reasoning = db.Column(db.Text)
+
+    # Optimization Metrics
+    plan_score = db.Column(db.Float, default=0.0)
+    sacrifice_cost = db.Column(db.Float, default=0.0)
+    overload_reduction = db.Column(db.Float, default=0.0)
+
+    status = db.Column(db.String(30), default='suggested', index=True) # suggested, accepted, rejected, modified
+    feedback_notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    resolved_at = db.Column(db.DateTime)
+
+    actions = db.relationship('RecommendationAction', backref='recommendation', lazy='dynamic', cascade='all, delete-orphan')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "title": self.title,
+            "category": self.category,
+            "summary": self.summary,
+            "reasoning": self.reasoning,
+            "plan_score": self.plan_score,
+            "sacrifice_cost": self.sacrifice_cost,
+            "overload_reduction": self.overload_reduction,
+            "status": self.status,
+            "feedback_notes": self.feedback_notes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
+            "actions": [a.to_dict() for a in self.actions]
+        }
+
+
+class RecommendationAction(db.Model):
+    """
+    Atomic scheduling step within a recommendation (e.g. MOVE, SHORTEN, SPLIT, ADD_RECOVERY).
+    """
+    __tablename__ = 'recommendation_actions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    recommendation_id = db.Column(db.Integer, db.ForeignKey('recommendations.id', ondelete='CASCADE'), nullable=False, index=True)
+    action_type = db.Column(db.String(30), nullable=False) # MOVE, SHORTEN, SPLIT, ADD_RECOVERY, PROTECT
+    target_activity_id = db.Column(db.Integer, db.ForeignKey('activities.id', ondelete='SET NULL'))
+    details = db.Column(db.JSON, default=dict)
+    sacrifice_cost = db.Column(db.Float, default=0.0)
+
+    target_activity = db.relationship('Activity')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "recommendation_id": self.recommendation_id,
+            "action_type": self.action_type,
+            "target_activity_id": self.target_activity_id,
+            "details": self.details or {},
+            "sacrifice_cost": self.sacrifice_cost
+        }
+
+
 # ============================================================================
 # 5. RECOVERY PROTOCOL & ZERO-DISTURBANCE
 # ============================================================================
@@ -641,6 +777,91 @@ class RecoveryWindow(db.Model):
             "is_utilized": self.is_utilized,
             "suppress_notifications": self.suppress_notifications,
             "recommended_actions": self.recommended_actions or []
+        }
+
+
+class RecoveryRecord(db.Model):
+    """
+    Daily sleep and recovery record tracking actual sleep vs target, deficit, and accumulated debt.
+    """
+    __tablename__ = 'recovery_records'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    date = db.Column(db.Date, nullable=False, index=True)
+
+    actual_sleep_hours = db.Column(db.Float, default=8.0)
+    target_sleep_hours = db.Column(db.Float, default=8.0)
+    sleep_deficit_hours = db.Column(db.Float, default=0.0) # max(0, target - actual)
+    recovery_debt_carried = db.Column(db.Float, default=0.0)
+    naps_minutes = db.Column(db.Integer, default=0)
+    recovery_activities_minutes = db.Column(db.Integer, default=0)
+    notes = db.Column(db.String(255))
+    recorded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'date', name='uq_recovery_user_date'),
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "date": self.date.isoformat() if self.date else None,
+            "actual_sleep_hours": self.actual_sleep_hours,
+            "target_sleep_hours": self.target_sleep_hours,
+            "sleep_deficit_hours": self.sleep_deficit_hours,
+            "recovery_debt_carried": self.recovery_debt_carried,
+            "naps_minutes": self.naps_minutes,
+            "recovery_activities_minutes": self.recovery_activities_minutes,
+            "notes": self.notes,
+            "recorded_at": self.recorded_at.isoformat() if self.recorded_at else None
+        }
+
+
+class BatterySnapshot(db.Model):
+    """
+    Daily snapshot of Battery State: starting capacity, drain, recovery, current and projected battery,
+    capacity load, and UX state categorization.
+    """
+    __tablename__ = 'battery_snapshots'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    date = db.Column(db.Date, nullable=False, index=True)
+
+    start_battery = db.Column(db.Float, default=100.0)
+    drain = db.Column(db.Float, default=0.0)
+    recovery = db.Column(db.Float, default=0.0)
+    fatigue_penalties = db.Column(db.Float, default=0.0)
+    current_battery = db.Column(db.Float, default=100.0) # clamp(start - drain + recovery - fatigue, 0, 100)
+    projected_battery = db.Column(db.Float, default=100.0)
+    recovery_debt = db.Column(db.Float, default=0.0)
+    capacity_load = db.Column(db.Float, default=0.0) # Workload / max(Battery, 10) * 100
+    battery_state = db.Column(db.String(30), default='healthy') # healthy, reduced, low, very_low, critical
+    details = db.Column(db.JSON, default=dict)
+    calculated_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'date', name='uq_battery_user_date'),
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "date": self.date.isoformat() if self.date else None,
+            "start_battery": self.start_battery,
+            "drain": self.drain,
+            "recovery": self.recovery,
+            "fatigue_penalties": self.fatigue_penalties,
+            "current_battery": self.current_battery,
+            "projected_battery": self.projected_battery,
+            "recovery_debt": self.recovery_debt,
+            "capacity_load": self.capacity_load,
+            "battery_state": self.battery_state,
+            "details": self.details or {},
+            "calculated_at": self.calculated_at.isoformat() if self.calculated_at else None
         }
 
 

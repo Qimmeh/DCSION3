@@ -77,6 +77,14 @@ def create_activity():
 
     end_time = start_time + timedelta(minutes=duration_minutes)
 
+    deadline_str = data.get("deadline")
+    deadline = None
+    if deadline_str:
+        try:
+            deadline = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
+        except Exception:
+            deadline = None
+
     activity = Activity(
         user_id=user.id,
         title=title,
@@ -91,6 +99,15 @@ def create_activity():
         intensity=data.get("intensity", "Medium"),
         priority=data.get("priority", "Medium"),
         is_fixed=bool(data.get("is_fixed", False)),
+        deadline=deadline,
+        estimated_effort_minutes=int(data.get("estimated_effort_minutes") or duration_minutes),
+        remaining_effort_minutes=int(data.get("remaining_effort_minutes") or duration_minutes),
+        minimum_block_minutes=int(data.get("minimum_block_minutes") or 30),
+        maximum_block_minutes=int(data.get("maximum_block_minutes") or 180),
+        splittable=bool(data.get("splittable", True)),
+        flexibility=data.get("flexibility", "movable"),
+        consequence_cost=float(data.get("consequence_cost", 2.0) or 2.0),
+        preferred_windows=data.get("preferred_windows") or [],
         recovery_type=data.get("recovery_type"),
         status="planned"
     )

@@ -21,6 +21,23 @@ from app.engine.workload import (
 )
 from app.engine.simulator import simulate_commitment
 from app.engine.rebalancer import find_rebalance_proposals
+from app.engine.battery import (
+    calculate_starting_battery,
+    calculate_recovery_debt,
+    calculate_activity_battery_drain,
+    calculate_recovery_restoration,
+    calculate_capacity_load,
+    compute_daily_battery_projection,
+    evaluate_battery_state,
+    sleep_recovery_curve,
+)
+from app.engine.burnout import (
+    calculate_capacity_stress,
+    calculate_sustained_overload,
+    calculate_risk_trend,
+    evaluate_risk_state,
+    compute_burnout_score,
+)
 
 __all__ = [
     "get_default_stat_vector",
@@ -37,4 +54,17 @@ __all__ = [
     "calculate_recovery_deficit",
     "simulate_commitment",
     "find_rebalance_proposals",
+    "calculate_starting_battery",
+    "calculate_recovery_debt",
+    "calculate_activity_battery_drain",
+    "calculate_recovery_restoration",
+    "calculate_capacity_load",
+    "compute_daily_battery_projection",
+    "evaluate_battery_state",
+    "sleep_recovery_curve",
+    "calculate_capacity_stress",
+    "calculate_sustained_overload",
+    "calculate_risk_trend",
+    "evaluate_risk_state",
+    "compute_burnout_score",
 ]

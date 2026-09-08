@@ -46,6 +46,8 @@ def create_app(config_class=Config):
             print(f"Connecting to database and creating {table_count} tables via db.create_all()...", flush=True)
             db.create_all()
             print("db.create_all() finished successfully! All tables verified.", flush=True)
+            from app.schema_sync import sync_db_columns
+            sync_db_columns(db)
         except Exception as err:
             print(f"FAILED to run db.create_all(): {err}", flush=True)
 
