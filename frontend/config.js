@@ -12,8 +12,8 @@
         window.Capacitor.isNativePlatform()
     );
 
-    // Default cloud backend URL (can be updated with your live domain)
-    const PRODUCTION_CLOUD_BACKEND = 'https://api.dcsion3.com';
+    // Google Cloud Run backend URL
+    const PRODUCTION_CLOUD_BACKEND = 'https://dcsion3-git-232142192878.europe-west1.run.app';
 
     window.DCSION3_CONFIG = {
         IS_NATIVE: isNativeMobile,
