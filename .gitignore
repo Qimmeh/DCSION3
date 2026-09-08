@@ -20,3 +20,7 @@ instance/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Node dependencies
+node_modules/
+package-lock.json
