@@ -8,6 +8,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
 	<script src="https://cdn.tailwindcss.com"></script>
+	<script src="config.js"></script>
 	<script>
 		tailwind.config = {
 			theme: {
@@ -371,14 +372,15 @@
 
 		// Initial sync with backend state if available
 		async function fetchStateForHomescreenWidget() {
+			const apiBase = (window.DCSION3_CONFIG && window.DCSION3_CONFIG.API_BASE_URL) || '';
 			try {
-				const batteryRes = await fetch('/api/v1/battery/today');
+				const batteryRes = await fetch(`${apiBase}/api/v1/battery/today`);
 				if (batteryRes.ok) {
 					const data = await batteryRes.json();
 					widgetSnapshot.batteryCapacity = Math.round(data.current_capacity || 85);
 					widgetSnapshot.batteryStatus = data.status_badge || 'Healthy';
 				}
-				const burnoutRes = await fetch('/api/v1/burnout-risk');
+				const burnoutRes = await fetch(`${apiBase}/api/v1/burnout-risk`);
 				if (burnoutRes.ok) {
 					const bData = await burnoutRes.json();
 					widgetSnapshot.burnoutRiskLevel = bData.risk_level || 'Low';

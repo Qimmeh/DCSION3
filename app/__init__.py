@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_login import current_user
+from flask_cors import CORS
 
 from config import Config
 from app.extensions import db, login_manager, csrf
@@ -9,6 +10,7 @@ def create_app(config_class=Config):
     app = Flask(__name__, template_folder="../frontend", static_folder="../frontend")
     app.config.from_object(config_class)
 
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     db.init_app(app)
     login_manager.init_app(app)
