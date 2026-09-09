@@ -64,7 +64,6 @@ class GoogleCalendarService:
             if not page_token:
                 break
 
-        self.store.save_timetable(user_id, events)
         return events
 
     @staticmethod

@@ -1,0 +1,28 @@
+.prototype-timetable { margin-top: 24px; }
+.prototype-timetable__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.prototype-timetable__header p { color: var(--muted); font-size: 12px; margin: 5px 0 0; }
+.prototype-timetable__button { border: 0; border-radius: 8px; background: #f37b32; color: #fff; padding: 10px 14px; font-size: 11px; font-weight: 700; }
+.prototype-timetable__button:disabled { cursor: wait; opacity: .6; }
+.prototype-timetable__hint { color: var(--muted); font-size: 11px; margin: 16px 0; }
+.prototype-timetable__hint a { color: #d86124; font-weight: 700; }
+.prototype-timetable__grid { display: grid; grid-template-columns: repeat(7, minmax(110px, 1fr)); overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+.prototype-timetable__day { min-height: 155px; padding: 12px 10px; border-right: 1px solid var(--line); background: rgba(255,255,255,.55); }
+.prototype-timetable__day:last-child { border-right: 0; }
+.prototype-timetable__day--today { background: #fff4eb; }
+.prototype-timetable__day strong, .prototype-timetable__day small { display: block; }
+.prototype-timetable__day strong { font-size: 11px; }
+.prototype-timetable__day small { color: var(--muted); font-size: 10px; }
+.prototype-timetable__event { margin-top: 10px; padding: 8px; border-left: 3px solid #f37b32; border-radius: 5px; background: #ffeadb; font-size: 10px; }
+.prototype-timetable__event b { display: block; font-size: 11px; margin-bottom: 3px; }
+.prototype-timetable__empty, .prototype-timetable__error { grid-column: 1 / -1; color: var(--muted); padding: 22px; text-align: center; font-size: 12px; }
+.prototype-timetable__modal { display: none; position: fixed; inset: 0; z-index: 20; place-items: center; padding: 18px; background: rgba(20, 35, 27, .38); }
+.prototype-timetable__modal.is-open { display: grid; }
+.prototype-timetable__dialog { width: min(850px, 100%); max-height: 90vh; overflow: auto; padding: 24px; border-radius: 14px; background: var(--surface); box-shadow: 0 25px 70px rgba(0,0,0,.2); }
+.prototype-timetable__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.prototype-timetable__actions button { border: 0; border-radius: 7px; padding: 10px 14px; font-size: 11px; font-weight: 700; }
+.prototype-timetable__discard { background: #edf1ed; color: var(--muted); }
+@media (max-width: 680px) {
+  .prototype-timetable__header { align-items: flex-start; flex-direction: column; }
+  .prototype-timetable__button { width: 100%; }
+  .prototype-timetable__grid { grid-template-columns: repeat(7, 135px); }
+}

@@ -66,12 +66,7 @@ def calendar_oauth_callback():
     except (ValueError, RuntimeError, OSError) as error:
         return jsonify({"error": "Google OAuth failed", "message": str(error)}), 502
 
-    return jsonify({
-        "status": "connected",
-        "message": "Google Calendar connected. Fetch a timetable to load events.",
-        "has_access_token": bool(token.access_token),
-        "has_refresh_token": bool(token.refresh_token),
-    })
+    return redirect("/?calendar=connected")
 
 
 @api_bp.route("/calendar/timetable", methods=["GET"])
@@ -100,7 +95,23 @@ def get_calendar_timetable():
     except (RuntimeError, OSError) as error:
         return jsonify({"error": "Unable to fetch Google Calendar", "message": str(error)}), 502
 
+    calendar_store.save_pending_timetable(g.current_api_user.id, events)
     return jsonify({"status": "success", "count": len(events), "timetable": events})
+
+
+@api_bp.route("/calendar/timetable/confirm", methods=["POST"])
+@require_user
+def confirm_calendar_timetable():
+    if not calendar_store.confirm_pending_timetable(g.current_api_user.id):
+        return jsonify({"error": "No pending timetable preview"}), 409
+    return jsonify({"status": "confirmed"})
+
+
+@api_bp.route("/calendar/timetable/pending", methods=["DELETE"])
+@require_user
+def discard_calendar_timetable():
+    calendar_store.discard_pending_timetable(g.current_api_user.id)
+    return jsonify({"status": "discarded"})
 
 
 @api_bp.route("/calendar/timetable/memory", methods=["GET"])
