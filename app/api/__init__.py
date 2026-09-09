@@ -86,5 +86,14 @@ def health():
 
 
 # Import and attach route handlers
-from app.api import workload_api, activities_api, simulation_api, ghost_api, recovery_api, battery_api, burnout_api, scheduler_api
-
+from app.api import (
+    workload_api,
+    activities_api,
+    simulation_api,
+    ghost_api,
+    recovery_api,
+    battery_api,
+    burnout_api,
+    scheduler_api,
+    calendar_api,
+)
