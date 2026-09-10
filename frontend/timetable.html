@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DCSION3 | Timetable</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+	<script src="config.js"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='timetable.css') }}">
+	<style>
+		:root { --surface: #fff; --ink: #17191d; --muted: #7d8188; --line: #e6e7eb; --mint-strong: #f37b32; }
+		* { box-sizing: border-box; }
+		body { margin: 0; color: var(--ink); background: linear-gradient(180deg, #fbe4d2 0 132px, #f5f6fa 300px); font-family: "Manrope", sans-serif; }
+		button { cursor: pointer; font: inherit; }
+		.app-shell { display: flex; min-height: 100vh; }
+		.sidebar { width: 244px; padding: 28px 20px; background: #fff7f0; border-right: 1px solid #f0e1d5; display: flex; flex-direction: column; flex: 0 0 auto; position: relative; overflow: hidden; }
+		.sidebar::after { content: ""; position: absolute; width: 170px; height: 170px; left: -105px; bottom: 110px; border: 1px solid rgba(243, 123, 50, .2); border-radius: 50%; box-shadow: 0 0 0 22px rgba(243, 123, 50, .06), 0 0 0 44px rgba(243, 123, 50, .04); pointer-events: none; }
+		.brand { display: flex; align-items: center; gap: 10px; margin: 0 12px 48px; }
+		.brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #f37b32; color: white; font-size: 16px; }
+		.brand-name { font-family: "Sora", sans-serif; font-size: 15px; font-weight: 700; line-height: 1.05; }
+		.brand-name span { display: block; color: #ed7130; font-size: 11px; font-weight: 600; margin-top: 3px; }
+		.nav-label { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 0 12px 10px; }
+		.nav { display: grid; gap: 5px; }
+		.nav button { border: 0; background: transparent; color: #777b82; border-radius: 10px; padding: 11px 12px; text-align: left; font-size: 13px; font-weight: 600; }
+		.nav button::before { display: inline-block; width: 25px; color: #8fa198; }
+		.nav button[data-icon="grid"]::before { content: "▦"; }
+		.nav button[data-icon="tasks"]::before { content: "✓"; }
+		.nav button[data-icon="heart"]::before { content: "♡"; }
+		.nav button[data-icon="chart"]::before { content: "↗"; }
+		.nav button.active, .nav button:hover { background: var(--surface); color: var(--ink); box-shadow: 0 5px 14px rgba(208, 111, 49, .1); }
+		.nav button.active::before { color: #f37b32; }
+		.sidebar-bottom { margin-top: auto; border-top: 1px solid #f0e1d5; padding-top: 18px; }
+		.privacy { display: flex; gap: 8px; color: var(--muted); font-size: 11px; line-height: 1.45; padding: 0 12px 18px; }
+		.privacy strong { display: block; color: var(--ink); font-size: 12px; margin-bottom: 2px; }
+		.theme-toggle { width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); padding: 10px 12px; border-radius: 9px; text-align: left; font-size: 12px; }
+		main { width: min(1220px, 100%); margin: 0 auto; padding: 42px 46px 60px; }
+		.topbar { margin-bottom: 34px; }
+		.eyebrow, .card-kicker { color: #69a381; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+		h1, h2, p { margin-top: 0; }
+		h1, h2 { font-family: "Sora", sans-serif; letter-spacing: -.04em; }
+		h1 { font-size: clamp(26px, 3vw, 36px); margin: 8px 0; }
+		.intro { color: var(--muted); font-size: 14px; }
+		.card { background: rgba(255, 255, 255, .88); border: 1px solid rgba(211, 225, 214, .8); border-radius: 16px; box-shadow: 0 18px 45px rgba(38, 68, 52, .08); padding: 27px; }
+		@media (max-width: 930px) { .sidebar { width: 200px; } main { padding: 30px 26px; } }
+		@media (max-width: 680px) { .app-shell { display: block; } .sidebar { width: 100%; height: auto; padding: 16px 16px 12px; border-right: 0; border-bottom: 1px solid #f0e1d5; } .brand { margin: 0 0 15px; } .nav-label, .sidebar-bottom { display: none; } .nav { display: flex; gap: 4px; overflow-x: auto; } .nav button { padding: 8px 10px; white-space: nowrap; font-size: 11px; } .nav button::before { width: 16px; } main { padding: 28px 16px 40px; } }
+	</style>
+</head>
+<body>
+	<div class="app-shell">
+		<aside class="sidebar">
+			<div class="brand"><div class="brand-mark">+</div><div class="brand-name">DCSION3<span>student wellbeing</span></div></div>
+			<div class="nav-label">Your space</div>
+			<nav class="nav" aria-label="Primary navigation">
+				<button data-icon="grid" data-page="home">Overview</button>
+				<button data-icon="tasks" data-page="tasks">My tasks</button>
+				<button class="active" data-icon="chart">Timetable</button>
+				<button data-icon="heart" data-page="wellbeing">Wellbeing</button>
+				<button data-icon="chart">Trends</button>
+				<button data-icon="heart" data-scroll="focus">Focus</button>
+			</nav>
+			<div class="sidebar-bottom">
+				<div class="privacy"><span>◎</span><div><strong>Your space is private</strong>Your data stays on this device.</div></div>
+				<button class="theme-toggle" id="themeToggle">◐ &nbsp; Switch to night mode</button>
+			</div>
+		</aside>
+		<main>
+			<header class="topbar"><div class="eyebrow">Your schedule</div><h1>Timetable</h1><p class="intro">Review the next seven days and preview calendar changes before they are saved.</p></header>
+			<section class="card prototype-timetable" id="prototypeTimetable" aria-labelledby="prototypeTimetableTitle">
+				<div class="prototype-timetable__header"><div><div class="card-kicker">Calendar</div><h2 id="prototypeTimetableTitle">Your seven-day timetable</h2><p data-timetable-status>No timetable loaded yet.</p></div></div>
+				<p class="prototype-timetable__hint"><span data-timetable-hint>No calendar data yet?</span> <a href="#prototypeTimetable" data-timetable-refresh>Fetch from Google Calendar</a>.</p>
+				<div class="prototype-timetable__grid" data-timetable-grid aria-live="polite"></div>
+				<div class="prototype-timetable__modal" data-timetable-modal role="dialog" aria-modal="true" aria-labelledby="prototypeTimetablePreviewTitle">
+					<div class="prototype-timetable__dialog"><div class="card-kicker">Preview before saving</div><h2 id="prototypeTimetablePreviewTitle">Confirm this timetable?</h2><p class="prototype-timetable__hint">This preview is not stored until you confirm it.</p><div class="prototype-timetable__grid" data-timetable-preview></div><div class="prototype-timetable__actions"><button class="prototype-timetable__discard" data-timetable-discard type="button">Discard</button><button class="prototype-timetable__button" data-timetable-confirm type="button">Confirm timetable</button></div></div>
+				</div>
+			</section>
+		</main>
+	</div>
+	<script src="{{ url_for('static', filename='timetable.js') }}"></script>
+	<script>
+		const NAV_PAGES = { home: 'index.html', tasks: 'task.html', wellbeing: 'wellbeing.html' };
+		document.querySelectorAll('[data-page]').forEach((button) => button.addEventListener('click', () => {
+			const target = NAV_PAGES[button.dataset.page];
+			if (target) window.location.href = target;
+		}));
+	</script>
+</body>
+</html>

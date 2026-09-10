@@ -55,6 +55,8 @@ def calendar_oauth_start():
 def calendar_oauth_callback():
     expected_state = session.pop("google_calendar_oauth_state", None)
     user_id = session.pop("google_calendar_oauth_user_id", None)
+    print("State:", request.args.get("state"))
+    print("Expected state", expected_state)
     if not expected_state or not user_id or request.args.get("state") != expected_state:
         return jsonify({"error": "Invalid or expired OAuth state"}), 400
     if request.args.get("error"):

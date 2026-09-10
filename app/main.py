@@ -38,3 +38,14 @@ def dashboard():
         nudge=nudge,
         trend=trend,
     )
+
+
+@bp.route("/timetable")
+@login_required
+def timetable():
+    return render_template("timetable.html")
+
+
+@bp.route("/timetable.html")
+def timetable_page():
+    return render_template("timetable.html")

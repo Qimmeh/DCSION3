@@ -9,7 +9,6 @@
 	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script src="config.js"></script>
-	<link rel="stylesheet" href="/frontend/timetable.css">
 	<script>
 		tailwind.config = {
 			theme: {
@@ -236,6 +235,7 @@
 			<nav class="nav flex gap-1 overflow-x-auto md:grid" aria-label="Primary navigation">
 				<button class="active" data-icon="grid">Overview</button>
 				<button data-icon="tasks">My tasks</button>
+				<button data-icon="chart" data-page="timetable">Timetable</button>
 				<button data-icon="heart">Wellbeing</button>
 				<button data-icon="chart">Trends</button>
 				<button data-icon="heart" data-scroll="focus">Focus</button>
@@ -264,22 +264,6 @@
 					<div class="bar-labels"><span>Apr 7</span><span>Apr 14</span><span>Apr 21</span><span>Now</span></div>
 				</article>
 			</section>
-			<section class="card prototype-timetable" id="prototypeTimetable" aria-labelledby="prototypeTimetableTitle">
-				<div class="prototype-timetable__header">
-					<div><div class="card-kicker">Calendar prototype</div><h2 id="prototypeTimetableTitle">Your seven-day timetable</h2><p data-timetable-status>No timetable loaded yet.</p></div>
-				</div>
-				<p class="prototype-timetable__hint"><span data-timetable-hint>No calendar data yet?</span> <a href="#prototypeTimetable" data-timetable-refresh>Fetch from Google Calendar</a>.</p>
-				<div class="prototype-timetable__grid" data-timetable-grid aria-live="polite"></div>
-				<div class="prototype-timetable__modal" data-timetable-modal role="dialog" aria-modal="true" aria-labelledby="prototypeTimetablePreviewTitle">
-					<div class="prototype-timetable__dialog">
-						<div class="card-kicker">Preview before saving</div><h2 id="prototypeTimetablePreviewTitle">Confirm this timetable?</h2>
-						<p class="prototype-timetable__hint">This preview is not stored until you confirm it.</p>
-						<div class="prototype-timetable__grid" data-timetable-preview></div>
-						<div class="prototype-timetable__actions"><button class="prototype-timetable__discard" data-timetable-discard type="button">Discard</button><button class="prototype-timetable__button" data-timetable-confirm type="button">Confirm timetable</button></div>
-					</div>
-				</div>
-			</section>
-
 			<div class="section-title flex items-center justify-between"><h2>Where your energy is going</h2><button class="text-button">View details →</button></div>
 			<section class="domain-grid grid grid-cols-2 gap-2.5 md:grid-cols-3 lg:grid-cols-5" aria-label="Life category workload">
 				<article class="domain !rounded-xl !bg-[#e3f0fb] !p-4"><div class="domain-top"><span>Academic</span><span class="domain-icon">✎</span></div><b>42%</b><small>3 tasks · 8h 30m</small></article>
@@ -408,7 +392,7 @@
 			}
 		}
 		fetchStateForHomescreenWidget();
+		document.querySelector('[data-page="timetable"]').addEventListener('click', () => { window.location.href = 'timetable.html'; });
 	</script>
-	<script src="/frontend/timetable.js"></script>
 </body>
 </html>
