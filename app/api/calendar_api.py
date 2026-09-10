@@ -20,13 +20,21 @@ MALAYSIA_TIMEZONE = timezone(timedelta(hours=8))
 
 
 def _oauth_client() -> GoogleOAuthClient:
+    redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI")
+    if not redirect_uri:
+        try:
+            from flask import has_request_context, request
+            if has_request_context():
+                redirect_uri = request.host_url.rstrip("/") + "/api/v1/calendar/oauth/callback"
+        except Exception:
+            pass
+    if not redirect_uri:
+        redirect_uri = "http://localhost:5000/api/v1/calendar/oauth/callback"
+
     return GoogleOAuthClient(
         client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
         client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
-        redirect_uri=os.environ.get(
-            "GOOGLE_REDIRECT_URI",
-            "http://localhost:5000/api/v1/calendar/oauth/callback",
-        ),
+        redirect_uri=redirect_uri,
         scope=os.environ.get(
             "GOOGLE_CALENDAR_SCOPE",
             "https://www.googleapis.com/auth/calendar.readonly",
@@ -75,7 +83,7 @@ def calendar_oauth_callback():
     except (ValueError, RuntimeError, OSError) as error:
         return jsonify({"error": "Google OAuth failed", "message": str(error)}), 502
 
-    return redirect("/?calendar=connected")
+    return redirect("/timetable.html?calendar=connected")
 
 
 @api_bp.route("/calendar/timetable", methods=["GET"])

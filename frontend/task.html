@@ -296,6 +296,7 @@
 			<nav class="nav" aria-label="Primary navigation">
 				<button data-icon="grid" data-page="home">Overview</button>
 				<button class="active" data-icon="tasks">My tasks</button>
+				<button data-icon="chart" data-page="timetable">Timetable</button>
 				<button data-icon="heart" data-page="wellbeing">Wellbeing</button>
 				<button data-icon="chart">Trends</button>
 				<button data-icon="heart" data-scroll="tasks">Focus</button>
@@ -695,7 +696,8 @@
 			document.body.classList.toggle('night');
 			document.getElementById('themeToggle').textContent = document.body.classList.contains('night') ? '☀  Switch to day mode' : '◐  Switch to night mode';
 		});
-		document.querySelector('[data-page="home"]').addEventListener('click', () => { window.location.href = 'Home_page.html'; });
+		document.querySelector('[data-page="home"]').addEventListener('click', () => { window.location.href = 'index.html'; });
+		document.querySelector('[data-page="timetable"]').addEventListener('click', () => { window.location.href = 'timetable.html'; });
 		document.querySelector('[data-page="wellbeing"]').addEventListener('click', () => { window.location.href = 'wellbeing.html'; });
 		document.querySelector('[data-scroll="tasks"]').addEventListener('click', () => document.querySelector('.task-card').scrollIntoView({ behavior: 'smooth', block: 'start' }));
 

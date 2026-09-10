@@ -213,4 +213,31 @@
         status.textContent = "Could not confirm the timetable. Try again.";
       });
   });
+
+  async function loadInitialTimetable() {
+    try {
+      const response = await fetch(apiBase + "/api/v1/calendar/timetable/memory");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.timetable && data.timetable.length) {
+          state.confirmed = normalizeCalendarResponse(data);
+          render(grid, state.confirmed);
+          status.textContent = "Loaded current timetable (" + data.timetable.length + " events).";
+          hint.textContent = "Calendar looks outdated?";
+          refreshLink.textContent = "Refresh from Google Calendar";
+        }
+      }
+    } catch (e) {
+      // Ignore background load failure
+    }
+
+    if (window.location.search.includes("calendar=connected")) {
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      fetchPreview();
+    }
+  }
+
+  loadInitialTimetable();
 }());

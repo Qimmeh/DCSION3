@@ -197,6 +197,7 @@
 			<nav class="nav" aria-label="Primary navigation">
 				<button data-icon="grid" data-page="home">Overview</button>
 				<button data-icon="tasks" data-page="tasks">My tasks</button>
+				<button data-icon="chart" data-page="timetable">Timetable</button>
 				<button class="active" data-icon="heart">Wellbeing</button>
 				<button data-icon="chart">Trends</button>
 			</nav>
@@ -287,7 +288,7 @@
 
 	<script>
 		// ---- navigation ----
-		const NAV_PAGES = { home: 'Home_page.html', tasks: 'task.html', wellbeing: 'wellbeing.html' };
+		const NAV_PAGES = { home: 'index.html', tasks: 'task.html', timetable: 'timetable.html', wellbeing: 'wellbeing.html' };
 		document.querySelectorAll('[data-page]').forEach((btn) => btn.addEventListener('click', () => {
 			const target = NAV_PAGES[btn.dataset.page];
 			if (target) window.location.href = target;

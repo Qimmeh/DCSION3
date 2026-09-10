@@ -8,7 +8,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
 	<script src="config.js"></script>
-	<link rel="stylesheet" href="{{ url_for('static', filename='timetable.css') }}">
+	<link rel="stylesheet" href="timetable.css">
 	<style>
 		:root { --surface: #fff; --ink: #17191d; --muted: #7d8188; --line: #e6e7eb; --mint-strong: #f37b32; }
 		* { box-sizing: border-box; }
@@ -85,7 +85,7 @@
 			</section>
 		</main>
 	</div>
-	<script src="{{ url_for('static', filename='timetable.js') }}"></script>
+	<script src="timetable.js"></script>
 	<script>
 		const NAV_PAGES = { home: 'index.html', tasks: 'task.html', wellbeing: 'wellbeing.html' };
 		document.querySelectorAll('[data-page]').forEach((button) => button.addEventListener('click', () => {

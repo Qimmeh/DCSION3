@@ -7,7 +7,7 @@ from app.extensions import db, login_manager, csrf
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__, template_folder="../frontend", static_folder="../frontend")
+    app = Flask(__name__, template_folder="../frontend", static_folder="../frontend", static_url_path="")
     app.config.from_object(config_class)
 
     CORS(app, resources={r"/api/*": {"origins": "*"}})
