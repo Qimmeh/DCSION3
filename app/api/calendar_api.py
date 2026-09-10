@@ -1,6 +1,6 @@
 """Google Calendar OAuth and in-memory timetable endpoints."""
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 import os
 
 from flask import current_app, g, jsonify, redirect, request
@@ -16,6 +16,7 @@ from app.google_calendar.oauth import new_oauth_state
 
 
 calendar_store = InMemoryCalendarStore()
+MALAYSIA_TIMEZONE = timezone(timedelta(hours=8))
 
 
 def _oauth_client() -> GoogleOAuthClient:
@@ -80,7 +81,7 @@ def calendar_oauth_callback():
 @api_bp.route("/calendar/timetable", methods=["GET"])
 @require_user
 def get_calendar_timetable():
-    today = date.today()
+    today = datetime.now(MALAYSIA_TIMEZONE).date()
     try:
         start = date.fromisoformat(request.args.get("start", today.isoformat()))
         end = date.fromisoformat(

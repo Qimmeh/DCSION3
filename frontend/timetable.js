@@ -10,9 +10,69 @@
   const hint = root.querySelector("[data-timetable-hint]");
   const refreshLink = root.querySelector("[data-timetable-refresh]");
   const modal = root.querySelector("[data-timetable-modal]");
+  const drawer = root.querySelector("[data-timetable-drawer]");
+  const drawerTitle = root.querySelector("[data-timetable-drawer-title]");
+  const drawerBody = root.querySelector("[data-timetable-drawer-body]");
+  const drawerClose = root.querySelectorAll("[data-timetable-drawer-close]");
+  const MALAYSIA_TIME_ZONE = "Asia/Kuala_Lumpur";
+
+  function malaysiaDateString(date) {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: MALAYSIA_TIME_ZONE,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(date);
+  }
 
   function formatDay(date) {
-    return date.toLocaleDateString(undefined, { weekday: "short" });
+    return date.toLocaleDateString(undefined, {
+      timeZone: MALAYSIA_TIME_ZONE,
+      weekday: "short",
+    });
+  }
+
+  function formatEventTime(event) {
+    if (event.start === "All day") return "All day";
+    return event.start + (event.end ? " – " + event.end : "");
+  }
+
+  function openDrawer(day, events) {
+    if (window.matchMedia("(max-width: 680px)").matches) return;
+    drawerTitle.textContent = day.toLocaleDateString(undefined, {
+      timeZone: MALAYSIA_TIME_ZONE,
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
+    drawerBody.replaceChildren();
+    if (!events.length) {
+      const empty = document.createElement("p");
+      empty.className = "timetable-drawer__empty";
+      empty.textContent = "No events scheduled for this day.";
+      drawerBody.appendChild(empty);
+    } else {
+      events.forEach(function (event) {
+        const item = document.createElement("article");
+        item.className = "timetable-drawer__event";
+        item.innerHTML = "<time></time><strong></strong>";
+        item.querySelector("time").textContent = formatEventTime(event);
+        item.querySelector("strong").textContent = event.title;
+        if (event.location) {
+          const location = document.createElement("small");
+          location.textContent = event.location;
+          item.appendChild(location);
+        }
+        drawerBody.appendChild(item);
+      });
+    }
+    drawer.classList.add("is-open");
+    drawer.setAttribute("aria-hidden", "false");
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove("is-open");
+    drawer.setAttribute("aria-hidden", "true");
   }
 
   function render(target, timetable) {
@@ -25,17 +85,34 @@
     for (let offset = 0; offset < 7; offset += 1) {
       const day = new Date(start);
       day.setDate(start.getDate() + offset);
-      const date = day.toISOString().slice(0, 10);
+      const date = malaysiaDateString(day);
       const column = document.createElement("div");
-      column.className = "prototype-timetable__day" + (date === new Date().toISOString().slice(0, 10) ? " prototype-timetable__day--today" : "");
+      column.className = "prototype-timetable__day" + (date === malaysiaDateString(new Date()) ? " prototype-timetable__day--today" : "");
+      column.dataset.date = date;
+      column.setAttribute("role", "button");
+      column.setAttribute("tabindex", "0");
+      column.setAttribute("aria-label", "View " + formatDay(day) + " timetable");
       column.innerHTML = "<strong>" + formatDay(day) + "</strong><small>" +
-        day.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + "</small>";
+        day.toLocaleDateString(undefined, {
+          timeZone: MALAYSIA_TIME_ZONE,
+          month: "short",
+          day: "numeric",
+        }) + "</small>";
       (byDate[date] || []).forEach(function (event) {
         const item = document.createElement("div");
         item.className = "prototype-timetable__event";
         item.innerHTML = "<b></b><span>" + event.start + " - " + event.end + "</span>";
         item.querySelector("b").textContent = event.title;
         column.appendChild(item);
+      });
+      column.addEventListener("click", function () {
+        openDrawer(day, byDate[date] || []);
+      });
+      column.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openDrawer(day, byDate[date] || []);
+        }
       });
       target.appendChild(column);
     }
@@ -49,13 +126,22 @@
       return {
         id: event.id,
         title: event.title || "(Untitled event)",
-        date: start.slice(0, 10),
-        start: start.includes("T") ? new Date(start).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "All day",
-        end: end.includes("T") ? new Date(end).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "",
+        location: event.location || "",
+        date: start.includes("T") ? malaysiaDateString(new Date(start)) : start,
+        start: start.includes("T") ? new Date(start).toLocaleTimeString([], {
+          timeZone: MALAYSIA_TIME_ZONE,
+          hour: "numeric",
+          minute: "2-digit",
+        }) : "All day",
+        end: end.includes("T") ? new Date(end).toLocaleTimeString([], {
+          timeZone: MALAYSIA_TIME_ZONE,
+          hour: "numeric",
+          minute: "2-digit",
+        }) : "",
       };
     });
     return {
-      start_date: new Date().toISOString().slice(0, 10),
+      start_date: malaysiaDateString(new Date()),
       events: events,
     };
   }
@@ -93,6 +179,12 @@
   refreshLink.addEventListener("click", function (event) {
     event.preventDefault();
     fetchPreview();
+  });
+  drawerClose.forEach(function (button) {
+    button.addEventListener("click", closeDrawer);
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") closeDrawer();
   });
   root.querySelector("[data-timetable-discard]").addEventListener("click", function () {
     fetch(apiBase + "/api/v1/calendar/timetable/pending", { method: "DELETE" })
