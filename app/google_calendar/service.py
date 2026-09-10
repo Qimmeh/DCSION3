@@ -68,9 +68,18 @@ class GoogleCalendarService:
 
     @staticmethod
     def _get_json(url: str, access_token: str) -> dict:
+        import urllib.error
         request = Request(url, headers={"Authorization": f"Bearer {access_token}"})
-        with urlopen(request, timeout=15) as response:
-            return json.loads(response.read().decode("utf-8"))
+        try:
+            with urlopen(request, timeout=15) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as error:
+            try:
+                body = json.loads(error.read().decode("utf-8"))
+                error_desc = body.get("error", {}).get("message") or str(body)
+                raise RuntimeError(f"Google API error ({error.code}): {error_desc}") from error
+            except Exception:
+                raise RuntimeError(f"Google API HTTP {error.code}: {error.reason}") from error
 
     @staticmethod
     def _normalize_event(event: dict) -> dict:

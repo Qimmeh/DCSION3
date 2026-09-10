@@ -157,19 +157,27 @@
         return;
       }
       if (!response.ok) {
-        throw new Error(response.status === 503
-          ? "Google Calendar is not configured"
-          : "Unable to fetch timetable");
+        let errMessage = "Unable to fetch timetable";
+        try {
+          const errData = await response.json();
+          errMessage = errData.message || errData.error || errMessage;
+        } catch (_) {}
+        throw new Error(errMessage);
       }
       state.pending = normalizeCalendarResponse(await response.json());
       render(previewGrid, state.pending);
       modal.classList.add("is-open");
       status.textContent = "Preview ready. Confirm it to keep it in memory.";
     } catch (error) {
-      status.textContent = error.message === "Google Calendar is not configured"
-        ? "Google Calendar is not configured on the server."
-        : "Could not fetch Google Calendar. Try again.";
-      grid.innerHTML = '<div class="prototype-timetable__error">Try fetching again.</div>';
+      console.error("Calendar fetch failed:", error);
+      let displayMessage = error.message;
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        displayMessage = "Cannot connect to server. Ensure the backend is running (" + (apiBase || "localhost:5000") + ").";
+      } else if (error.message === "Google OAuth is not configured") {
+        displayMessage = "Google Calendar is not configured on the server.";
+      }
+      status.textContent = displayMessage;
+      grid.innerHTML = '<div class="prototype-timetable__error">' + displayMessage + '</div>';
     } finally {
       refreshLink.removeAttribute("aria-busy");
       refreshLink.style.pointerEvents = "";
