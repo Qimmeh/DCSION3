@@ -3,7 +3,8 @@
 from datetime import date, timedelta
 import os
 
-from flask import g, jsonify, redirect, request, session
+from flask import current_app, g, jsonify, redirect, request
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from app.api import api_bp, require_user
 from app.google_calendar import (
@@ -36,29 +37,34 @@ def _calendar_service() -> GoogleCalendarService:
     return GoogleCalendarService(_oauth_client(), calendar_store)
 
 
+def _oauth_state_serializer() -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="google-calendar-oauth")
+
+
 @api_bp.route("/calendar/oauth/start", methods=["GET"])
 @require_user
 def calendar_oauth_start():
-    state = new_oauth_state()
-    session["google_calendar_oauth_state"] = state
-    session["google_calendar_oauth_user_id"] = g.current_api_user.id
+    state = _oauth_state_serializer().dumps({
+        "nonce": new_oauth_state(),
+        "user_id": g.current_api_user.id,
+    })
     try:
         authorization_url = _oauth_client().build_authorization_url(state)
     except ValueError as error:
-        session.pop("google_calendar_oauth_state", None)
-        session.pop("google_calendar_oauth_user_id", None)
         return jsonify({"error": "Google OAuth is not configured", "message": str(error)}), 503
     return redirect(authorization_url)
 
 
 @api_bp.route("/calendar/oauth/callback", methods=["GET"])
 def calendar_oauth_callback():
-    expected_state = session.pop("google_calendar_oauth_state", None)
-    user_id = session.pop("google_calendar_oauth_user_id", None)
-    print("State:", request.args.get("state"))
-    print("Expected state", expected_state)
-    if not expected_state or not user_id or request.args.get("state") != expected_state:
+    state = request.args.get("state", "")
+    try:
+        state_data = _oauth_state_serializer().loads(state, max_age=600)
+    except (BadSignature, SignatureExpired):
         return jsonify({"error": "Invalid or expired OAuth state"}), 400
+    user_id = state_data.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Invalid OAuth state payload"}), 400
     if request.args.get("error"):
         return jsonify({"error": request.args["error"]}), 400
 
