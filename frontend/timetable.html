@@ -71,6 +71,14 @@
 				<div class="prototype-timetable__header"><div><div class="card-kicker">Calendar</div><h2 id="prototypeTimetableTitle">Your seven-day timetable</h2><p data-timetable-status>No timetable loaded yet.</p></div></div>
 				<p class="prototype-timetable__hint"><span data-timetable-hint>No calendar data yet?</span> <a href="#prototypeTimetable" data-timetable-refresh>Fetch from Google Calendar</a>.</p>
 				<div class="prototype-timetable__grid" data-timetable-grid aria-live="polite"></div>
+				<aside class="timetable-drawer" data-timetable-drawer aria-hidden="true" aria-labelledby="timetableDrawerTitle">
+					<div class="timetable-drawer__header">
+						<div><div class="card-kicker">Daily timeline</div><h2 id="timetableDrawerTitle" data-timetable-drawer-title>Select a day</h2></div>
+						<button class="timetable-drawer__close" data-timetable-drawer-close type="button" aria-label="Close daily timeline">×</button>
+					</div>
+					<div class="timetable-drawer__body" data-timetable-drawer-body></div>
+				</aside>
+				<div class="timetable-drawer__backdrop" data-timetable-drawer-close></div>
 				<div class="prototype-timetable__modal" data-timetable-modal role="dialog" aria-modal="true" aria-labelledby="prototypeTimetablePreviewTitle">
 					<div class="prototype-timetable__dialog"><div class="card-kicker">Preview before saving</div><h2 id="prototypeTimetablePreviewTitle">Confirm this timetable?</h2><p class="prototype-timetable__hint">This preview is not stored until you confirm it.</p><div class="prototype-timetable__grid" data-timetable-preview></div><div class="prototype-timetable__actions"><button class="prototype-timetable__discard" data-timetable-discard type="button">Discard</button><button class="prototype-timetable__button" data-timetable-confirm type="button">Confirm timetable</button></div></div>
 				</div>
