@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>emora | AI Assistant</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		/* --- Design Tokens & Global Reset --- */
+		:root {
+			--bg-app: #FAF9F6;
+			--bg-surface: #FFFFFF;
+			--primary-green: #4A6B5D;
+			--primary-green-light: #EBF0EE;
+			--alert-orange: #D97A53;
+			--alert-bg: #FBF3EE;
+			--text-main: #2C2A29;
+			--text-muted: #7A7774;
+			--border-subtle: #ECEAE4;
+			--border-input: #E7E2D8;
+		}
+
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			background: var(--bg-app);
+			font-family: 'Inter', sans-serif;
+			color: var(--text-main);
+			min-height: 100vh;
+			margin: 0;
+			-webkit-font-smoothing: antialiased;
+		}
+
+		/* screen-ai-assistant */
+		.screen-ai-assistant {
+			display: flex;
+			flex-direction: row;
+			align-items: flex-start;
+			width: 100%;
+			min-height: 100vh;
+			background: var(--bg-app);
+		}
+
+		/* sidebar - fixed to left edge */
+		.sidebar {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			align-items: flex-start;
+			padding: 32px 24px;
+			width: 240px;
+			min-width: 240px;
+			height: 100vh;
+			position: fixed;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			background: var(--bg-surface);
+			border-right: 1px solid var(--border-subtle);
+			z-index: 100;
+			overflow-y: auto;
+		}
+
+		.sidebar-top {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 40px;
+			width: 100%;
+		}
+
+		/* brand */
+		.brand {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 12px;
+			text-decoration: none;
+		}
+
+		.brand-icon {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 32px;
+			height: 32px;
+			background: var(--primary-green);
+			border-radius: 8px;
+			flex-shrink: 0;
+		}
+
+		.brand-icon span {
+			font-family: 'Fraunces', serif;
+			font-weight: 700;
+			font-size: 18px;
+			line-height: 1;
+			color: #FFFFFF;
+		}
+
+		.brand-text-col {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 2px;
+		}
+
+		.brand-name {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 18px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.brand-sub {
+			font-family: 'Inter', sans-serif;
+			font-weight: 500;
+			font-size: 10px;
+			line-height: 1.2;
+			letter-spacing: 1px;
+			text-transform: uppercase;
+			color: var(--primary-green);
+		}
+
+		/* tabs */
+		.tabs {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 8px;
+			width: 100%;
+		}
+
+		.tab-item {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 12px 16px;
+			gap: 12px;
+			width: 100%;
+			border-radius: 8px;
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			text-align: left;
+			transition: background 0.15s ease;
+		}
+
+		.tab-item:hover {
+			background: #F5F7F6;
+		}
+
+		.tab-item.active {
+			background: var(--primary-green-light);
+		}
+
+		.icon-wrapper {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 18px;
+			height: 18px;
+			flex-shrink: 0;
+		}
+
+		.icon-wrapper svg {
+			width: 18px;
+			height: 18px;
+			stroke: var(--text-muted);
+			stroke-width: 2;
+			fill: none;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		.tab-item.active .icon-wrapper svg {
+			stroke: var(--primary-green);
+		}
+
+		.tab-label {
+			font-family: 'Inter', sans-serif;
+			font-weight: 500;
+			font-size: 14px;
+			line-height: 1.2;
+			color: var(--text-main);
+			flex-grow: 1;
+		}
+
+		.tab-item.active .tab-label {
+			font-weight: 600;
+			color: var(--primary-green);
+		}
+
+		/* profile-card */
+		.profile-card {
+			width: 100%;
+		}
+
+		.profile-box {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 12px;
+			gap: 12px;
+			width: 100%;
+			border-radius: 12px;
+			background: #FAF9F6;
+		}
+
+		.profile-avatar {
+			width: 36px;
+			height: 36px;
+			border-radius: 18px;
+			background: #EBF0EE;
+			border: 1px solid #D1DED8;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: var(--primary-green);
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 14px;
+			flex-shrink: 0;
+		}
+
+		.profile-meta {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 2px;
+			overflow: hidden;
+		}
+
+		.profile-name {
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 13px;
+			line-height: 1.2;
+			color: var(--text-main);
+			white-space: nowrap;
+		}
+
+		.profile-email {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 11px;
+			line-height: 1.2;
+			color: var(--text-muted);
+			white-space: nowrap;
+		}
+
+		/* content-area */
+		.content-area {
+			margin-left: 240px;
+			width: calc(100% - 240px);
+			max-width: 1200px;
+			min-height: 100vh;
+			padding: 40px 48px 64px 48px;
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 24px;
+		}
+
+		/* header */
+		.header-title-frame {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 6px;
+			width: 100%;
+		}
+
+		.page-title {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 28px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.page-subtitle {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 13px;
+			line-height: 1.4;
+			color: var(--text-muted);
+		}
+
+		/* system telemetry banner */
+		.telemetry-banner {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 12px 16px;
+			gap: 12px;
+			background: var(--primary-green-light);
+			border-radius: 12px;
+			width: 100%;
+		}
+
+		.telemetry-icon-wrap {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 16px;
+			height: 16px;
+			flex-shrink: 0;
+		}
+
+		.telemetry-icon-wrap svg {
+			width: 16px;
+			height: 16px;
+			stroke: var(--primary-green);
+			stroke-width: 2;
+			fill: none;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		.telemetry-text {
+			font-family: 'Inter', sans-serif;
+			font-weight: 500;
+			font-size: 13px;
+			line-height: 1.4;
+			color: var(--primary-green);
+			flex-grow: 1;
+		}
+
+		/* Chat Conversation Area */
+		.chat-card {
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			padding: 24px;
+			background: var(--bg-surface);
+			border-radius: 16px;
+			width: 100%;
+			min-height: 420px;
+			gap: 20px;
+		}
+
+		.chat-messages-container {
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+			width: 100%;
+			flex-grow: 1;
+		}
+
+		/* Message Blocks */
+		.message-block {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			width: 100%;
+		}
+
+		.message-header-row {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+		}
+
+		.sender-title {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 16px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.message-time-label {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 12px;
+			line-height: 1.2;
+			color: var(--text-muted);
+		}
+
+		.message-body-text {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 14px;
+			line-height: 1.6;
+			color: var(--text-main);
+		}
+
+		.chat-divider-line {
+			height: 1px;
+			background: var(--border-subtle);
+			width: 100%;
+		}
+
+		/* Suggested Prompt Chips */
+		.suggested-prompts-row {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 12px;
+			width: 100%;
+		}
+
+		.prompt-chip {
+			display: inline-flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 8px 14px;
+			gap: 8px;
+			background: var(--bg-surface);
+			border: 1px solid var(--border-input);
+			border-radius: 20px;
+			cursor: pointer;
+			transition: all 0.15s ease;
+		}
+
+		.prompt-chip:hover {
+			background: var(--primary-green-light);
+			border-color: var(--primary-green);
+		}
+
+		.prompt-chip-icon {
+			width: 14px;
+			height: 14px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+		}
+
+		.prompt-chip-icon svg {
+			width: 14px;
+			height: 14px;
+			stroke: var(--primary-green);
+			stroke-width: 2;
+			fill: none;
+		}
+
+		.prompt-chip-text {
+			font-family: 'Inter', sans-serif;
+			font-weight: 500;
+			font-size: 12px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		/* Chat Input Bar */
+		.chat-input-bar {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 8px 8px 8px 16px;
+			gap: 12px;
+			background: var(--bg-surface);
+			border: 1px solid var(--border-input);
+			border-radius: 12px;
+			width: 100%;
+		}
+
+		.chat-input-field {
+			flex-grow: 1;
+			border: none;
+			outline: none;
+			background: transparent;
+			font-family: 'Inter', sans-serif;
+			font-size: 14px;
+			line-height: 1.4;
+			color: var(--text-main);
+		}
+
+		.chat-input-field::placeholder {
+			color: var(--text-muted);
+		}
+
+		.send-button {
+			display: inline-flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 10px 18px;
+			gap: 8px;
+			background: var(--primary-green);
+			border: none;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: opacity 0.15s ease;
+			flex-shrink: 0;
+		}
+
+		.send-button:hover {
+			opacity: 0.92;
+		}
+
+		.send-btn-label {
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 13px;
+			line-height: 1;
+			color: #FFFFFF;
+		}
+
+		.send-icon {
+			width: 14px;
+			height: 14px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.send-icon svg {
+			width: 14px;
+			height: 14px;
+			stroke: #FFFFFF;
+			stroke-width: 2;
+			fill: none;
+		}
+
+		/* Responsive layout */
+		@media (max-width: 768px) {
+			.sidebar {
+				position: relative;
+				width: 100%;
+				height: auto;
+			}
+			.content-area {
+				margin-left: 0;
+				width: 100%;
+				padding: 24px 16px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="screen-ai-assistant">
+		<!-- sidebar -->
+		<aside class="sidebar">
+			<div class="sidebar-top">
+				<!-- brand -->
+				<div class="brand">
+					<div class="brand-icon">
+						<span>e</span>
+					</div>
+					<div class="brand-text-col">
+						<div class="brand-name">emora</div>
+						<div class="brand-sub">Wellbeing &amp; Work</div>
+					</div>
+				</div>
+
+				<!-- tabs -->
+				<nav class="tabs" aria-label="Sidebar navigation">
+					<!-- tab-home -->
+					<button class="tab-item" data-page="home">
+						<div class="icon-wrapper">
+							<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+						</div>
+						<span class="tab-label">Home</span>
+					</button>
+					<!-- tab-timetable -->
+					<button class="tab-item" data-page="timetable">
+						<div class="icon-wrapper">
+							<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+						</div>
+						<span class="tab-label">Timetable</span>
+					</button>
+					<!-- tab-ai (Active) -->
+					<button class="tab-item active" data-page="ai">
+						<div class="icon-wrapper">
+							<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+						</div>
+						<span class="tab-label">AI Assistant</span>
+					</button>
+					<!-- tab-insights -->
+					<button class="tab-item" data-page="insights">
+						<div class="icon-wrapper">
+							<svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+						</div>
+						<span class="tab-label">Insights</span>
+					</button>
+				</nav>
+			</div>
+
+			<!-- profile-card -->
+			<div class="profile-card">
+				<div class="profile-box">
+					<div class="profile-avatar">CJ</div>
+					<div class="profile-meta">
+						<div class="profile-name">Clara Jensen</div>
+						<div class="profile-email">clara@university.edu</div>
+					</div>
+				</div>
+			</div>
+		</aside>
+
+		<!-- content-area -->
+		<main class="content-area">
+			<!-- header -->
+			<header class="header-title-frame">
+				<h1 class="page-title">Wellbeing Planner AI</h1>
+				<p class="page-subtitle">Personalized schedule optimizations based on your workload trends.</p>
+			</header>
+
+			<!-- Live telemetry banner -->
+			<div class="telemetry-banner" role="status">
+				<div class="telemetry-icon-wrap">
+					<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+				</div>
+				<span class="telemetry-text">System telemetry live: Wednesday overload detected. Schedule rebalancing recommended.</span>
+			</div>
+
+			<!-- Chat Area Card -->
+			<section class="chat-card" aria-label="AI Consultation">
+				<div class="chat-messages-container" id="chatContainer">
+					<!-- Companion Message -->
+					<div class="message-block">
+						<div class="message-header-row">
+							<h2 class="sender-title">Emora Companion</h2>
+							<span class="message-time-label">Just now</span>
+						</div>
+						<p class="message-body-text">Good morning Clara! Based on your schedule, Wednesday has a high probability of stress overload due to overlapping academic and paid work commitments. Would you like me to distribute your 2-hour writing session across Thursday and Friday instead?</p>
+					</div>
+
+					<div class="chat-divider-line"></div>
+
+					<!-- User Message -->
+					<div class="message-block">
+						<div class="message-header-row">
+							<h2 class="sender-title">You</h2>
+							<span class="message-time-label">1m ago</span>
+						</div>
+						<p class="message-body-text">Yes, let's keep Friday afternoon free for rest, but Thursday works well.</p>
+					</div>
+				</div>
+
+				<!-- Suggested Prompt Chips -->
+				<div class="suggested-prompts-row">
+					<button class="prompt-chip" type="button" data-prompt="Adjust my timetable for Wednesday peak">
+						<div class="prompt-chip-icon">
+							<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+						</div>
+						<span class="prompt-chip-text">Adjust my timetable for Wednesday peak</span>
+					</button>
+
+					<button class="prompt-chip" type="button" data-prompt="Find a 30-min recovery break today">
+						<div class="prompt-chip-icon">
+							<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+						</div>
+						<span class="prompt-chip-text">Find a 30-min recovery break today</span>
+					</button>
+
+					<button class="prompt-chip" type="button" data-prompt="How is my sleep and rest rhythm this week?">
+						<div class="prompt-chip-icon">
+							<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+						</div>
+						<span class="prompt-chip-text">How is my sleep rhythm this week?</span>
+					</button>
+				</div>
+
+				<!-- Chat Input Form -->
+				<form class="chat-input-bar" id="chatForm">
+					<input class="chat-input-field" id="chatInput" type="text" placeholder="Ask Emora about schedule balance, rest intervals, or rebalancing..." required />
+					<button class="send-button" type="submit">
+						<span class="send-btn-label">Send Query</span>
+						<div class="send-icon">
+							<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+						</div>
+					</button>
+				</form>
+			</section>
+		</main>
+	</div>
+
+	<script>
+		// Tab Navigation Routing
+		const NAV_PAGES = {
+			home: 'index.html',
+			timetable: 'timetable.html',
+			ai: 'ai.html',
+			tasks: 'ai.html',
+			insights: 'insights.html',
+			insight: 'insights.html'
+		};
+
+		document.querySelectorAll('[data-page]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const target = NAV_PAGES[btn.dataset.page];
+				if (target && !btn.classList.contains('active')) {
+					window.location.href = target;
+				}
+			});
+		});
+
+		// Interactive Suggested Prompt insertion
+		const chatInput = document.getElementById('chatInput');
+		const chatForm = document.getElementById('chatForm');
+		const chatContainer = document.getElementById('chatContainer');
+
+		document.querySelectorAll('.prompt-chip').forEach((chip) => {
+			chip.addEventListener('click', () => {
+				const prompt = chip.dataset.prompt;
+				if (chatInput && prompt) {
+					chatInput.value = prompt;
+					chatInput.focus();
+				}
+			});
+		});
+
+		if (chatForm && chatInput && chatContainer) {
+			chatForm.addEventListener('submit', (e) => {
+				e.preventDefault();
+				const msg = chatInput.value.trim();
+				if (!msg) return;
+
+				// Add divider
+				const div = document.createElement('div');
+				div.className = 'chat-divider-line';
+				chatContainer.appendChild(div);
+
+				// Add user message
+				const userBlock = document.createElement('div');
+				userBlock.className = 'message-block';
+				userBlock.innerHTML = `
+					<div class="message-header-row">
+						<h2 class="sender-title">You</h2>
+						<span class="message-time-label">Just now</span>
+					</div>
+					<p class="message-body-text">${msg}</p>
+				`;
+				chatContainer.appendChild(userBlock);
+
+				chatInput.value = '';
+
+				// Simulated intelligent response
+				setTimeout(() => {
+					const botDiv = document.createElement('div');
+					botDiv.className = 'chat-divider-line';
+					chatContainer.appendChild(botDiv);
+
+					const botBlock = document.createElement('div');
+					botBlock.className = 'message-block';
+					botBlock.innerHTML = `
+						<div class="message-header-row">
+							<h2 class="sender-title">Emora Companion</h2>
+							<span class="message-time-label">Just now</span>
+						</div>
+						<p class="message-body-text">Noted! I've updated your schedule preferences. I'll maintain clear protected time after 5 PM on Friday for your rest and recovery.</p>
+					`;
+					chatContainer.appendChild(botBlock);
+				}, 600);
+			});
+		}
+	</script>
+</body>
+</html>
