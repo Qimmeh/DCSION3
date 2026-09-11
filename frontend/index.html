@@ -47,21 +47,27 @@
 		button { cursor: pointer; }
 		.app-shell { display: flex; min-height: 100vh; }
 		.sidebar {
-			width: 244px;
-			flex: 0 0 244px;
-			padding: 28px 20px;
+			position: fixed !important;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			width: 268px;
+			max-width: 85vw;
+			height: 100vh;
+			z-index: 50;
 			background: #fff7f0;
 			border-right: 1px solid #f0e1d5;
 			display: flex;
 			flex-direction: column;
-			position: relative;
-			overflow: hidden;
-			transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1), margin-left .3s cubic-bezier(0.16, 1, 0.3, 1);
+			padding: 26px 20px;
+			overflow-y: auto;
+			overflow-x: hidden;
+			transform: translateX(-100%);
+			transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
 		}
-		@media (min-width: 931px) {
-			body.sidebar-closed .sidebar {
-				margin-left: -264px;
-			}
+		body.sidebar-open .sidebar {
+			transform: translateX(0);
 		}
 		.sidebar::after {
 			content: "";
@@ -75,7 +81,7 @@
 			box-shadow: 0 0 0 22px rgba(243, 123, 50, .06), 0 0 0 44px rgba(243, 123, 50, .04);
 			pointer-events: none;
 		}
-		.brand { display: flex; align-items: center; gap: 10px; margin: 0 6px 44px; }
+		.brand { display: flex; align-items: center; gap: 10px; margin: 0 4px 38px; }
 		.brand-mark {
 			display: grid;
 			place-items: center;
@@ -100,6 +106,31 @@
 			font-size: 11px;
 			font-weight: 600;
 			margin-top: 3px;
+		}
+		.sidebar-close-btn {
+			margin-left: auto;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border-radius: 9px;
+			border: 1px solid #f0e1d5;
+			background: var(--surface);
+			color: var(--muted);
+			font-size: 14px;
+			cursor: pointer;
+			flex: 0 0 auto;
+			transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+		}
+		.sidebar-close-btn:hover {
+			border-color: #f37b32;
+			color: #f37b32;
+			background: #fff0e6;
+			transform: scale(1.08);
+		}
+		.sidebar-close-btn:active {
+			transform: scale(0.92);
 		}
 		.nav-label {
 			color: var(--muted);
@@ -632,62 +663,87 @@
 
 		/* ===== Collapsible sidebar / hamburger menu ===== */
 		.hamburger-btn {
+			position: fixed;
+			top: 26px;
+			left: 26px;
+			z-index: 40;
 			display: inline-flex;
 			border: 1px solid var(--line);
 			background: var(--surface);
 			color: var(--ink);
-			width: 38px;
-			height: 38px;
-			border-radius: 9px;
-			font-size: 16px;
+			width: 40px;
+			height: 40px;
+			border-radius: 11px;
+			font-size: 18px;
 			align-items: center;
 			justify-content: center;
-			flex: 0 0 auto;
-			margin-right: 14px;
 			cursor: pointer;
-			transition: all .2s ease;
+			box-shadow: 0 4px 16px rgba(32, 36, 45, .08);
+			transition: all .22s cubic-bezier(0.16, 1, 0.3, 1);
 		}
-		.hamburger-btn:hover { border-color: var(--mint-strong); color: var(--mint-strong); }
+		.hamburger-btn:hover {
+			border-color: var(--mint-strong);
+			color: var(--mint-strong);
+			transform: scale(1.05);
+			box-shadow: 0 6px 20px rgba(243, 123, 50, .18);
+		}
+		.hamburger-btn:active {
+			transform: scale(0.95);
+		}
+		body.sidebar-open .hamburger-btn {
+			opacity: 0;
+			pointer-events: none;
+			transform: scale(0.8);
+		}
 		.sidebar-overlay {
-			display: none;
+			display: block;
 			position: fixed;
 			inset: 0;
-			background: rgba(15, 12, 9, .45);
-			z-index: 15;
+			background: rgba(15, 12, 9, .42);
+			backdrop-filter: blur(2px);
+			-webkit-backdrop-filter: blur(2px);
+			z-index: 45;
 			opacity: 0;
-			transition: opacity .25s ease;
+			pointer-events: none;
+			transition: opacity .28s cubic-bezier(0.16, 1, 0.3, 1);
 		}
 		body.sidebar-open .sidebar-overlay {
-			display: block;
 			opacity: 1;
+			pointer-events: auto;
 		}
-		body.night .sidebar-overlay { background: rgba(0, 0, 0, .6); }
-		@media (max-width: 930px) {
-			.hamburger-btn { display: inline-flex; }
-			.sidebar {
-				display: flex !important;
-				position: fixed !important;
-				top: 0;
-				left: 0;
-				bottom: 0;
-				height: 100vh;
-				width: 260px !important;
-				max-width: 82vw;
-				flex-direction: column !important;
-				padding: 24px 20px !important;
-				border-right: 1px solid var(--line) !important;
-				border-bottom: 0 !important;
-				z-index: 20;
-				transform: translateX(-100%);
-				transition: transform .28s cubic-bezier(0.16, 1, 0.3, 1);
-				box-shadow: 0 20px 60px rgba(0,0,0,.28);
-				overflow-y: auto;
+		body.night .sidebar-overlay { background: rgba(0, 0, 0, .65); }
+		body.night .hamburger-btn {
+			background: #211a13;
+			border-color: var(--line);
+			color: var(--ink);
+			box-shadow: 0 6px 20px rgba(0, 0, 0, .4);
+		}
+		body.night .hamburger-btn:hover {
+			border-color: #ff8f4d;
+			color: #ff8f4d;
+			background: #2b2117;
+		}
+		body.night .sidebar-close-btn {
+			background: #211a13;
+			border-color: var(--line);
+			color: var(--muted);
+		}
+		body.night .sidebar-close-btn:hover {
+			border-color: #ff8f4d;
+			color: #ff8f4d;
+			background: #2b2117;
+		}
+		@media (max-width: 680px) {
+			.hamburger-btn {
+				top: 18px;
+				left: 16px;
+				width: 36px;
+				height: 36px;
+				font-size: 16px;
 			}
-			.sidebar .nav-label, .sidebar .sidebar-bottom { display: block !important; }
-			.sidebar .nav { display: grid !important; gap: 5px !important; overflow-x: visible !important; }
-			.sidebar .brand { margin: 0 0 40px !important; }
-			body.sidebar-open .sidebar { transform: translateX(0); }
-			.topbar { margin-top: 2px; }
+			.topbar {
+				padding-left: 50px;
+			}
 		}
 
 		/* Refined Dark Mode (matching user's palette) */
@@ -840,11 +896,22 @@
 	</style>
 </head>
 <body class="antialiased">
-	<div class="app-shell flex min-h-screen max-md:block">
-		<aside class="sidebar flex w-full shrink-0 flex-col !border-[#f0e1d5] !bg-[#fff7f0] px-5 py-7 md:w-64">
-			<div class="brand mb-12 flex items-center gap-2.5 px-3"><div class="brand-mark grid h-8 w-8 shrink-0 place-items-center rounded-full !bg-[#f37b32] !text-white">+</div><div class="brand-name font-display text-[15px] font-bold">DCSION3<span>student wellbeing</span></div></div>
+	<!-- Left-side floating hamburger button -->
+	<button class="hamburger-btn" id="hamburgerBtn" aria-label="Open navigation menu" title="Open navigation">
+		<span aria-hidden="true">☰</span>
+	</button>
+
+	<div class="app-shell flex min-h-screen">
+		<aside class="sidebar flex flex-col !border-[#f0e1d5] !bg-[#fff7f0]" id="sidebarNav" aria-label="Sidebar navigation">
+			<div class="brand mb-8 flex items-center justify-between px-2">
+				<div class="flex items-center gap-2.5">
+					<div class="brand-mark grid h-8 w-8 shrink-0 place-items-center rounded-full !bg-[#f37b32] !text-white">+</div>
+					<div class="brand-name font-display text-[15px] font-bold">DCSION3<span>student wellbeing</span></div>
+				</div>
+				<button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close navigation" title="Close navigation">✕</button>
+			</div>
 			<div class="nav-label">Your space</div>
-			<nav class="nav flex gap-1 overflow-x-auto md:grid" aria-label="Primary navigation">
+			<nav class="nav flex flex-col gap-1" aria-label="Primary navigation">
 				<a href="index.html" class="active" data-icon="grid" style="display: flex; align-items: center; border-radius: 12px; padding: 12px 14px; font-weight: 600; text-decoration: none;">Overview</a>
 				<a href="task.html" data-icon="tasks" style="display: flex; align-items: center; border-radius: 12px; padding: 12px 14px; font-weight: 600; text-decoration: none;">My tasks</a>
 				<a href="wellbeing.html" data-icon="heart" style="display: flex; align-items: center; border-radius: 12px; padding: 12px 14px; font-weight: 600; text-decoration: none;">Wellbeing</a>
@@ -853,7 +920,7 @@
 			</nav>
 			<div class="sidebar-bottom">
 				<div class="nav-label" style="text-transform: capitalize; text-align: left; opacity: 1; font-size: 12px; font-weight: 600; padding: 8px 12px 10px;">Account</div>
-				<nav class="nav flex gap-1 overflow-x-auto md:grid" aria-label="Account navigation">
+				<nav class="nav flex flex-col gap-1" aria-label="Account navigation">
 					<a href="profile.html" data-icon="chart" style="display: flex; align-items: center; border-radius: 12px; padding: 12px 14px; font-weight: 600; text-decoration: none;">Profile</a>
 				</nav>
 				<div class="privacy"><span>◎</span><div><strong>Your space is private</strong>Your data stays on this device.</div></div>
@@ -864,7 +931,6 @@
 
 		<main class="mx-auto w-full max-w-[1220px] px-4 py-7 md:px-12 md:py-10">
 			<header class="topbar mb-8 flex items-start justify-between gap-5">
-				<button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">☰</button>
 				<div><div class="eyebrow">Saturday, 05 September</div><h1 class="greeting">Good morning, Alex.</h1><p class="intro">Here’s your week at a glance. Let’s make room for what matters.</p></div>
 				<div class="date-wrap"><span>Week 36</span><div class="avatar">A</div></div>
 			</header>
@@ -1021,42 +1087,40 @@
 		document.querySelector('[data-scroll="focus"]').addEventListener('click', () => document.getElementById('focus').scrollIntoView({ behavior: 'smooth', block: 'center' }));
 		updateTimer();
 
-		// ===== Hamburger & Navigation Toggle =====
+		// ===== Hamburger & Navigation Drawer =====
 		const hamburgerBtn = document.getElementById('hamburgerBtn');
+		const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
 		const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-		function toggleSidebar() {
-			if (window.innerWidth <= 930) {
-				body.classList.toggle('sidebar-open');
-			} else {
-				body.classList.toggle('sidebar-closed');
-			}
+		function openSidebar() {
+			body.classList.add('sidebar-open');
+		}
+
+		function closeSidebar() {
+			body.classList.remove('sidebar-open');
 		}
 
 		if (hamburgerBtn) {
-			hamburgerBtn.addEventListener('click', toggleSidebar);
+			hamburgerBtn.addEventListener('click', openSidebar);
+		}
+
+		if (sidebarCloseBtn) {
+			sidebarCloseBtn.addEventListener('click', closeSidebar);
 		}
 
 		if (sidebarOverlay) {
-			sidebarOverlay.addEventListener('click', () => {
-				body.classList.remove('sidebar-open');
-			});
+			sidebarOverlay.addEventListener('click', closeSidebar);
 		}
 
 		document.addEventListener('keydown', (e) => {
 			if (e.key === 'Escape') {
-				body.classList.remove('sidebar-open');
-				if (window.innerWidth > 930) {
-					body.classList.add('sidebar-closed');
-				}
+				closeSidebar();
 			}
 		});
 
 		document.querySelectorAll('.sidebar .nav a, .sidebar .nav button').forEach((link) => {
 			link.addEventListener('click', () => {
-				if (window.innerWidth <= 930) {
-					body.classList.remove('sidebar-open');
-				}
+				closeSidebar();
 			});
 		});
 	</script>
