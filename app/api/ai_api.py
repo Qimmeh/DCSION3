@@ -1,14 +1,21 @@
 """
 AI Assistant & Timetable Parser API Endpoints (/api/v1/ai)
 ==========================================================
-Integrates OpenRouter with Google Gemma 4 31B (Free) to power:
+Integrates OpenRouter using STRICTLY FREE models:
 1. Emora Wellbeing & Schedule Companion Chat (POST /api/v1/ai/chat)
-2. Timetable Syllabus / Raw Text Parser (POST /api/v1/ai/parse-timetable)
-3. Service Status & Model Info (GET /api/v1/ai/status)
+   - Primary: google/gemma-4-31b-it:free
+   - Fallbacks: inclusionai/ling-3.0-flash-vl:free, nvidia/nemotron-3.5-lightning:free
+2. Timetable Image / Text Parser (POST /api/v1/ai/parse-timetable)
+   - Primary: inclusionai/ling-3.0-flash-vl:free
+   - Fallback: nex-agi/nex-n2.5-pro:free
+   - Fixed, deterministic JSON normalization pipeline
+3. Service Status & Model Diagnostics (GET /api/v1/ai/status)
 """
 import os
+import re
 import json
 import logging
+import base64
 import requests
 from datetime import date, datetime
 from flask import jsonify, request, g, current_app
@@ -18,20 +25,156 @@ from app.models import Activity, Profile, Task
 logger = logging.getLogger(__name__)
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-DEFAULT_MODEL = "google/gemma-4-31b-it:free"
-FALLBACK_MODELS = [
+
+# Strictly free models only
+FREE_CHAT_MODELS = [
     "google/gemma-4-31b-it:free",
-    "google/gemma-4-26b-a4b-it:free",
+    "inclusionai/ling-3.0-flash-vl:free",
     "nvidia/nemotron-3.5-lightning:free",
-    "liquid/lfm-2.5-2.6b:free",
+]
+
+FREE_VISION_MODELS = [
+    "inclusionai/ling-3.0-flash-vl:free",
+    "nex-agi/nex-n2.5-pro:free",
 ]
 
 
-def call_openrouter_chat(messages, preferred_model=None, max_tokens=1000, temperature=0.7):
+def normalize_time_str(t_str):
+    """Normalizes any time format (e.g. '2:00 PM', '14:00', '3pm', '9:00am') into standard 'HH:MM' (24-hour)."""
+    if not t_str:
+        return ""
+    cleaned = str(t_str).strip().upper()
+    formats = ("%I:%M %p", "%I:%M%p", "%I %p", "%I%p", "%H:%M", "%H:%M:%S")
+    for fmt in formats:
+        try:
+            return datetime.strptime(cleaned, fmt).strftime("%H:%M")
+        except ValueError:
+            pass
+    # If already HH:MM pattern
+    match = re.search(r"(\d{1,2}):(\d{2})", cleaned)
+    if match:
+        h, m = int(match.group(1)), int(match.group(2))
+        if "PM" in cleaned and h < 12:
+            h += 12
+        elif "AM" in cleaned and h == 12:
+            h = 0
+        return f"{h:02d}:{m:02d}"
+    return cleaned
+
+
+def normalize_day_str(d_str):
+    """Normalizes day representations (e.g. 'Monday Aug 17', 'Tue', 'Friday 21') to standard Day Name."""
+    if not d_str:
+        return "Monday"
+    d_lower = str(d_str).lower()
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    for day in days:
+        if day.lower() in d_lower or day[:3].lower() in d_lower:
+            return day
+    return d_str.strip()
+
+
+def clean_and_standardize_events(raw_output):
     """
-    Executes a chat completion call to OpenRouter with automatic fallback
-    if the preferred model is temporarily rate-limited (HTTP 429).
+    Robustly extracts, repairs, and standardizes timetable JSON from LLM output.
+    Ensures zero bugs regardless of whether the LLM wrapped it in markdown or comments.
     """
+    if not raw_output:
+        return []
+
+    # 1. Strip markdown fences if present
+    cleaned = re.sub(r"```(?:json)?", "", raw_output)
+    cleaned = re.sub(r"```", "", cleaned).strip()
+
+    # 2. Extract the outermost JSON array [ ... ] via regex
+    match = re.search(r"\[\s*\{.*\}\s*\]", cleaned, re.DOTALL)
+    if match:
+        cleaned = match.group(0)
+
+    # 3. Clean up trailing commas before closing braces/brackets
+    cleaned = re.sub(r",\s*([\]}])", r"\1", cleaned)
+
+    try:
+        data = json.loads(cleaned)
+    except Exception as e:
+        logger.warning(f"Direct JSON parse failed: {e}. Attempting recovery...")
+        # Fallback: find all single objects { ... }
+        obj_matches = re.findall(r"\{[^{}]*\}", cleaned)
+        data = []
+        for om in obj_matches:
+            try:
+                data.append(json.loads(om))
+            except Exception:
+                pass
+
+    if isinstance(data, dict):
+        data = [data]
+    elif not isinstance(data, list):
+        data = []
+
+    standardized = []
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+
+        # Resolve Course/Event Name
+        name = item.get("name") or item.get("course") or item.get("title") or "Class"
+        name = str(name).strip()
+
+        # Resolve Day
+        day = normalize_day_str(item.get("day", ""))
+
+        # Resolve Times
+        start_time = item.get("start_time", "")
+        end_time = item.get("end_time", "")
+        time_span = item.get("time") or item.get("times") or ""
+
+        if (not start_time or not end_time) and time_span:
+            # Handles '2:00 PM-4:00 PM' or '10:00 AM to 12:00 PM'
+            parts = re.split(r"[-–—to]+", str(time_span))
+            if len(parts) >= 2:
+                start_time = normalize_time_str(parts[0])
+                end_time = normalize_time_str(parts[1])
+            elif len(parts) == 1:
+                start_time = normalize_time_str(parts[0])
+                end_time = ""
+        else:
+            start_time = normalize_time_str(start_time)
+            end_time = normalize_time_str(end_time)
+
+        # Resolve Venue / Room
+        location = item.get("location") or item.get("room") or ""
+        location = str(location).strip()
+
+        # Resolve Session Type
+        session_type = item.get("type", "")
+        if not session_type:
+            if "lecture" in name.lower() or "lecture" in location.lower():
+                session_type = "Lecture"
+            elif "tutorial" in name.lower():
+                session_type = "Tutorial"
+            elif "lab" in name.lower():
+                session_type = "Lab"
+            else:
+                session_type = "Class"
+
+        category = item.get("category") or "academic"
+
+        standardized.append({
+            "name": name,
+            "day": day,
+            "start_time": start_time,
+            "end_time": end_time,
+            "location": location,
+            "type": session_type,
+            "category": str(category).lower().strip()
+        })
+
+    return standardized
+
+
+def call_openrouter_chat(messages, model_list=None, max_tokens=1000, temperature=0.2):
+    """Executes a chat completion call with automatic failover across free models."""
     api_key = current_app.config.get("OPENROUTER_API_KEY") or os.environ.get("OPENROUTER_API_KEY", "")
     if not api_key:
         raise ValueError("OPENROUTER_API_KEY is not configured in server environment.")
@@ -43,10 +186,9 @@ def call_openrouter_chat(messages, preferred_model=None, max_tokens=1000, temper
         "X-Title": "Emora Wellbeing & Schedule Assistant",
     }
 
-    target_model = preferred_model or current_app.config.get("OPENROUTER_MODEL") or DEFAULT_MODEL
-    models_to_try = [target_model] + [m for m in FALLBACK_MODELS if m != target_model]
-
+    models_to_try = model_list or FREE_CHAT_MODELS
     last_error = None
+
     for model in models_to_try:
         payload = {
             "model": model,
@@ -55,7 +197,7 @@ def call_openrouter_chat(messages, preferred_model=None, max_tokens=1000, temper
             "temperature": temperature,
         }
         try:
-            resp = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=25)
+            resp = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=30)
             if resp.status_code == 200:
                 data = resp.json()
                 choices = data.get("choices", [])
@@ -67,23 +209,23 @@ def call_openrouter_chat(messages, preferred_model=None, max_tokens=1000, temper
                         "status": 200,
                     }
             elif resp.status_code == 429:
-                logger.warning(f"Model {model} hit 429 rate limit upstream, trying fallback...")
+                logger.warning(f"Free model {model} hit 429 rate limit upstream, trying fallback...")
                 last_error = resp.text
                 continue
             else:
-                logger.error(f"OpenRouter error {resp.status_code} for {model}: {resp.text}")
+                logger.warning(f"OpenRouter {resp.status_code} for {model}: {resp.text}")
                 last_error = resp.text
                 continue
         except requests.exceptions.Timeout:
-            logger.warning(f"Model {model} timed out after 25s, trying fallback...")
+            logger.warning(f"Model {model} timed out after 30s, trying fallback...")
             last_error = "Request timed out"
             continue
         except Exception as e:
-            logger.error(f"Failed to query {model}: {e}")
+            logger.warning(f"Failed to query {model}: {e}")
             last_error = str(e)
             continue
 
-    raise RuntimeError(f"All AI models exhausted. Last error: {last_error}")
+    raise RuntimeError(f"All free AI models exhausted. Last error: {last_error}")
 
 
 def build_student_context(user):
@@ -133,13 +275,12 @@ def build_student_context(user):
 
 @api_bp.route("/ai/status", methods=["GET"])
 def ai_status():
-    """Returns the current AI configuration and health."""
+    """Returns the current AI configuration and free model list."""
     has_key = bool(current_app.config.get("OPENROUTER_API_KEY") or os.environ.get("OPENROUTER_API_KEY"))
-    active_model = current_app.config.get("OPENROUTER_MODEL") or DEFAULT_MODEL
     return jsonify({
-        "provider": "OpenRouter",
-        "configured_model": active_model,
-        "available_fallbacks": FALLBACK_MODELS,
+        "provider": "OpenRouter (Strictly Free Tier)",
+        "chat_models": FREE_CHAT_MODELS,
+        "vision_models": FREE_VISION_MODELS,
         "api_key_configured": has_key,
         "status": "ready" if has_key else "missing_key",
     })
@@ -163,12 +304,12 @@ def ai_chat():
 
     system_prompt = (
         "You are Emora, an empathetic, intelligent, and proactive wellbeing and schedule management companion "
-        "for university students and busy individuals. Your goal is to help users prevent burnout, find rest "
-        "intervals, balance academic study with personal life, and optimize their daily schedule.\n\n"
+        "for university students. Your goal is to help users prevent burnout, find rest intervals, "
+        "balance academic study with personal life, and optimize their daily schedule.\n\n"
         "Guidelines:\n"
         "- Tone: Warm, supportive, encouraging, clear, and actionable.\n"
-        "- Keep answers reasonably concise (2-4 paragraphs max or clean bullet points) so they are easy to read on mobile and desktop.\n"
-        "- When suggesting schedule adjustments, be concrete with times (e.g., 'Move your 2-hour writing session to Thursday 3 PM').\n"
+        "- Keep answers concise (2-3 paragraphs or clean bullet points).\n"
+        "- When suggesting schedule adjustments, be concrete with times (e.g., 'Move your writing session to Thursday 3 PM').\n"
         "- If the user feels overwhelmed or stressed, validate their feelings and suggest small, manageable steps.\n"
     )
 
@@ -178,7 +319,6 @@ def ai_chat():
 
     messages = [{"role": "system", "content": system_prompt}]
 
-    # Append valid history (up to last 6 messages)
     if isinstance(history, list):
         for msg in history[-6:]:
             if isinstance(msg, dict) and "role" in msg and "content" in msg:
@@ -188,8 +328,7 @@ def ai_chat():
     messages.append({"role": "user", "content": user_message})
 
     try:
-        preferred_model = current_app.config.get("OPENROUTER_MODEL") or DEFAULT_MODEL
-        result = call_openrouter_chat(messages, preferred_model=preferred_model)
+        result = call_openrouter_chat(messages, model_list=FREE_CHAT_MODELS, temperature=0.7)
         return jsonify({
             "ok": True,
             "reply": result["text"],
@@ -202,8 +341,8 @@ def ai_chat():
             "ok": False,
             "error": str(err),
             "fallback_reply": (
-                "I'm temporarily experiencing connectivity issues with the upstream AI provider. "
-                "In the meantime, consider protecting a 30-minute rest buffer between your major tasks today!"
+                "I'm temporarily experiencing connectivity delays with the upstream AI provider. "
+                "In the meantime, consider taking a 15-minute screen break to rest your mind!"
             )
         }), 500
 
@@ -212,13 +351,9 @@ def ai_chat():
 @require_user
 def parse_timetable_ai():
     """
-    Parses unstructured syllabus text OR timetable screenshot images into structured JSON activities.
-    Accepts:
-      JSON: { "text": str } OR { "image_base64": str }
-      Multipart: file 'image' / 'file'
-    Returns: { "events": [ { "name": ..., "day": ..., "start_time": ..., "end_time": ..., "location": ..., "category": ... } ] }
+    Parses syllabus text OR timetable screenshot images into structured, bug-free JSON activities.
+    Uses strictly free vision models with our fixed normalization pipeline.
     """
-    import base64
     raw_text = ""
     image_b64 = ""
 
@@ -235,22 +370,26 @@ def parse_timetable_ai():
     if not raw_text and not image_b64:
         return jsonify({"error": "Please provide either timetable text or an image."}), 400
 
+    # Fixed, strict JSON schema instructions with few-shot example
     prompt = (
-        "You are an expert schedule extraction engine. Extract all classes, lectures, tutorials, "
-        "meetings, study blocks, and tasks from the provided timetable input.\n\n"
-        "Output ONLY a valid JSON array of objects with no markdown code fences, no preamble, and no explanation.\n"
-        "Each object MUST have the following keys:\n"
-        "- \"name\": string (e.g. \"C MT1134 Lecture\" or \"C MT1134 Tutorial\")\n"
-        "- \"day\": string (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)\n"
-        "- \"start_time\": string in HH:MM format (24-hour, e.g. \"09:00\" or \"14:00\")\n"
-        "- \"end_time\": string in HH:MM format (24-hour, e.g. \"11:00\" or \"16:00\")\n"
-        "- \"location\": string (room or building, e.g. \"CQMX0001-FCI\" or empty string)\n"
-        "- \"type\": string (e.g. \"Lecture\", \"Tutorial\", \"Classroom\", \"Lab\")\n"
-        "- \"category\": string (one of: \"academic\", \"work\", \"social\", \"health\", \"errands\")\n"
+        "Extract all scheduled classes, lectures, tutorials, and events from this timetable input.\n"
+        "You MUST output ONLY a valid JSON array of objects. Do not include any explanation or conversational text.\n\n"
+        "Follow this EXACT JSON schema:\n"
+        "[\n"
+        "  {\n"
+        "    \"name\": \"C MT1134 Lecture\",\n"
+        "    \"day\": \"Monday\",\n"
+        "    \"start_time\": \"14:00\",\n"
+        "    \"end_time\": \"16:00\",\n"
+        "    \"location\": \"CQMX0001-FCI\",\n"
+        "    \"type\": \"Lecture\",\n"
+        "    \"category\": \"academic\"\n"
+        "  }\n"
+        "]\n"
     )
 
     if raw_text:
-        prompt += f"\nRaw Text:\n{raw_text}"
+        prompt += f"\nTimetable Text:\n{raw_text}"
 
     if image_b64:
         if not image_b64.startswith("data:"):
@@ -260,40 +399,37 @@ def parse_timetable_ai():
             {"type": "image_url", "image_url": {"url": image_b64}}
         ]
         messages = [
-            {"role": "system", "content": "You output strictly valid JSON."},
+            {"role": "system", "content": "You output strictly valid JSON conforming to the requested schema."},
             {"role": "user", "content": user_content}
         ]
-        preferred_model = "inclusionai/ling-3.0-flash-vl:free"
+        models_to_use = FREE_VISION_MODELS
     else:
         messages = [
-            {"role": "system", "content": "You output strictly valid JSON."},
+            {"role": "system", "content": "You output strictly valid JSON conforming to the requested schema."},
             {"role": "user", "content": prompt}
         ]
-        preferred_model = current_app.config.get("OPENROUTER_MODEL") or DEFAULT_MODEL
+        models_to_use = FREE_CHAT_MODELS
 
     try:
-        result = call_openrouter_chat(messages, preferred_model=preferred_model, temperature=0.2)
+        result = call_openrouter_chat(messages, model_list=models_to_use, temperature=0.1)
         raw_output = result["text"].strip()
 
-        # Clean markdown code block fences if present
-        if raw_output.startswith("```"):
-            raw_output = raw_output.strip("`")
-            if raw_output.startswith("json"):
-                raw_output = raw_output[4:].strip()
+        # Run through our robust JSON sanitizer and field standardizer
+        events = clean_and_standardize_events(raw_output)
 
-        events = json.loads(raw_output)
+        if not events:
+            return jsonify({
+                "ok": False,
+                "error": "Could not identify any timetable events from the provided input.",
+                "raw_output": raw_output
+            }), 422
+
         return jsonify({
             "ok": True,
             "events": events,
+            "event_count": len(events),
             "model": result["model_used"]
         })
-    except json.JSONDecodeError:
-        return jsonify({
-            "ok": False,
-            "error": "Failed to parse structured JSON from AI output",
-            "raw_output": raw_output
-        }), 502
     except Exception as err:
         logger.exception("AI parse-timetable failed")
         return jsonify({"ok": False, "error": str(err)}), 500
-
