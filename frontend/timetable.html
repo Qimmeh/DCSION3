@@ -2245,6 +2245,12 @@
 						<span id="openPreviewBtnText">Preview Proposal</span>
 					</button>
 
+					<!-- Clear Timetable Button -->
+					<button class="clear-schedule-btn" id="clearScheduleBtn" type="button" title="Clear all commitments" style="display:inline-flex; align-items:center; gap:6px; padding:7px 13px; background:transparent; border:1px solid #D8CFC4; border-radius:20px; font-family:'Inter',sans-serif; font-size:12px; font-weight:500; color:#7A7269; cursor:pointer; transition:all 0.15s ease;">
+						<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+						<span>Clear</span>
+					</button>
+
 					<!-- import-button -->
 					<button class="import-button" id="toggleImportBtn" type="button">
 						<div class="import-icon">
@@ -2679,169 +2685,17 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 			return `${num}:00 ${ampm}`;
 		}
 
-		// Initial authentic commitments with realistic multi-hour sessions
-		const DEFAULT_ACTIVITIES = [
-			{
-				id: 'lit-mon',
-				title: 'LIT 302 Class',
-				day: 'Mon',
-				startHour: 9,
-				duration: 1,
-				type: 'fixed',
-				code: 'LIT 302-01',
-				location: 'Humanities Hall 304',
-				instructor: 'Dr. Julian Vance',
-				desc: 'Twentieth-Century Literature & Critical Theory seminar discussing modernist poetics and structural analysis.',
-				tags: ['Lecture', 'Required Course', 'Humanities']
-			},
-			{
-				id: 'cog-mon',
-				title: 'Cognitive Science',
-				day: 'Mon',
-				startHour: 11,
-				duration: 1,
-				type: 'fixed',
-				code: 'COG 210',
-				location: 'Science Hall 102',
-				instructor: 'Prof. Elena Rostova',
-				desc: 'Neural networks, decision frameworks, and cognitive load management lectures.',
-				tags: ['Lecture', 'STEM', 'Core']
-			},
-			{
-				id: 'res-mon',
-				title: 'Research Session',
-				day: 'Mon',
-				startHour: 17,
-				duration: 2,
-				type: 'flex',
-				highlight: true,
-				location: 'Main Library - Room 4B',
-				instructor: 'Self-directed',
-				phase: 'Phase 1: Source material research',
-				desc: 'Source material research and literature index curation for the "Echoes of Modernism" assignment (Phase 1).',
-				tags: ['Essay Task', 'Independent', 'Flexible']
-			},
-			{
-				id: 'chem-lab-tue',
-				title: 'Chemistry Study Lab',
-				day: 'Tue',
-				startHour: 16,
-				duration: 2,
-				type: 'flex',
-				code: 'CHEM 201-L',
-				location: 'Chemistry Complex 4B',
-				instructor: 'TA Michael Chang',
-				desc: 'Collaborative problem sets, titration post-lab analysis, and quiz preparation (2-hour session).',
-				tags: ['Lab', 'Study Group', 'Flexible']
-			},
-			{
-				id: 'lit-wed',
-				title: 'LIT 302 Class',
-				day: 'Wed',
-				startHour: 9,
-				duration: 1,
-				type: 'fixed',
-				code: 'LIT 302-01',
-				location: 'Humanities Hall 304',
-				instructor: 'Dr. Julian Vance',
-				desc: 'Modernist short prose critique and close reading discussion on narrative voice.',
-				tags: ['Seminar', 'Required Course']
-			},
-			{
-				id: 'des-wed',
-				title: 'Design Studio',
-				day: 'Wed',
-				startHour: 11,
-				duration: 1,
-				type: 'fixed',
-				code: 'DES 140',
-				location: 'Arts Complex 220',
-				instructor: 'Sarah Lin, MFA',
-				desc: 'Design systems studio: visual hierarchy, digital interface craft, and typography.',
-				tags: ['Studio', 'Design Lab']
-			},
-			{
-				id: 'lib-wed',
-				title: 'Library Assistant Shift',
-				day: 'Wed',
-				startHour: 15,
-				duration: 1,
-				type: 'fixed',
-				location: 'University Library Reference Desk',
-				instructor: 'Supervisor: Karen Diaz',
-				desc: 'Work-study employment: circulation support, digital archive indexing, and reserve desk management.',
-				tags: ['Work-Study', 'Employment', 'Fixed Shift']
-			},
-			{
-				id: 'essay-wed',
-				title: 'Essay Writing',
-				day: 'Wed',
-				startHour: 19,
-				duration: 2,
-				type: 'flex',
-				highlight: true,
-				location: 'Study Hub North',
-				instructor: 'Self-directed',
-				phase: 'Phase 2: Draft outline & body typing',
-				desc: 'Draft outline synthesis and primary argument drafting for "Echoes of Modernism" (Phase 2).',
-				tags: ['Essay Task', 'Deep Work', 'Flexible']
-			},
-			{
-				id: 'chem-sem-fri',
-				title: 'Chemistry Seminar',
-				day: 'Fri',
-				startHour: 11,
-				duration: 1,
-				type: 'fixed',
-				code: 'CHEM 201',
-				location: 'Science Hall 201',
-				instructor: 'Dr. Marcus Reed',
-				desc: 'Biochemistry foundations, reaction kinetics, and thermodynamic equilibrium principles.',
-				tags: ['Lecture', 'Science Core']
-			},
-			{
-				id: 'lab-rev-fri',
-				title: 'Lab Review / Prep',
-				day: 'Fri',
-				startHour: 13,
-				duration: 1,
-				type: 'flex',
-				location: 'Chemistry Hub 105',
-				instructor: 'Self-directed',
-				desc: 'Reviewing lab notebook entries and consolidating test data before weekend review.',
-				tags: ['Review', 'Flexible Workflow']
-			},
-			{
-				id: 'final-rev-fri',
-				title: 'Final Review (Essay)',
-				day: 'Fri',
-				startHour: 17,
-				duration: 2,
-				type: 'flex',
-				highlight: true,
-				location: 'Quiet Reading Room',
-				instructor: 'Self-directed',
-				phase: 'Phase 3: Final review & proofing',
-				desc: 'Comprehensive proofreading, citation validation, and submission finalization for English term paper (Phase 3).',
-				tags: ['Essay Task', 'Final Submission']
-			},
-			{
-				id: 'hike-sat',
-				title: 'Outdoor Hike / Personal',
-				day: 'Sat',
-				startHour: 13,
-				duration: 2,
-				type: 'flex',
-				location: 'Eagle Peak Trail',
-				instructor: 'Wellness & Rest',
-				desc: 'Recovery trail hike, mindfulness recharge, and disconnection from screen fatigue (2 hours).',
-				tags: ['Wellness', 'Recovery', 'Personal']
-			}
-		];
+		// Clean base timetable state (all placeholder clutter removed as requested)
+		const DEFAULT_ACTIVITIES = [];
 
-		// Active activities state with versioned persistence
-		const STORAGE_KEY = 'emora_timetable_activities_v3';
-		let activities = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || [...DEFAULT_ACTIVITIES];
+		// Purge obsolete cache keys from localStorage so no old dummy items block the user's timetable
+		['emora_timetable_activities', 'emora_timetable_activities_v1', 'emora_timetable_activities_v2', 'emora_timetable_activities_v3', 'emora_timetable_activities_v4'].forEach(k => {
+			try { localStorage.removeItem(k); } catch (e) {}
+		});
+
+		// Active activities state with fresh key
+		const STORAGE_KEY = 'emora_timetable_activities_v5';
+		let activities = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || [];
 		let selectedActivityId = null;
 
 		function saveActivities() {
@@ -3559,6 +3413,16 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 					refineProposalWithPrompt(prompt);
 				}
 			});
+		});
+
+		// Clear Schedule Button Handler
+		document.getElementById('clearScheduleBtn')?.addEventListener('click', () => {
+			if (confirm('Clear all commitments from your active timetable?')) {
+				activities = [];
+				saveActivities();
+				renderSchedule();
+				showGapToast('All timetable commitments cleared.');
+			}
 		});
 
 		// Import Popover Extraction Handlers
