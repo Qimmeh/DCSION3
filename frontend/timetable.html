@@ -535,17 +535,51 @@
 			padding: 0 4px;
 			text-align: center;
 			box-sizing: border-box;
-			transition: transform 0.15s ease, box-shadow 0.15s ease;
+			cursor: pointer;
+			transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+			border: 1px solid transparent;
 		}
 
 		.schedule-card:hover {
-			transform: translateY(-1px);
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(74, 107, 93, 0.12);
+			border-color: rgba(74, 107, 93, 0.3);
+		}
+
+		.schedule-card.selected {
+			box-shadow: 0 0 0 2px var(--primary-green), 0 6px 16px rgba(74, 107, 93, 0.2);
+			border-color: var(--primary-green);
 		}
 
 		.schedule-card.slot-fixed { background: var(--fixed-schedule); }
 		.schedule-card.slot-flex { background: var(--primary-green-light); }
 		.schedule-card.slot-gap { background: var(--bg-app); }
+
+		/* Empty slot hover cue */
+		.grid-slot-cell.empty-slot {
+			cursor: pointer;
+			transition: background 0.15s ease;
+		}
+
+		.grid-slot-cell.empty-slot:hover {
+			background: rgba(74, 107, 93, 0.04);
+		}
+
+		.empty-slot-hint {
+			display: none;
+			font-family: 'Inter', sans-serif;
+			font-size: 14px;
+			font-weight: 500;
+			color: #A39E96;
+			pointer-events: none;
+			user-select: none;
+		}
+
+		.grid-slot-cell.empty-slot:hover .empty-slot-hint {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
 
 		/* Chain-Linked Free Badge - Compact & Non-expanding */
 		.grid-slot-cell.chain-gap-slot {
@@ -1128,6 +1162,472 @@
 				min-width: 640px;
 			}
 		}
+
+		/* Activity Detail Slide-over Drawer */
+		.drawer-overlay {
+			position: fixed;
+			inset: 0;
+			background: rgba(44, 42, 41, 0.35);
+			backdrop-filter: blur(2px);
+			z-index: 400;
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity 0.25s ease, visibility 0.25s ease;
+		}
+
+		.drawer-overlay.open {
+			opacity: 1;
+			visibility: visible;
+		}
+
+		.activity-drawer {
+			position: fixed;
+			top: 0;
+			right: -450px;
+			width: 420px;
+			max-width: 90vw;
+			height: 100vh;
+			background: #FFFFFF;
+			box-shadow: -8px 0 32px rgba(0, 0, 0, 0.12);
+			z-index: 410;
+			transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+			display: flex;
+			flex-direction: column;
+			box-sizing: border-box;
+			overflow-y: auto;
+		}
+
+		.activity-drawer.open {
+			right: 0;
+		}
+
+		.drawer-header {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+			padding: 24px 28px 16px;
+			border-bottom: 1px solid #EAE5DB;
+		}
+
+		.drawer-type-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 4px 10px;
+			border-radius: 12px;
+			font-family: 'Inter', sans-serif;
+			font-size: 11px;
+			font-weight: 600;
+		}
+
+		.drawer-type-badge.fixed {
+			background: #F4EFEA;
+			color: #615D59;
+		}
+
+		.drawer-type-badge.flex {
+			background: var(--primary-green-light);
+			color: var(--primary-green);
+		}
+
+		.drawer-close-btn {
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			padding: 6px;
+			border-radius: 8px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: var(--text-muted);
+			transition: background 0.15s ease, color 0.15s ease;
+		}
+
+		.drawer-close-btn:hover {
+			background: #F4EFEA;
+			color: var(--text-main);
+		}
+
+		.drawer-close-btn svg {
+			width: 20px;
+			height: 20px;
+			stroke: currentColor;
+			stroke-width: 2;
+			fill: none;
+		}
+
+		.drawer-body {
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+			padding: 24px 28px;
+			flex-grow: 1;
+		}
+
+		.drawer-title-group {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+
+		.drawer-activity-title {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 22px;
+			line-height: 1.25;
+			color: var(--text-main);
+		}
+
+		.drawer-code-tag {
+			font-family: 'Inter', sans-serif;
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--text-muted);
+		}
+
+		.drawer-info-list {
+			display: flex;
+			flex-direction: column;
+			gap: 12px;
+			background: var(--bg-app);
+			padding: 16px;
+			border-radius: 12px;
+			border: 1px solid #EAE5DB;
+		}
+
+		.drawer-info-row {
+			display: flex;
+			flex-direction: row;
+			align-items: flex-start;
+			gap: 10px;
+		}
+
+		.drawer-info-icon {
+			width: 16px;
+			height: 16px;
+			flex-shrink: 0;
+			margin-top: 2px;
+			stroke: var(--primary-green);
+			stroke-width: 2;
+			fill: none;
+		}
+
+		.drawer-info-text {
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			line-height: 1.4;
+			color: var(--text-main);
+		}
+
+		.drawer-info-text strong {
+			font-weight: 600;
+		}
+
+		.drawer-section {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.drawer-section-title {
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 12px;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			color: var(--text-muted);
+		}
+
+		.drawer-desc-text {
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			line-height: 1.5;
+			color: #4A4744;
+		}
+
+		.drawer-tags-wrap {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+		}
+
+		.drawer-tag-pill {
+			display: inline-flex;
+			padding: 4px 10px;
+			background: #FFFFFF;
+			border: 1px solid #EAE5DB;
+			border-radius: 10px;
+			font-size: 11px;
+			font-weight: 500;
+			color: #615D59;
+		}
+
+		.drawer-insight-box {
+			display: flex;
+			flex-direction: row;
+			align-items: flex-start;
+			gap: 10px;
+			padding: 14px;
+			background: #F6F8F7;
+			border-left: 3px solid var(--primary-green);
+			border-radius: 8px;
+		}
+
+		.drawer-insight-text {
+			font-family: 'Inter', sans-serif;
+			font-size: 12px;
+			line-height: 1.45;
+			color: #324B40;
+		}
+
+		.drawer-footer-actions {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			padding: 20px 28px 28px;
+			border-top: 1px solid #EAE5DB;
+			background: #FFFFFF;
+		}
+
+		.drawer-ai-btn {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			width: 100%;
+			padding: 12px;
+			background: var(--primary-green);
+			border: none;
+			border-radius: 12px;
+			color: #FFFFFF;
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 13px;
+			cursor: pointer;
+			transition: background 0.15s ease, transform 0.15s ease;
+		}
+
+		.drawer-ai-btn:hover {
+			background: #3A5549;
+			transform: translateY(-1px);
+		}
+
+		.drawer-ai-btn svg {
+			width: 16px;
+			height: 16px;
+			stroke: #FFFFFF;
+			stroke-width: 2;
+			fill: none;
+		}
+
+		.drawer-secondary-actions {
+			display: flex;
+			flex-direction: row;
+			gap: 8px;
+			width: 100%;
+		}
+
+		.drawer-action-btn {
+			flex: 1;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 10px;
+			border: 1px solid #EAE5DB;
+			border-radius: 10px;
+			background: #FFFFFF;
+			color: var(--text-main);
+			font-family: 'Inter', sans-serif;
+			font-size: 12px;
+			font-weight: 500;
+			cursor: pointer;
+			transition: background 0.15s ease, border-color 0.15s ease;
+		}
+
+		.drawer-action-btn:hover {
+			background: #FAF9F6;
+			border-color: #C8C2B4;
+		}
+
+		.drawer-action-btn.danger {
+			color: #C44E3D;
+		}
+
+		.drawer-action-btn.danger:hover {
+			background: #FDF2F0;
+			border-color: #F1B4AB;
+		}
+
+		/* Quick Add Commitment Modal */
+		.quick-add-modal {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%) scale(0.95);
+			width: 380px;
+			max-width: 90vw;
+			background: #FFFFFF;
+			border: 1px solid #EAE5DB;
+			border-radius: 16px;
+			box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14);
+			z-index: 500;
+			padding: 24px;
+			display: none;
+			flex-direction: column;
+			gap: 16px;
+			opacity: 0;
+			transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+		}
+
+		.quick-add-modal.open {
+			display: flex;
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+		}
+
+		.modal-title-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.modal-title {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 18px;
+			color: var(--text-main);
+		}
+
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+
+		.form-label {
+			font-size: 12px;
+			font-weight: 600;
+			color: var(--text-muted);
+		}
+
+		.form-input, .form-select {
+			padding: 10px 12px;
+			border: 1px solid #E7E2D8;
+			border-radius: 8px;
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			color: var(--text-main);
+			background: #FAF9F6;
+			outline: none;
+			transition: border-color 0.15s ease;
+		}
+
+		.form-input:focus, .form-select:focus {
+			border-color: var(--primary-green);
+			background: #FFFFFF;
+		}
+
+		.form-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+
+		.modal-actions {
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-end;
+			gap: 10px;
+			margin-top: 8px;
+		}
+
+		.btn-cancel {
+			padding: 9px 16px;
+			border: 1px solid #EAE5DB;
+			border-radius: 8px;
+			background: #FFFFFF;
+			font-size: 13px;
+			font-weight: 500;
+			color: var(--text-muted);
+			cursor: pointer;
+		}
+
+		.btn-submit {
+			padding: 9px 18px;
+			border: none;
+			border-radius: 8px;
+			background: var(--primary-green);
+			font-size: 13px;
+			font-weight: 600;
+			color: #FFFFFF;
+			cursor: pointer;
+		}
+
+		.btn-submit:hover {
+			background: #3A5549;
+		}
+
+		/* Gap Notification Toast */
+		.gap-toast {
+			position: fixed;
+			bottom: 32px;
+			left: 50%;
+			transform: translateX(-50%) translateY(50px);
+			background: #2C2A29;
+			color: #FFFFFF;
+			padding: 12px 20px;
+			border-radius: 12px;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			font-size: 13px;
+			z-index: 600;
+			opacity: 0;
+			visibility: hidden;
+			transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+		}
+
+		.gap-toast.show {
+			opacity: 1;
+			visibility: visible;
+			transform: translateX(-50%) translateY(0);
+		}
+
+		.gap-toast-btn {
+			background: var(--primary-green);
+			color: #FFFFFF;
+			border: none;
+			padding: 4px 10px;
+			border-radius: 6px;
+			font-size: 12px;
+			font-weight: 600;
+			cursor: pointer;
+		}
+
+		.gap-toast-close {
+			background: transparent;
+			border: none;
+			color: #C8C2B4;
+			cursor: pointer;
+			font-size: 16px;
+			line-height: 1;
+			padding: 2px 4px;
+		}
+
+		/* Clickable Phase Item in Sidebar */
+		.phase-item-frame {
+			cursor: pointer;
+			padding: 6px 8px;
+			border-radius: 8px;
+			transition: background 0.15s ease;
+		}
+
+		.phase-item-frame:hover {
+			background: #F4EFEA;
+		}
 	</style>
 </head>
 <body>
@@ -1301,197 +1801,8 @@
 						<div class="day-col-header"><span>Sun</span></div>
 					</div>
 
-					<!-- Schedule Grid Rows -->
-					<div class="schedule-rows-frame">
-						<!-- Row 1: 9:00 AM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>9:00 AM</span></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-fixed has-chain-bottom"><span class="grid-slot-text">LIT 302 Class</span></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-fixed has-chain-bottom"><span class="grid-slot-text">LIT 302 Class</span></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-
-						<!-- Row 2: 10:00 AM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>10:00 AM</span></div>
-							<!-- Mon: 1h Free Gap between LIT 302 and Cognitive Science -->
-							<div class="grid-slot-cell chain-gap-slot" title="1h Free">
-								<div class="chain-connector-full"></div>
-								<div class="chain-gap-card">
-									<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-									<span class="chain-gap-title">1h Free</span>
-								</div>
-							</div>
-							<div class="grid-slot-cell"></div>
-							<!-- Wed: 1h Free Gap between LIT 302 and Design Studio -->
-							<div class="grid-slot-cell chain-gap-slot" title="1h Free">
-								<div class="chain-connector-full"></div>
-								<div class="chain-gap-card">
-									<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-									<span class="chain-gap-title">1h Free</span>
-								</div>
-							</div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-
-						<!-- Row 3: 11:00 AM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>11:00 AM</span></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-fixed has-chain-top has-chain-bottom"><span class="grid-slot-text">Cognitive Science</span></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-fixed has-chain-top has-chain-bottom"><span class="grid-slot-text">Design Studio</span></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-fixed has-chain-bottom"><span class="grid-slot-text">Chemistry Seminar</span></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-
-						<!-- Row 4: 12:00 PM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>12:00 PM</span></div>
-							<!-- Mon: Connector stem linking Cognitive Science down through 5h Free -->
-							<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>
-							<div class="grid-slot-cell"></div>
-							<!-- Wed: Connector stem linking Design Studio down through 3h Free -->
-							<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>
-							<div class="grid-slot-cell"></div>
-							<!-- Fri: 1h Free Gap between Chemistry Seminar and Lab Review -->
-							<div class="grid-slot-cell chain-gap-slot" title="1h Free">
-								<div class="chain-connector-full"></div>
-								<div class="chain-gap-card">
-									<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-									<span class="chain-gap-title">1h Free</span>
-								</div>
-							</div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-
-						<!-- Row 5: 1:00 PM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>1:00 PM</span></div>
-							<!-- Mon: Connector stem linking Cognitive Science down through 5h Free -->
-							<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-flex"><span class="grid-slot-text">Chemistry Study Lab</span></div></div>
-							<!-- Wed: 3h Free Gap between Design Studio (11 AM) and Library Assistant Shift (3 PM) -->
-							<div class="grid-slot-cell chain-gap-slot" title="3h Free">
-								<div class="chain-connector-full"></div>
-								<div class="chain-gap-card">
-									<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-									<span class="chain-gap-title">3h Free</span>
-								</div>
-							</div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-flex has-chain-top has-chain-bottom"><span class="grid-slot-text">Lab Review / Prep</span></div></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-flex"><span class="grid-slot-text">Outdoor Hike / Personal</span></div></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-
-						<!-- Row 6: 2:00 PM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>2:00 PM</span></div>
-							<!-- Mon: 5h Free Gap between Cognitive Science (11 AM) and Research Session (5 PM) -->
-							<div class="grid-slot-cell chain-gap-slot" title="5h Free">
-								<div class="chain-connector-full"></div>
-								<div class="chain-gap-card">
-									<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-									<span class="chain-gap-title">5h Free</span>
-								</div>
-							</div>
-							<div class="grid-slot-cell"></div>
-							<!-- Wed: Connector stem linking 3h Free down to Library Assistant Shift -->
-							<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>
-							<div class="grid-slot-cell"></div>
-							<!-- Fri: 1h Free Gap between Lab Review / Prep and Final Review -->
-							<div class="grid-slot-cell chain-gap-slot" title="1h Free">
-								<div class="chain-connector-full"></div>
-								<div class="chain-gap-card">
-									<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-									<span class="chain-gap-title">1h Free</span>
-								</div>
-							</div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-
-						<!-- Row 7: 3:00 PM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>3:00 PM</span></div>
-							<!-- Mon: Connector stem linking 5h Free down to Research Session -->
-							<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-fixed has-chain-top has-chain-bottom"><span class="grid-slot-text">Library Assistant Shift</span></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-flex has-chain-top"><span class="grid-slot-text bold-orange">Final Review (Essay)</span></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-
-						<!-- Row 8: 4:00 PM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>4:00 PM</span></div>
-							<!-- Mon: Connector stem linking 5h Free down to Research Session -->
-							<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>
-							<div class="grid-slot-cell"></div>
-							<!-- Wed: Connector stem linking Library Assistant Shift down through 3h Free -->
-							<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-
-						<!-- Row 9: 5:00 PM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>5:00 PM</span></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-flex has-chain-top"><span class="grid-slot-text bold-orange">Research Session</span></div></div>
-							<div class="grid-slot-cell"></div>
-							<!-- Wed: 3h Free Gap between Library Assistant Shift (3 PM) and Essay Writing (7 PM) -->
-							<div class="grid-slot-cell chain-gap-slot" title="3h Free">
-								<div class="chain-connector-full"></div>
-								<div class="chain-gap-card">
-									<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-									<span class="chain-gap-title">3h Free</span>
-								</div>
-							</div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-
-						<!-- Row 10: 6:00 PM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>6:00 PM</span></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<!-- Wed: Connector stem linking 3h Free down to Essay Writing -->
-							<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-
-						<!-- Row 11: 7:00 PM -->
-						<div class="schedule-time-row">
-							<div class="time-col-label"><span>7:00 PM</span></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-flex has-chain-top"><span class="grid-slot-text bold-orange">Essay Writing</span></div></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"></div>
-						</div>
-					</div>
+					<!-- Schedule Grid Rows Container (Dynamically rendered with automatic free time gap calculation) -->
+					<div class="schedule-rows-frame" id="scheduleRowsContainer"></div>
 				</div>
 
 				<!-- Right Tasks Sidebar (380px) -->
@@ -1514,7 +1825,7 @@
 						<!-- Linked Phases List -->
 						<div class="essay-phases-list">
 							<!-- Phase 1 -->
-							<div class="phase-item-frame">
+							<div class="phase-item-frame" title="Click to view Monday Research Session">
 								<div class="phase-time-row">
 									<div class="phase-dot green"></div>
 									<strong class="phase-time-text">Monday 5:00 PM &ndash; 7:00 PM</strong>
@@ -1523,7 +1834,7 @@
 							</div>
 
 							<!-- Phase 2 -->
-							<div class="phase-item-frame">
+							<div class="phase-item-frame" title="Click to view Wednesday Essay Writing">
 								<div class="phase-time-row">
 									<div class="phase-dot green"></div>
 									<strong class="phase-time-text">Wednesday 7:00 PM &ndash; 9:00 PM</strong>
@@ -1532,7 +1843,7 @@
 							</div>
 
 							<!-- Phase 3 -->
-							<div class="phase-item-frame">
+							<div class="phase-item-frame" title="Click to view Friday Final Review">
 								<div class="phase-time-row">
 									<div class="phase-dot orange"></div>
 									<strong class="phase-time-text orange">Friday 3:00 PM &ndash; 5:00 PM</strong>
@@ -1561,6 +1872,130 @@
 				</aside>
 			</div>
 		</main>
+	</div>
+
+	<!-- Activity Detail Drawer & Overlay -->
+	<div class="drawer-overlay" id="drawerOverlay"></div>
+	<aside class="activity-drawer" id="activityDrawer" role="dialog" aria-labelledby="drawerTitle" aria-modal="true">
+		<div class="drawer-header">
+			<span class="drawer-type-badge fixed" id="drawerTypeBadge">Fixed Schedule</span>
+			<button class="drawer-close-btn" id="drawerCloseBtn" type="button" aria-label="Close details">
+				<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+			</button>
+		</div>
+		<div class="drawer-body">
+			<div class="drawer-title-group">
+				<h2 class="drawer-activity-title" id="drawerTitle">Activity Title</h2>
+				<span class="drawer-code-tag" id="drawerCodeTag">COURSE-001</span>
+			</div>
+			<div class="drawer-info-list">
+				<div class="drawer-info-row">
+					<svg class="drawer-info-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+					<span class="drawer-info-text" id="drawerTimeText">Monday &bull; 9:00 AM &ndash; 10:00 AM (1 hr)</span>
+				</div>
+				<div class="drawer-info-row" id="drawerLocationRow">
+					<svg class="drawer-info-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+					<span class="drawer-info-text" id="drawerLocationText">Humanities Hall 304</span>
+				</div>
+				<div class="drawer-info-row" id="drawerInstructorRow">
+					<svg class="drawer-info-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+					<span class="drawer-info-text" id="drawerInstructorText">Dr. Julian Vance</span>
+				</div>
+			</div>
+			<div class="drawer-section">
+				<h3 class="drawer-section-title">Session Overview</h3>
+				<p class="drawer-desc-text" id="drawerDescText">Session description goes here.</p>
+			</div>
+			<div class="drawer-section" id="drawerTagsSection">
+				<h3 class="drawer-section-title">Category Tags</h3>
+				<div class="drawer-tags-wrap" id="drawerTagsWrap"></div>
+			</div>
+			<div class="drawer-insight-box" id="drawerInsightBox">
+				<svg class="drawer-info-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+				<span class="drawer-insight-text" id="drawerInsightText">Followed by 1h Free break before next class.</span>
+			</div>
+		</div>
+		<div class="drawer-footer-actions">
+			<button class="drawer-ai-btn" id="drawerAiBtn" type="button">
+				<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+				<span>Ask Emora AI to Rebalance</span>
+			</button>
+			<div class="drawer-secondary-actions">
+				<button class="drawer-action-btn danger" id="drawerDeleteBtn" type="button">Delete Commitment</button>
+				<button class="drawer-action-btn" id="drawerDoneBtn" type="button">Close</button>
+			</div>
+		</div>
+	</aside>
+
+	<!-- Quick Add Commitment Modal -->
+	<div class="quick-add-modal" id="quickAddModal">
+		<div class="modal-title-row">
+			<h3 class="modal-title">Add Commitment</h3>
+			<button class="drawer-close-btn" id="quickAddCloseBtn" type="button"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+		</div>
+		<form id="quickAddForm">
+			<div class="form-group">
+				<label class="form-label" for="addTitle">Commitment Title</label>
+				<input class="form-input" id="addTitle" type="text" placeholder="e.g. Physics Seminar, Focus Study..." required />
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label class="form-label" for="addDay">Day</label>
+					<select class="form-select" id="addDay">
+						<option value="Mon">Monday</option>
+						<option value="Tue">Tuesday</option>
+						<option value="Wed">Wednesday</option>
+						<option value="Thu">Thursday</option>
+						<option value="Fri">Friday</option>
+						<option value="Sat">Saturday</option>
+						<option value="Sun">Sunday</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label class="form-label" for="addHour">Start Time</label>
+					<select class="form-select" id="addHour">
+						<option value="9">9:00 AM</option>
+						<option value="10">10:00 AM</option>
+						<option value="11">11:00 AM</option>
+						<option value="12">12:00 PM</option>
+						<option value="13">1:00 PM</option>
+						<option value="14">2:00 PM</option>
+						<option value="15">3:00 PM</option>
+						<option value="16">4:00 PM</option>
+						<option value="17">5:00 PM</option>
+						<option value="18">6:00 PM</option>
+						<option value="19">7:00 PM</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label class="form-label" for="addDuration">Duration</label>
+					<select class="form-select" id="addDuration">
+						<option value="1">1 hour</option>
+						<option value="2">2 hours</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label class="form-label" for="addType">Commitment Type</label>
+					<select class="form-select" id="addType">
+						<option value="flex">Flexible Task</option>
+						<option value="fixed">Fixed Class/Shift</option>
+					</select>
+				</div>
+			</div>
+			<div class="modal-actions">
+				<button class="btn-cancel" id="quickAddCancelBtn" type="button">Cancel</button>
+				<button class="btn-submit" type="submit">Add Commitment</button>
+			</div>
+		</form>
+	</div>
+
+	<!-- Free Gap Click Toast -->
+	<div class="gap-toast" id="gapToast">
+		<span id="gapToastText">1h Free Time Window</span>
+		<button class="gap-toast-btn" id="gapToastAiBtn">Plan with AI</button>
+		<button class="gap-toast-close" id="gapToastCloseBtn">&times;</button>
 	</div>
 
 	<script>
@@ -1609,6 +2044,572 @@
 				}
 			});
 		}
+
+		/* =========================================================================
+		   DATA-DRIVEN TIMETABLE & AUTOMATED FREE TIME GAP ENGINE
+		   ========================================================================= */
+		const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+		const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+
+		function formatHour(h) {
+			const ampm = h >= 12 ? 'PM' : 'AM';
+			const num = h > 12 ? h - 12 : h;
+			return `${num}:00 ${ampm}`;
+		}
+
+		// Initial authentic commitments
+		const DEFAULT_ACTIVITIES = [
+			{
+				id: 'lit-mon',
+				title: 'LIT 302 Class',
+				day: 'Mon',
+				startHour: 9,
+				duration: 1,
+				type: 'fixed',
+				code: 'LIT 302-01',
+				location: 'Humanities Hall 304',
+				instructor: 'Dr. Julian Vance',
+				desc: 'Twentieth-Century Literature & Critical Theory seminar discussing modernist poetics and structural analysis.',
+				tags: ['Lecture', 'Required Course', 'Humanities']
+			},
+			{
+				id: 'cog-mon',
+				title: 'Cognitive Science',
+				day: 'Mon',
+				startHour: 11,
+				duration: 1,
+				type: 'fixed',
+				code: 'COG 210',
+				location: 'Science Hall 102',
+				instructor: 'Prof. Elena Rostova',
+				desc: 'Neural networks, decision frameworks, and cognitive load management lectures.',
+				tags: ['Lecture', 'STEM', 'Core']
+			},
+			{
+				id: 'res-mon',
+				title: 'Research Session',
+				day: 'Mon',
+				startHour: 17,
+				duration: 1,
+				type: 'flex',
+				highlight: true,
+				location: 'Main Library - Room 4B',
+				instructor: 'Self-directed',
+				phase: 'Phase 1: Source material research',
+				desc: 'Source material research and literature index curation for the "Echoes of Modernism" assignment.',
+				tags: ['Essay Task', 'Independent', 'Flexible']
+			},
+			{
+				id: 'chem-lab-tue',
+				title: 'Chemistry Study Lab',
+				day: 'Tue',
+				startHour: 13,
+				duration: 1,
+				type: 'flex',
+				code: 'CHEM 201-L',
+				location: 'Chemistry Complex 4B',
+				instructor: 'TA Michael Chang',
+				desc: 'Collaborative problem sets, titration post-lab analysis, and quiz preparation.',
+				tags: ['Lab', 'Study Group', 'Flexible']
+			},
+			{
+				id: 'lit-wed',
+				title: 'LIT 302 Class',
+				day: 'Wed',
+				startHour: 9,
+				duration: 1,
+				type: 'fixed',
+				code: 'LIT 302-01',
+				location: 'Humanities Hall 304',
+				instructor: 'Dr. Julian Vance',
+				desc: 'Modernist short prose critique and close reading discussion on narrative voice.',
+				tags: ['Seminar', 'Required Course']
+			},
+			{
+				id: 'des-wed',
+				title: 'Design Studio',
+				day: 'Wed',
+				startHour: 11,
+				duration: 1,
+				type: 'fixed',
+				code: 'DES 140',
+				location: 'Arts Complex 220',
+				instructor: 'Sarah Lin, MFA',
+				desc: 'Design systems studio: visual hierarchy, digital interface craft, and typography.',
+				tags: ['Studio', 'Design Lab']
+			},
+			{
+				id: 'lib-wed',
+				title: 'Library Assistant Shift',
+				day: 'Wed',
+				startHour: 15,
+				duration: 1,
+				type: 'fixed',
+				location: 'University Library Reference Desk',
+				instructor: 'Supervisor: Karen Diaz',
+				desc: 'Work-study employment: circulation support, digital archive indexing, and reserve desk management.',
+				tags: ['Work-Study', 'Employment', 'Fixed Shift']
+			},
+			{
+				id: 'essay-wed',
+				title: 'Essay Writing',
+				day: 'Wed',
+				startHour: 19,
+				duration: 1,
+				type: 'flex',
+				highlight: true,
+				location: 'Study Hub North',
+				instructor: 'Self-directed',
+				phase: 'Phase 2: Draft outline & body typing',
+				desc: 'Draft outline synthesis and primary argument drafting for "Echoes of Modernism".',
+				tags: ['Essay Task', 'Deep Work', 'Flexible']
+			},
+			{
+				id: 'chem-sem-fri',
+				title: 'Chemistry Seminar',
+				day: 'Fri',
+				startHour: 11,
+				duration: 1,
+				type: 'fixed',
+				code: 'CHEM 201',
+				location: 'Science Hall 201',
+				instructor: 'Dr. Marcus Reed',
+				desc: 'Biochemistry foundations, reaction kinetics, and thermodynamic equilibrium principles.',
+				tags: ['Lecture', 'Science Core']
+			},
+			{
+				id: 'lab-rev-fri',
+				title: 'Lab Review / Prep',
+				day: 'Fri',
+				startHour: 13,
+				duration: 1,
+				type: 'flex',
+				location: 'Chemistry Hub 105',
+				instructor: 'Self-directed',
+				desc: 'Reviewing lab notebook entries and consolidating test data before weekend review.',
+				tags: ['Review', 'Flexible Workflow']
+			},
+			{
+				id: 'final-rev-fri',
+				title: 'Final Review (Essay)',
+				day: 'Fri',
+				startHour: 15,
+				duration: 1,
+				type: 'flex',
+				highlight: true,
+				location: 'Quiet Reading Room',
+				instructor: 'Self-directed',
+				phase: 'Phase 3: Final review & proofing',
+				desc: 'Comprehensive proofreading, citation validation, and submission finalization for English term paper.',
+				tags: ['Essay Task', 'Final Submission']
+			},
+			{
+				id: 'hike-sat',
+				title: 'Outdoor Hike / Personal',
+				day: 'Sat',
+				startHour: 13,
+				duration: 1,
+				type: 'flex',
+				location: 'Eagle Peak Trail',
+				instructor: 'Wellness & Rest',
+				desc: 'Recovery trail hike, mindfulness recharge, and disconnection from screen fatigue.',
+				tags: ['Wellness', 'Recovery', 'Personal']
+			}
+		];
+
+		// Active activities state
+		let activities = JSON.parse(localStorage.getItem('emora_timetable_activities') || 'null') || [...DEFAULT_ACTIVITIES];
+		let selectedActivityId = null;
+
+		function saveActivities() {
+			localStorage.setItem('emora_timetable_activities', JSON.stringify(activities));
+		}
+
+		/**
+		 * AUTOMATED FREE TIME GAP ENGINE
+		 * Automatically iterates through commitments per day, determines exact intervals,
+		 * assigns top/bottom chain connectors to adjacent activities, and places the gap badge
+		 * at the exact center row with unbroken dashed connectors.
+		 */
+		function calculateScheduleMatrix(activitiesList) {
+			const matrix = {};
+			HOURS.forEach(h => {
+				matrix[h] = {};
+				DAYS.forEach(d => {
+					matrix[h][d] = { type: 'empty' };
+				});
+			});
+
+			DAYS.forEach(day => {
+				const dayActs = activitiesList
+					.filter(a => a.day === day)
+					.sort((a, b) => a.startHour - b.startHour);
+
+				// Reset connectors
+				dayActs.forEach(a => {
+					a.hasChainTop = false;
+					a.hasChainBottom = false;
+				});
+
+				// Place activities into cell matrix
+				dayActs.forEach(act => {
+					for (let h = act.startHour; h < act.startHour + act.duration && h <= 19; h++) {
+						matrix[h][day] = {
+							type: 'activity',
+							activity: act
+						};
+					}
+				});
+
+				// Automatically calculate and assign free time intervals between consecutive classes
+				for (let i = 0; i < dayActs.length - 1; i++) {
+					const prev = dayActs[i];
+					const next = dayActs[i + 1];
+					const endPrev = prev.startHour + prev.duration;
+					const startNext = next.startHour;
+					const gapHours = startNext - endPrev;
+
+					if (gapHours >= 1) {
+						// Link previous activity's bottom anchor and next activity's top anchor
+						prev.hasChainBottom = true;
+						next.hasChainTop = true;
+
+						// Determine exact center row of the gap
+						const centerHour = endPrev + Math.floor((gapHours - 1) / 2);
+
+						for (let h = endPrev; h < startNext && h <= 19; h++) {
+							if (h === centerHour) {
+								matrix[h][day] = {
+									type: 'gap-badge',
+									duration: gapHours,
+									prev,
+									next
+								};
+							} else {
+								matrix[h][day] = {
+									type: 'gap-stem',
+									duration: gapHours,
+									prev,
+									next
+								};
+							}
+						}
+					}
+				}
+			});
+
+			return matrix;
+		}
+
+		/**
+		 * Render schedule grid dynamically
+		 */
+		function renderSchedule() {
+			const container = document.getElementById('scheduleRowsContainer');
+			if (!container) return;
+
+			const matrix = calculateScheduleMatrix(activities);
+			let html = '';
+
+			HOURS.forEach(h => {
+				html += `
+				<div class="schedule-time-row" data-hour="${h}">
+					<div class="time-col-label"><span>${formatHour(h)}</span></div>`;
+
+				DAYS.forEach(day => {
+					const cell = matrix[h][day];
+					if (cell.type === 'activity') {
+						const act = cell.activity;
+						const isSelected = selectedActivityId === act.id;
+						const typeClass = act.type === 'fixed' ? 'slot-fixed' : 'slot-flex';
+						const topChainClass = act.hasChainTop ? 'has-chain-top' : '';
+						const bottomChainClass = act.hasChainBottom ? 'has-chain-bottom' : '';
+						const selectedClass = isSelected ? 'selected' : '';
+						const textHighlight = act.highlight ? 'bold-orange' : '';
+
+						html += `
+						<div class="grid-slot-cell" data-day="${day}" data-hour="${h}">
+							<div class="schedule-card ${typeClass} ${topChainClass} ${bottomChainClass} ${selectedClass}" data-id="${act.id}" title="Click to view details: ${act.title}">
+								<span class="grid-slot-text ${textHighlight}">${act.title}</span>
+							</div>
+						</div>`;
+					} else if (cell.type === 'gap-badge') {
+						html += `
+						<div class="grid-slot-cell chain-gap-slot" data-day="${day}" data-hour="${h}" data-gap="${cell.duration}" data-prev="${cell.prev.title}" data-next="${cell.next.title}" title="${cell.duration}h Free Time: Auto-calculated gap between ${cell.prev.title} and ${cell.next.title}">
+							<div class="chain-connector-full"></div>
+							<div class="chain-gap-card">
+								<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+								<span class="chain-gap-title">${cell.duration}h Free</span>
+							</div>
+						</div>`;
+					} else if (cell.type === 'gap-stem') {
+						html += `
+						<div class="grid-slot-cell chain-stem-slot" data-day="${day}" data-hour="${h}" title="${cell.duration}h Free Interval">
+							<div class="chain-connector-full"></div>
+						</div>`;
+					} else {
+						html += `
+						<div class="grid-slot-cell empty-slot" data-day="${day}" data-hour="${h}" title="Click to schedule commitment at ${day} ${formatHour(h)}">
+							<span class="empty-slot-hint">+</span>
+						</div>`;
+					}
+				});
+
+				html += `</div>`;
+			});
+
+			container.innerHTML = html;
+			attachGridEventListeners();
+		}
+
+		/**
+		 * Attach event listeners to activity cards, gaps, and empty slots
+		 */
+		function attachGridEventListeners() {
+			// 1. Activity Cards Click
+			document.querySelectorAll('.schedule-card').forEach(card => {
+				card.addEventListener('click', (e) => {
+					e.stopPropagation();
+					const actId = card.dataset.id;
+					openActivityDrawer(actId);
+				});
+			});
+
+			// 2. Free Gap Badge Click
+			document.querySelectorAll('.chain-gap-slot').forEach(gapEl => {
+				gapEl.addEventListener('click', (e) => {
+					e.stopPropagation();
+					const gap = gapEl.dataset.gap;
+					const prev = gapEl.dataset.prev;
+					const next = gapEl.dataset.next;
+					const day = gapEl.dataset.day;
+					showGapToast(`${gap}h Free break on ${day} between ${prev} and ${next}`, day, gap);
+				});
+			});
+
+			// 3. Empty Slot Click (Quick Add)
+			document.querySelectorAll('.grid-slot-cell.empty-slot').forEach(slot => {
+				slot.addEventListener('click', () => {
+					const day = slot.dataset.day;
+					const hour = parseInt(slot.dataset.hour);
+					openQuickAdd(day, hour);
+				});
+			});
+		}
+
+		/**
+		 * Activity Detail Slide-over Drawer
+		 */
+		const drawer = document.getElementById('activityDrawer');
+		const overlay = document.getElementById('drawerOverlay');
+
+		function openActivityDrawer(actId) {
+			const act = activities.find(a => a.id === actId);
+			if (!act) return;
+
+			selectedActivityId = actId;
+			renderSchedule(); // Update selection halo
+
+			const titleEl = document.getElementById('drawerTitle');
+			const typeBadge = document.getElementById('drawerTypeBadge');
+			const codeTag = document.getElementById('drawerCodeTag');
+			const timeText = document.getElementById('drawerTimeText');
+			const locRow = document.getElementById('drawerLocationRow');
+			const locText = document.getElementById('drawerLocationText');
+			const instRow = document.getElementById('drawerInstructorRow');
+			const instText = document.getElementById('drawerInstructorText');
+			const descText = document.getElementById('drawerDescText');
+			const tagsWrap = document.getElementById('drawerTagsWrap');
+			const insightText = document.getElementById('drawerInsightText');
+
+			titleEl.textContent = act.title;
+			codeTag.textContent = act.code || (act.type === 'fixed' ? 'FIXED-COMMITMENT' : 'FLEXIBLE-WORKFLOW');
+			
+			typeBadge.className = `drawer-type-badge ${act.type}`;
+			typeBadge.textContent = act.type === 'fixed' ? 'Fixed Schedule' : 'Flexible Workflow';
+
+			const endHour = act.startHour + act.duration;
+			timeText.innerHTML = `<strong>${act.day}</strong> &bull; ${formatHour(act.startHour)} &ndash; ${formatHour(endHour)} (${act.duration} hr)`;
+
+			if (act.location) {
+				locRow.style.display = 'flex';
+				locText.textContent = act.location;
+			} else {
+				locRow.style.display = 'none';
+			}
+
+			if (act.instructor) {
+				instRow.style.display = 'flex';
+				instText.textContent = act.instructor;
+			} else {
+				instRow.style.display = 'none';
+			}
+
+			descText.textContent = act.desc || 'No detailed syllabus notes added.';
+
+			tagsWrap.innerHTML = (act.tags || []).map(t => `<span class="drawer-tag-pill">${t}</span>`).join('');
+
+			// Automatic Contextual free time insight
+			const dayActs = activities.filter(a => a.day === act.day).sort((a, b) => a.startHour - b.startHour);
+			const actIdx = dayActs.findIndex(a => a.id === act.id);
+			let insight = '';
+			if (actIdx < dayActs.length - 1) {
+				const nextAct = dayActs[actIdx + 1];
+				const gap = nextAct.startHour - (act.startHour + act.duration);
+				if (gap > 0) {
+					insight = `Followed by an auto-calculated <strong>${gap}h Free</strong> recovery buffer before ${nextAct.title} at ${formatHour(nextAct.startHour)}.`;
+				} else {
+					insight = `Direct back-to-back transition into ${nextAct.title} with 0 min interval.`;
+				}
+			} else if (actIdx > 0) {
+				const prevAct = dayActs[actIdx - 1];
+				const gap = act.startHour - (prevAct.startHour + prevAct.duration);
+				if (gap > 0) {
+					insight = `Preceded by a <strong>${gap}h Free</strong> transition window after ${prevAct.title}.`;
+				}
+			} else {
+				insight = `This is Clara's only scheduled commitment on ${act.day}. Maximum schedule flexibility!`;
+			}
+			insightText.innerHTML = insight;
+
+			drawer.classList.add('open');
+			overlay.classList.add('open');
+		}
+
+		function closeActivityDrawer() {
+			selectedActivityId = null;
+			drawer.classList.remove('open');
+			overlay.classList.remove('open');
+			renderSchedule();
+		}
+
+		document.getElementById('drawerCloseBtn').addEventListener('click', closeActivityDrawer);
+		document.getElementById('drawerDoneBtn').addEventListener('click', closeActivityDrawer);
+		overlay.addEventListener('click', () => {
+			closeActivityDrawer();
+			closeQuickAdd();
+		});
+
+		// "Ask Emora AI to Rebalance" Button
+		document.getElementById('drawerAiBtn').addEventListener('click', () => {
+			const act = activities.find(a => a.id === selectedActivityId);
+			if (!act) return;
+			const params = new URLSearchParams({
+				activity: act.title,
+				day: act.day,
+				time: formatHour(act.startHour),
+				type: act.type
+			});
+			window.location.href = `ai.html?${params.toString()}`;
+		});
+
+		// "Delete Commitment" Button -> triggers instant automatic gap recalculation!
+		document.getElementById('drawerDeleteBtn').addEventListener('click', () => {
+			if (!selectedActivityId) return;
+			const act = activities.find(a => a.id === selectedActivityId);
+			if (!act) return;
+			activities = activities.filter(a => a.id !== selectedActivityId);
+			saveActivities();
+			closeActivityDrawer();
+			renderSchedule(); // Automatically re-runs gap engine!
+			showGapToast(`Removed "${act.title}". Gaps recalculated automatically.`);
+		});
+
+		/**
+		 * Quick Add Commitment Modal
+		 */
+		const quickAddModal = document.getElementById('quickAddModal');
+
+		function openQuickAdd(day, hour) {
+			document.getElementById('addDay').value = day;
+			document.getElementById('addHour').value = hour;
+			document.getElementById('addTitle').value = '';
+			document.getElementById('quickAddModal').classList.add('open');
+			document.getElementById('drawerOverlay').classList.add('open');
+			document.getElementById('addTitle').focus();
+		}
+
+		function closeQuickAdd() {
+			quickAddModal.classList.remove('open');
+			overlay.classList.remove('open');
+		}
+
+		document.getElementById('quickAddCloseBtn').addEventListener('click', closeQuickAdd);
+		document.getElementById('quickAddCancelBtn').addEventListener('click', closeQuickAdd);
+
+		document.getElementById('quickAddForm').addEventListener('submit', (e) => {
+			e.preventDefault();
+			const title = document.getElementById('addTitle').value.trim();
+			const day = document.getElementById('addDay').value;
+			const startHour = parseInt(document.getElementById('addHour').value);
+			const duration = parseInt(document.getElementById('addDuration').value);
+			const type = document.getElementById('addType').value;
+
+			if (!title) return;
+
+			// Add new commitment to state
+			const newAct = {
+				id: 'act-' + Date.now(),
+				title,
+				day,
+				startHour,
+				duration,
+				type,
+				desc: `Custom commitment scheduled on ${day}.`,
+				tags: [type === 'fixed' ? 'Fixed Commitment' : 'Flexible Study']
+			};
+
+			activities.push(newAct);
+			saveActivities();
+			closeQuickAdd();
+			renderSchedule(); // Automatically recalculates all gaps in real time!
+			showGapToast(`Added "${title}". Free time gaps updated!`);
+		});
+
+		/**
+		 * Free Gap Click Toast Notification
+		 */
+		const gapToast = document.getElementById('gapToast');
+		const gapToastText = document.getElementById('gapToastText');
+		const gapToastAiBtn = document.getElementById('gapToastAiBtn');
+		const gapToastCloseBtn = document.getElementById('gapToastCloseBtn');
+		let toastTimeout = null;
+
+		function showGapToast(message, day = '', gapHours = '') {
+			gapToastText.textContent = message;
+			gapToast.classList.add('show');
+
+			gapToastAiBtn.onclick = () => {
+				const params = new URLSearchParams({
+					topic: 'free_time_optimization',
+					day: day || 'today',
+					gap: gapHours ? `${gapHours}h` : 'free'
+				});
+				window.location.href = `ai.html?${params.toString()}`;
+			};
+
+			clearTimeout(toastTimeout);
+			toastTimeout = setTimeout(() => {
+				gapToast.classList.remove('show');
+			}, 5000);
+		}
+
+		gapToastCloseBtn.addEventListener('click', () => {
+			gapToast.classList.remove('show');
+		});
+
+		// Sidebar Task Phases linking into timetable activities
+		document.querySelectorAll('.phase-item-frame').forEach((item, index) => {
+			item.addEventListener('click', () => {
+				const targetIds = ['res-mon', 'essay-wed', 'final-rev-fri'];
+				if (targetIds[index]) {
+					openActivityDrawer(targetIds[index]);
+				}
+			});
+		});
+
+		// Initial rendering on page load
+		renderSchedule();
 	</script>
 </body>
 </html>

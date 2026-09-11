@@ -774,6 +774,54 @@
 			});
 		});
 
+		// Deep-link context handler from Timetable interactions
+		function handleUrlDeepLinks() {
+			const params = new URLSearchParams(window.location.search);
+			const activity = params.get('activity');
+			const day = params.get('day');
+			const time = params.get('time');
+			const topic = params.get('topic');
+			const gap = params.get('gap');
+
+			if (activity) {
+				const prompt = `Can you analyze my "${activity}" on ${day || 'the schedule'} at ${time || 'its current slot'} and suggest a more balanced placement?`;
+				if (chatInput) {
+					chatInput.value = prompt;
+					chatInput.focus();
+				}
+
+				// Insert proactive Emora prompt pill in chat
+				if (chatContainer) {
+					const div = document.createElement('div');
+					div.className = 'chat-divider-line';
+					chatContainer.appendChild(div);
+
+					const ctxBlock = document.createElement('div');
+					ctxBlock.className = 'message-block';
+					ctxBlock.style.background = 'var(--primary-green-light)';
+					ctxBlock.style.border = '1px solid var(--primary-green)';
+					ctxBlock.style.borderRadius = '12px';
+					ctxBlock.style.padding = '14px 18px';
+					ctxBlock.innerHTML = `
+						<div class="message-header-row" style="margin-bottom:6px;">
+							<h2 class="sender-title" style="color:var(--primary-green);font-size:13px;font-weight:600;">Timetable Focus: ${activity} (${day || ''} ${time || ''})</h2>
+							<span class="message-time-label" style="color:var(--primary-green);">Active Context</span>
+						</div>
+						<p class="message-body-text" style="color:var(--text-main);font-size:13px;">I noticed you're reviewing <strong>${activity}</strong> from your timetable. You can send the query below to simulate schedule rebalancing options with live AI advice.</p>
+					`;
+					chatContainer.appendChild(ctxBlock);
+					scrollToBottom();
+				}
+			} else if (topic === 'free_time_optimization' && gap) {
+				const prompt = `I noticed an auto-calculated ${gap} free buffer on ${day || 'my calendar'}. What's the best way to utilize or protect this window for restorative rest?`;
+				if (chatInput) {
+					chatInput.value = prompt;
+					chatInput.focus();
+				}
+			}
+		}
+		handleUrlDeepLinks();
+
 		// Helper to render simple markdown formatting
 		function formatMessageText(text) {
 			if (!text) return '';
