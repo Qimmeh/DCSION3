@@ -1733,6 +1733,420 @@
 		.phase-item-frame:hover {
 			background: #F4EFEA;
 		}
+
+		/* =========================================================================
+		   PROPOSED TIMETABLE PREVIEW & GLOWING GREEN CARD STYLES
+		   ========================================================================= */
+
+		/* Glowing Green Outline for Newly Added / Proposed Cards */
+		.schedule-card.is-proposed-new {
+			border: 2px solid #2E7D5A !important;
+			box-shadow: 0 0 0 2px rgba(46, 125, 90, 0.4),
+			            0 0 16px rgba(46, 125, 90, 0.7),
+			            0 0 28px rgba(46, 125, 90, 0.35) !important;
+			animation: glowPulseGreen 1.8s infinite alternate ease-in-out;
+			z-index: 12 !important;
+		}
+
+		@keyframes glowPulseGreen {
+			0% {
+				box-shadow: 0 0 0 2px rgba(46, 125, 90, 0.5),
+				            0 0 10px rgba(46, 125, 90, 0.6),
+				            0 0 18px rgba(46, 125, 90, 0.3);
+				transform: translateY(0);
+			}
+			100% {
+				box-shadow: 0 0 0 2.5px rgba(56, 168, 118, 0.95),
+				            0 0 22px rgba(56, 168, 118, 0.95),
+				            0 0 36px rgba(56, 168, 118, 0.5);
+				transform: translateY(-1px);
+			}
+		}
+
+		.proposed-badge {
+			position: absolute;
+			top: -8px;
+			right: 6px;
+			background: #2E7D5A;
+			color: #FFFFFF;
+			font-family: 'Inter', sans-serif;
+			font-size: 8px;
+			font-weight: 700;
+			letter-spacing: 0.5px;
+			text-transform: uppercase;
+			padding: 1px 5px;
+			border-radius: 4px;
+			box-shadow: 0 2px 6px rgba(46, 125, 90, 0.4);
+			z-index: 14;
+			pointer-events: none;
+		}
+
+		/* Header Preview Launch Pill Button */
+		.preview-launch-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 8px 14px;
+			background: rgba(46, 125, 90, 0.12);
+			border: 1.5px solid #2E7D5A;
+			border-radius: 20px;
+			color: #2E7D5A;
+			font-family: 'Inter', sans-serif;
+			font-size: 12px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.15s ease;
+			animation: pulseBadge 2s infinite ease-in-out;
+		}
+
+		@keyframes pulseBadge {
+			0%, 100% { transform: scale(1); }
+			50% { transform: scale(1.03); }
+		}
+
+		.preview-launch-pill:hover {
+			background: #2E7D5A;
+			color: #FFFFFF;
+		}
+
+		.preview-launch-pill svg {
+			width: 14px;
+			height: 14px;
+			stroke: currentColor;
+			stroke-width: 2;
+			fill: none;
+		}
+
+		/* Dedicated Proposed Timetable Preview Modal Window */
+		.preview-modal-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(44, 42, 41, 0.65);
+			backdrop-filter: blur(5px);
+			z-index: 800;
+			display: none;
+			opacity: 0;
+			transition: opacity 0.25s ease;
+		}
+
+		.preview-modal-overlay.open {
+			display: block;
+			opacity: 1;
+		}
+
+		.preview-modal-window {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%) scale(0.96);
+			width: 95vw;
+			max-width: 1380px;
+			height: 92vh;
+			background: var(--bg-surface);
+			border-radius: 20px;
+			border: 1px solid #D8D2C5;
+			box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+			z-index: 810;
+			display: none;
+			flex-direction: column;
+			overflow: hidden;
+			transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+			opacity: 0;
+		}
+
+		.preview-modal-window.open {
+			display: flex;
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+		}
+
+		/* Preview Header */
+		.preview-header-bar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 18px 24px;
+			background: #FAF9F6;
+			border-bottom: 1px solid #EAE5DB;
+			flex-shrink: 0;
+		}
+
+		.preview-title-group {
+			display: flex;
+			flex-direction: column;
+			gap: 3px;
+		}
+
+		.preview-title-row {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+
+		.preview-main-title {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 20px;
+			color: var(--text-main);
+			margin: 0;
+		}
+
+		.preview-status-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 3px 10px;
+			background: #EBF0EE;
+			border: 1px solid #2E7D5A;
+			border-radius: 12px;
+			font-family: 'Inter', sans-serif;
+			font-size: 11px;
+			font-weight: 600;
+			color: #2E7D5A;
+		}
+
+		.preview-status-dot {
+			width: 7px;
+			height: 7px;
+			border-radius: 50%;
+			background: #2E7D5A;
+			box-shadow: 0 0 6px rgba(46, 125, 90, 0.8);
+		}
+
+		.preview-subtext {
+			font-family: 'Inter', sans-serif;
+			font-size: 12px;
+			color: var(--text-muted);
+		}
+
+		.preview-close-btn {
+			width: 34px;
+			height: 34px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: transparent;
+			border: 1px solid var(--border-subtle);
+			border-radius: 8px;
+			cursor: pointer;
+			transition: all 0.15s ease;
+		}
+
+		.preview-close-btn:hover {
+			background: #EAE5DB;
+		}
+
+		.preview-close-btn svg {
+			width: 16px;
+			height: 16px;
+			stroke: #615D59;
+			stroke-width: 2;
+		}
+
+		/* Preview Refinement Prompt Bar */
+		.preview-refine-box {
+			padding: 12px 24px;
+			background: #FFFFFF;
+			border-bottom: 1px solid #EAE5DB;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			flex-shrink: 0;
+		}
+
+		.preview-refine-form {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			width: 100%;
+		}
+
+		.preview-prompt-field {
+			flex: 1;
+			height: 40px;
+			padding: 0 16px;
+			background: #FAF9F6;
+			border: 1px solid #E2DDD3;
+			border-radius: 10px;
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			color: var(--text-main);
+			transition: all 0.15s ease;
+		}
+
+		.preview-prompt-field:focus {
+			outline: none;
+			border-color: var(--primary-green);
+			background: #FFFFFF;
+			box-shadow: 0 0 0 3px rgba(74, 107, 93, 0.15);
+		}
+
+		.preview-refine-btn {
+			height: 40px;
+			padding: 0 18px;
+			background: var(--primary-green);
+			border: none;
+			border-radius: 10px;
+			color: #FFFFFF;
+			font-family: 'Inter', sans-serif;
+			font-size: 12.5px;
+			font-weight: 600;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			transition: background 0.15s ease;
+			white-space: nowrap;
+		}
+
+		.preview-refine-btn:hover {
+			background: #3A5549;
+		}
+
+		.preview-chips-row {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			overflow-x: auto;
+		}
+
+		.preview-chips-label {
+			font-family: 'Inter', sans-serif;
+			font-size: 11px;
+			color: var(--text-muted);
+			white-space: nowrap;
+			font-weight: 500;
+		}
+
+		.preview-chip-pill {
+			display: inline-flex;
+			align-items: center;
+			padding: 4px 10px;
+			background: #FAF9F6;
+			border: 1px solid #E2DDD3;
+			border-radius: 12px;
+			font-family: 'Inter', sans-serif;
+			font-size: 11px;
+			color: var(--text-main);
+			cursor: pointer;
+			white-space: nowrap;
+			transition: all 0.15s ease;
+		}
+
+		.preview-chip-pill:hover {
+			border-color: var(--primary-green);
+			background: var(--primary-green-light);
+			color: var(--primary-green);
+		}
+
+		/* Preview Grid Body */
+		.preview-grid-body {
+			flex: 1;
+			overflow-y: auto;
+			padding: 20px 24px;
+			background: var(--bg-app);
+		}
+
+		/* Preview Footer Action Bar */
+		.preview-footer-bar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 16px 24px;
+			background: #FFFFFF;
+			border-top: 1px solid #EAE5DB;
+			flex-shrink: 0;
+		}
+
+		.preview-legend-guide {
+			display: flex;
+			align-items: center;
+			gap: 16px;
+		}
+
+		.preview-legend-item {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-family: 'Inter', sans-serif;
+			font-size: 12px;
+			color: var(--text-main);
+		}
+
+		.legend-swatch {
+			width: 14px;
+			height: 14px;
+			border-radius: 4px;
+		}
+
+		.legend-swatch.existing {
+			background: var(--fixed-schedule);
+			border: 1px solid #E2DDD3;
+		}
+
+		.legend-swatch.proposed {
+			background: var(--primary-green-light);
+			border: 2px solid #2E7D5A;
+			box-shadow: 0 0 6px rgba(46, 125, 90, 0.8);
+		}
+
+		.preview-footer-buttons {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+
+		.btn-deny-proposal {
+			padding: 10px 18px;
+			background: #FFFFFF;
+			border: 1px solid #E2DDD3;
+			border-radius: 10px;
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			font-weight: 500;
+			color: #C44E3D;
+			cursor: pointer;
+			transition: all 0.15s ease;
+		}
+
+		.btn-deny-proposal:hover {
+			background: #FDF2F0;
+			border-color: #F1B4AB;
+		}
+
+		.btn-accept-proposal {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 22px;
+			background: var(--primary-green);
+			border: none;
+			border-radius: 10px;
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			font-weight: 600;
+			color: #FFFFFF;
+			cursor: pointer;
+			box-shadow: 0 4px 12px rgba(74, 107, 93, 0.25);
+			transition: all 0.15s ease;
+		}
+
+		.btn-accept-proposal:hover {
+			background: #3A5549;
+			transform: translateY(-1px);
+			box-shadow: 0 6px 16px rgba(74, 107, 93, 0.35);
+		}
+
+		.btn-accept-proposal svg {
+			width: 16px;
+			height: 16px;
+			stroke: #FFFFFF;
+			stroke-width: 2.5;
+			fill: none;
+		}
 	</style>
 </head>
 <body>
@@ -1824,6 +2238,12 @@
 							<span class="legend-label">Free Time (Linked)</span>
 						</div>
 					</div>
+					
+					<!-- preview-proposal-button (Illuminates when a proposal is ready to review) -->
+					<button class="preview-launch-pill" id="openPreviewBtn" type="button" style="display:none;" title="Click to review AI proposed timetable changes">
+						<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+						<span id="openPreviewBtnText">Preview Proposal</span>
+					</button>
 
 					<!-- import-button -->
 					<button class="import-button" id="toggleImportBtn" type="button">
@@ -1840,15 +2260,15 @@
 				<div class="popover-header-row">
 					<h2 class="popover-title" id="popoverHeading">Import timetable</h2>
 					<div class="popover-static-tag">
-						<span class="popover-tag-text">Static state</span>
+						<span class="popover-tag-text">AI Parser</span>
 					</div>
 				</div>
-				<p class="popover-intro">Bring in recurring classes, course outlines, or describe your schedule in plain text.</p>
+				<p class="popover-intro">Upload a timetable screenshot, PDF outline, or describe your schedule in plain text for AI extraction.</p>
 
 				<!-- Options List -->
 				<div class="popover-options-list">
 					<!-- Option 1: Google Calendar -->
-					<div class="popover-option-item">
+					<div class="popover-option-item" id="optGoogleCal" style="cursor:pointer;">
 						<div class="popover-opt-icon green">
 							<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
 						</div>
@@ -1859,24 +2279,32 @@
 					</div>
 
 					<!-- Option 2: Upload Outline -->
-					<div class="popover-option-item">
+					<div class="popover-option-item" id="uploadFileOption" style="cursor:pointer;">
 						<div class="popover-opt-icon orange">
 							<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
 						</div>
 						<div class="popover-opt-text">
-							<div class="popover-opt-title">Timetable / course-outline upload</div>
-							<div class="popover-opt-desc">Upload PDF, CSV, or course schedule files</div>
+							<div class="popover-opt-title">Timetable / screenshot upload</div>
+							<div class="popover-opt-desc" id="uploadFileDesc">Upload screenshot image, PDF, or CSV</div>
 						</div>
+						<input type="file" id="timetableFileInput" accept="image/*,.pdf,.csv,.txt" style="display:none;" />
 					</div>
 				</div>
 
 				<!-- Textarea Frame -->
 				<div class="popover-textarea-frame">
-					<label class="popover-textarea-label" for="scheduleText">Describe schedule in text</label>
-					<div class="popover-text-box">
-						<p class="popover-sample-text">Mon 9-11 AM &middot; LIT 302 class<br>Tue 2-4 PM &middot; Chemistry lab<br>Wed 7-9 PM &middot; Essay writing block<br>Fri 4-5 PM &middot; Final review</p>
+					<label class="popover-textarea-label" for="scheduleTextInput">Describe schedule or paste syllabus</label>
+					<textarea class="popover-text-box" id="scheduleTextInput" style="width:100%; min-height:80px; font-family:'Inter',sans-serif; font-size:12px; line-height:1.4; resize:vertical;" placeholder="Thu 10-12 AM · Neuroscience Lecture&#10;Thu 2-4 PM · Neurobiology Lab (NEUR 301-L)">Thu 10:00 AM – 12:00 PM · Neuroscience Lecture (NEUR 301)
+Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
+					<span class="popover-footnote">Emora AI extracts scheduled courses and generates an interactive preview window.</span>
+				</div>
+
+				<!-- Extraction Progress / Completion Status -->
+				<div id="importExtractStatus" style="display:none; padding:10px 14px; background:#EBF0EE; border:1px solid #2E7D5A; border-radius:10px; font-size:12px; color:#2E7D5A; margin-bottom:8px;">
+					<div style="display:flex; align-items:center; gap:8px;">
+						<span class="preview-status-dot"></span>
+						<strong id="importExtractMsg">AI extraction complete!</strong>
 					</div>
-					<span class="popover-footnote">We'll parse recurring patterns and create linked sessions automatically.</span>
 				</div>
 
 				<!-- Actions Row -->
@@ -1885,7 +2313,7 @@
 						<span>Cancel</span>
 					</button>
 					<button class="popover-confirm-btn" id="confirmImportBtn" type="button">
-						<span>Import</span>
+						<span id="confirmImportBtnText">Extract &amp; Preview</span>
 					</button>
 				</div>
 			</div>
@@ -2113,6 +2541,83 @@
 		<span id="gapToastText">1h Free Time Window</span>
 		<button class="gap-toast-btn" id="gapToastAiBtn">Plan with AI</button>
 		<button class="gap-toast-close" id="gapToastCloseBtn">&times;</button>
+	</div>
+
+	<!-- Proposed Timetable Preview Modal Window -->
+	<div class="preview-modal-overlay" id="previewModalOverlay"></div>
+	<div class="preview-modal-window" id="previewWindowModal" role="dialog" aria-labelledby="previewMainTitle" aria-modal="true">
+		<!-- Preview Header Bar -->
+		<div class="preview-header-bar">
+			<div class="preview-title-group">
+				<div class="preview-title-row">
+					<h2 class="preview-main-title" id="previewMainTitle">Proposed Timetable Preview</h2>
+					<span class="preview-status-pill" id="previewPillCount">
+						<span class="preview-status-dot"></span>
+						<span id="previewPillText">2 Proposed Additions</span>
+					</span>
+				</div>
+				<p class="preview-subtext">Review AI-extracted commitments before accepting. Newly added cards feature a glowing green outline.</p>
+			</div>
+			<button class="preview-close-btn" id="closePreviewBtn" type="button" aria-label="Close preview">
+				<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+			</button>
+		</div>
+
+		<!-- AI Refinement Prompt Bar inside Preview -->
+		<div class="preview-refine-box">
+			<form class="preview-refine-form" id="previewRefineForm">
+				<input class="preview-prompt-field" id="previewPromptInput" type="text" placeholder="Ask Emora AI for adjustments (e.g. 'Move Thursday lab to 2 PM', 'Make lecture 1 hr', 'Shift to Friday')..." />
+				<button class="preview-refine-btn" type="submit">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+					<span>Ask for Changes</span>
+				</button>
+			</form>
+			<div class="preview-chips-row">
+				<span class="preview-chips-label">Quick adjustments:</span>
+				<button type="button" class="preview-chip-pill" data-prompt="Make Thursday lecture 1 hour">Make Thursday lecture 1 hr</button>
+				<button type="button" class="preview-chip-pill" data-prompt="Move Thursday lab to Friday afternoon">Move lab to Friday</button>
+				<button type="button" class="preview-chip-pill" data-prompt="Keep Thursday morning free for rest">Keep morning free</button>
+				<button type="button" class="preview-chip-pill" data-prompt="Reset to initial AI extraction">Reset to extraction</button>
+			</div>
+		</div>
+
+		<!-- Timetable Grid Preview Body -->
+		<div class="preview-grid-body">
+			<div class="timetable-grid-card">
+				<div class="days-header-row">
+					<div class="days-spacer"></div>
+					<div class="day-col-header"><span>Mon</span></div>
+					<div class="day-col-header"><span>Tue</span></div>
+					<div class="day-col-header"><span>Wed</span></div>
+					<div class="day-col-header"><span>Thu</span></div>
+					<div class="day-col-header"><span>Fri</span></div>
+					<div class="day-col-header"><span>Sat</span></div>
+					<div class="day-col-header"><span>Sun</span></div>
+				</div>
+				<div class="schedule-rows-frame" id="previewScheduleRows"></div>
+			</div>
+		</div>
+
+		<!-- Preview Footer Action Bar -->
+		<div class="preview-footer-bar">
+			<div class="preview-legend-guide">
+				<div class="preview-legend-item">
+					<div class="legend-swatch existing"></div>
+					<span>Existing Schedule</span>
+				</div>
+				<div class="preview-legend-item">
+					<div class="legend-swatch proposed"></div>
+					<span style="font-weight:600; color:#2E7D5A;">Newly Added (Glowing Green)</span>
+				</div>
+			</div>
+			<div class="preview-footer-buttons">
+				<button class="btn-deny-proposal" id="denyProposalBtn" type="button">Deny &amp; Discard</button>
+				<button class="btn-accept-proposal" id="acceptProposalBtn" type="button">
+					<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+					<span>Accept &amp; Apply Timetable</span>
+				</button>
+			</div>
+		</div>
 	</div>
 
 	<script>
@@ -2428,12 +2933,18 @@
 
 		/**
 		 * Render schedule grid dynamically supporting multi-hour continuous cards
+		 * and Glowing Green Outline for newly proposed activities in Preview mode.
 		 */
-		function renderSchedule() {
-			const container = document.getElementById('scheduleRowsContainer');
+		function renderScheduleGrid(containerId, actsList, proposedList = []) {
+			const container = document.getElementById(containerId);
 			if (!container) return;
 
-			const matrix = calculateScheduleMatrix(activities);
+			// Combine existing activities and proposed additions
+			const safeActs = (actsList || []).map(a => ({ ...a, isProposed: false }));
+			const safeProps = (proposedList || []).map(p => ({ ...p, isProposed: true }));
+			const combined = [...safeActs, ...safeProps];
+
+			const matrix = calculateScheduleMatrix(combined);
 			let html = '';
 
 			HOURS.forEach(h => {
@@ -2453,14 +2964,16 @@
 						const textHighlight = act.highlight ? 'bold-orange' : '';
 						const isMultiHour = act.duration >= 2;
 						const cardHeightStyle = `height: calc(56px * ${act.duration} - 6px);`;
+						const proposedClass = act.isProposed ? 'is-proposed-new' : '';
 
 						html += `
 						<div class="grid-slot-cell" data-day="${day}" data-hour="${h}">
-							<div class="schedule-card ${typeClass} ${topChainClass} ${bottomChainClass} ${selectedClass} ${isMultiHour ? 'is-multi-hour' : ''}" 
+							<div class="schedule-card ${typeClass} ${topChainClass} ${bottomChainClass} ${selectedClass} ${isMultiHour ? 'is-multi-hour' : ''} ${proposedClass}" 
 								 data-id="${act.id}" 
 								 data-duration="${act.duration}"
 								 style="${cardHeightStyle}" 
-								 title="Click to view details: ${act.title} (${act.duration} hr${act.duration > 1 ? 's' : ''})">
+								 title="${act.isProposed ? 'Proposed Addition (Glowing Green): ' : 'Click to view details: '}${act.title} (${act.duration} hr${act.duration > 1 ? 's' : ''})">
+								${act.isProposed ? '<span class="proposed-badge">Proposed</span>' : ''}
 								${isMultiHour ? `
 								<div class="card-multi-content">
 									<span class="grid-slot-text ${textHighlight}" style="font-weight:600;">${act.title}</span>
@@ -2499,24 +3012,28 @@
 			});
 
 			container.innerHTML = html;
-			attachGridEventListeners();
+			attachGridEventListeners(container, combined);
+		}
+
+		function renderSchedule() {
+			renderScheduleGrid('scheduleRowsContainer', activities, []);
 		}
 
 		/**
 		 * Attach event listeners to activity cards, gaps, and empty slots
 		 */
-		function attachGridEventListeners() {
+		function attachGridEventListeners(container, list = activities) {
 			// 1. Activity Cards Click
-			document.querySelectorAll('.schedule-card').forEach(card => {
+			container.querySelectorAll('.schedule-card').forEach(card => {
 				card.addEventListener('click', (e) => {
 					e.stopPropagation();
 					const actId = card.dataset.id;
-					openActivityDrawer(actId);
+					openActivityDrawer(actId, list);
 				});
 			});
 
 			// 2. Free Gap Badge Click
-			document.querySelectorAll('.chain-gap-slot').forEach(gapEl => {
+			container.querySelectorAll('.chain-gap-slot').forEach(gapEl => {
 				gapEl.addEventListener('click', (e) => {
 					e.stopPropagation();
 					const gap = gapEl.dataset.gap;
@@ -2528,7 +3045,7 @@
 			});
 
 			// 3. Empty Slot Click (Quick Add)
-			document.querySelectorAll('.grid-slot-cell.empty-slot').forEach(slot => {
+			container.querySelectorAll('.grid-slot-cell.empty-slot').forEach(slot => {
 				slot.addEventListener('click', () => {
 					const day = slot.dataset.day;
 					const hour = parseInt(slot.dataset.hour);
@@ -2832,6 +3349,229 @@
 				}
 			});
 		});
+
+		/* =========================================================================
+		   AI TIMETABLE EXTRACTION, PROPOSAL ENGINE & PREVIEW WINDOW
+		   ========================================================================= */
+		let proposedActivities = [];
+
+		function initDefaultProposal() {
+			proposedActivities = [
+				{
+					id: 'prop-neur-lec',
+					title: 'Neuroscience Lecture',
+					day: 'Thu',
+					startHour: 10,
+					duration: 2,
+					type: 'fixed',
+					code: 'NEUR 301',
+					location: 'Medical Sciences Hall 105',
+					instructor: 'Dr. Aris Thorne',
+					desc: 'Synaptic transmission, neuroplasticity, and neural computational dynamics.',
+					tags: ['Lecture', 'Neuroscience', 'Proposed']
+				},
+				{
+					id: 'prop-neur-lab',
+					title: 'Neurobiology Lab',
+					day: 'Thu',
+					startHour: 14,
+					duration: 2,
+					type: 'flex',
+					code: 'NEUR 301-L',
+					location: 'Brain Science Complex 2',
+					instructor: 'TA Serena Wu',
+					desc: 'Electrophysiology recording, neuron staining, and neural network simulations.',
+					tags: ['Lab', 'Hands-on', 'Proposed']
+				}
+			];
+		}
+
+		/**
+		 * Open the Dedicated Proposed Timetable Preview Modal
+		 */
+		function openPreviewModal() {
+			if (!proposedActivities || proposedActivities.length === 0) {
+				initDefaultProposal();
+			}
+
+			const pillText = document.getElementById('previewPillText');
+			if (pillText) {
+				pillText.textContent = `${proposedActivities.length} Proposed Addition${proposedActivities.length > 1 ? 's' : ''}`;
+			}
+
+			// Render proposed preview grid with glowing green outline on proposed cards
+			renderScheduleGrid('previewScheduleRows', activities, proposedActivities);
+
+			// Open modal window & overlay
+			document.getElementById('previewWindowModal').classList.add('open');
+			document.getElementById('previewModalOverlay').classList.add('open');
+
+			// Show preview launch pill in header
+			const openBtn = document.getElementById('openPreviewBtn');
+			if (openBtn) openBtn.style.display = 'inline-flex';
+		}
+
+		function closePreviewModal() {
+			document.getElementById('previewWindowModal').classList.remove('open');
+			document.getElementById('previewModalOverlay').classList.remove('open');
+		}
+
+		/**
+		 * Interactive AI prompt refinement inside the preview window
+		 */
+		function refineProposalWithPrompt(prompt) {
+			const pLower = prompt.toLowerCase();
+			showGapToast(`AI refining proposal: "${prompt}"...`);
+
+			if (pLower.includes('reset') || pLower.includes('initial')) {
+				initDefaultProposal();
+				showGapToast("Reset proposal to initial AI extraction.");
+			} else if (pLower.includes('1 hour') || pLower.includes('1 hr') || pLower.includes('1h')) {
+				if (proposedActivities.length > 0) {
+					proposedActivities[0].duration = 1;
+					showGapToast(`Adjusted "${proposedActivities[0].title}" to 1 hour.`);
+				}
+			} else if (pLower.includes('friday') || pLower.includes('fri')) {
+				const target = proposedActivities.find(a => a.id === 'prop-neur-lab') || proposedActivities[1] || proposedActivities[0];
+				if (target) {
+					target.day = 'Fri';
+					target.startHour = 9;
+					target.duration = 1;
+					showGapToast(`Shifted "${target.title}" to Friday at 9:00 AM.`);
+				}
+			} else if (pLower.includes('afternoon') || pLower.includes('3 pm') || pLower.includes('2 pm') || pLower.includes('15:00')) {
+				const target = proposedActivities.find(a => a.id === 'prop-neur-lab') || proposedActivities[1] || proposedActivities[0];
+				if (target) {
+					target.startHour = 15;
+					showGapToast(`Moved "${target.title}" to 3:00 PM afternoon slot.`);
+				}
+			} else if (pLower.includes('morning free') || pLower.includes('morning')) {
+				const target = proposedActivities.find(a => a.startHour < 12) || proposedActivities[0];
+				if (target) {
+					target.startHour = 13;
+					showGapToast(`Moved morning "${target.title}" to 1:00 PM to protect morning rest.`);
+				}
+			} else {
+				showGapToast(`Emora AI updated proposal layout to match: "${prompt}"`);
+			}
+
+			const pillText = document.getElementById('previewPillText');
+			if (pillText) {
+				pillText.textContent = `${proposedActivities.length} Proposed Addition${proposedActivities.length > 1 ? 's' : ''}`;
+			}
+
+			// Live re-render of preview grid keeping the glowing green outline!
+			renderScheduleGrid('previewScheduleRows', activities, proposedActivities);
+		}
+
+		// Preview Modal Event Listeners
+		document.getElementById('closePreviewBtn').addEventListener('click', closePreviewModal);
+		document.getElementById('previewModalOverlay').addEventListener('click', closePreviewModal);
+		document.getElementById('openPreviewBtn').addEventListener('click', openPreviewModal);
+
+		// "Deny & Discard" -> Rejects proposal and keeps current timetable
+		document.getElementById('denyProposalBtn').addEventListener('click', () => {
+			proposedActivities = [];
+			closePreviewModal();
+			const openBtn = document.getElementById('openPreviewBtn');
+			if (openBtn) openBtn.style.display = 'none';
+			showGapToast("Proposal denied. Your current timetable was left unchanged.");
+		});
+
+		// "Accept & Apply Timetable" -> Commits proposal into active schedule
+		document.getElementById('acceptProposalBtn').addEventListener('click', () => {
+			if (!proposedActivities || proposedActivities.length === 0) {
+				closePreviewModal();
+				return;
+			}
+			const count = proposedActivities.length;
+			const cleanAdditions = proposedActivities.map(p => {
+				const copy = { ...p };
+				delete copy.isProposed;
+				return copy;
+			});
+			activities = [...activities, ...cleanAdditions];
+			saveActivities();
+			proposedActivities = [];
+			closePreviewModal();
+			renderSchedule(); // Re-renders main timetable with new additions & updated gaps!
+			const openBtn = document.getElementById('openPreviewBtn');
+			if (openBtn) openBtn.style.display = 'none';
+			showGapToast(`Accepted! Added ${count} new commitment${count > 1 ? 's' : ''} to your timetable.`);
+		});
+
+		// Prompt Refinement Form Submit
+		document.getElementById('previewRefineForm').addEventListener('submit', (e) => {
+			e.preventDefault();
+			const prompt = document.getElementById('previewPromptInput').value.trim();
+			if (!prompt) return;
+			refineProposalWithPrompt(prompt);
+		});
+
+		// Quick Refinement Chips
+		document.querySelectorAll('.preview-chip-pill').forEach(chip => {
+			chip.addEventListener('click', () => {
+				const prompt = chip.dataset.prompt;
+				if (prompt) {
+					document.getElementById('previewPromptInput').value = prompt;
+					refineProposalWithPrompt(prompt);
+				}
+			});
+		});
+
+		// Import Popover Extraction Handlers
+		document.getElementById('uploadFileOption').addEventListener('click', () => {
+			document.getElementById('timetableFileInput').click();
+		});
+
+		document.getElementById('timetableFileInput').addEventListener('change', (e) => {
+			if (e.target.files && e.target.files[0]) {
+				const file = e.target.files[0];
+				document.getElementById('uploadFileDesc').textContent = `Selected: ${file.name}`;
+				triggerAiExtraction(file.name);
+			}
+		});
+
+		document.getElementById('optGoogleCal').addEventListener('click', () => {
+			triggerAiExtraction('Google Calendar');
+		});
+
+		confirmImportBtn.addEventListener('click', () => {
+			triggerAiExtraction('Course Schedule');
+		});
+
+		function triggerAiExtraction(sourceName) {
+			const statusBox = document.getElementById('importExtractStatus');
+			const statusMsg = document.getElementById('importExtractMsg');
+			const btnText = document.getElementById('confirmImportBtnText');
+
+			statusBox.style.display = 'block';
+			statusMsg.textContent = `Emora AI is extracting timetable commitments from ${sourceName}...`;
+			btnText.textContent = 'Extracting...';
+
+			setTimeout(() => {
+				initDefaultProposal();
+				statusMsg.textContent = `Done! AI extracted ${proposedActivities.length} new scheduled courses. Opening preview...`;
+				btnText.textContent = 'Open Preview';
+
+				const openBtn = document.getElementById('openPreviewBtn');
+				if (openBtn) openBtn.style.display = 'inline-flex';
+
+				setTimeout(() => {
+					importPopover.classList.remove('open');
+					statusBox.style.display = 'none';
+					btnText.textContent = 'Extract & Preview';
+					openPreviewModal();
+				}, 600);
+			}, 800);
+		}
+
+		// Auto-open preview if deep-linked via URL (e.g. ?preview=1)
+		const urlParams = new URLSearchParams(window.location.search);
+		if (urlParams.get('preview') || urlParams.get('import')) {
+			initDefaultProposal();
+			openPreviewModal();
+		}
 
 		// Initial rendering on page load
 		renderSchedule();
