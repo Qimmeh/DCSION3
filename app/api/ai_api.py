@@ -212,36 +212,66 @@ def ai_chat():
 @require_user
 def parse_timetable_ai():
     """
-    Parses unstructured syllabus or timetable text into structured JSON activities.
-    Accepts: { "text": str }
-    Returns: { "events": [ { "name": ..., "day": ..., "start_time": ..., "end_time": ..., "category": ... } ] }
+    Parses unstructured syllabus text OR timetable screenshot images into structured JSON activities.
+    Accepts:
+      JSON: { "text": str } OR { "image_base64": str }
+      Multipart: file 'image' / 'file'
+    Returns: { "events": [ { "name": ..., "day": ..., "start_time": ..., "end_time": ..., "location": ..., "category": ... } ] }
     """
-    data = request.get_json(silent=True) or {}
-    raw_text = data.get("text", "").strip()
-    if not raw_text:
-        return jsonify({"error": "No timetable text provided."}), 400
+    import base64
+    raw_text = ""
+    image_b64 = ""
+
+    if request.is_json:
+        data = request.get_json(silent=True) or {}
+        raw_text = data.get("text", "").strip()
+        image_b64 = data.get("image_base64") or data.get("image") or ""
+    elif request.files:
+        f = request.files.get("image") or request.files.get("file")
+        if f:
+            image_b64 = base64.b64encode(f.read()).decode("utf-8")
+        raw_text = request.form.get("text", "").strip()
+
+    if not raw_text and not image_b64:
+        return jsonify({"error": "Please provide either timetable text or an image."}), 400
 
     prompt = (
         "You are an expert schedule extraction engine. Extract all classes, lectures, tutorials, "
-        "meetings, study blocks, and tasks from the provided raw timetable text.\n\n"
+        "meetings, study blocks, and tasks from the provided timetable input.\n\n"
         "Output ONLY a valid JSON array of objects with no markdown code fences, no preamble, and no explanation.\n"
         "Each object MUST have the following keys:\n"
-        "- \"name\": string (e.g. \"Data Structures Lecture\")\n"
+        "- \"name\": string (e.g. \"C MT1134 Lecture\" or \"C MT1134 Tutorial\")\n"
         "- \"day\": string (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)\n"
-        "- \"start_time\": string in HH:MM format (24-hour, e.g. \"09:00\" or \"14:30\")\n"
+        "- \"start_time\": string in HH:MM format (24-hour, e.g. \"09:00\" or \"14:00\")\n"
         "- \"end_time\": string in HH:MM format (24-hour, e.g. \"11:00\" or \"16:00\")\n"
-        "- \"location\": string (or empty string if not found)\n"
-        "- \"category\": string (one of: \"academic\", \"work\", \"social\", \"health\", \"errands\")\n\n"
-        f"Raw Text:\n{raw_text}"
+        "- \"location\": string (room or building, e.g. \"CQMX0001-FCI\" or empty string)\n"
+        "- \"type\": string (e.g. \"Lecture\", \"Tutorial\", \"Classroom\", \"Lab\")\n"
+        "- \"category\": string (one of: \"academic\", \"work\", \"social\", \"health\", \"errands\")\n"
     )
 
-    messages = [
-        {"role": "system", "content": "You output strictly valid JSON."},
-        {"role": "user", "content": prompt}
-    ]
+    if raw_text:
+        prompt += f"\nRaw Text:\n{raw_text}"
+
+    if image_b64:
+        if not image_b64.startswith("data:"):
+            image_b64 = f"data:image/png;base64,{image_b64}"
+        user_content = [
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": image_b64}}
+        ]
+        messages = [
+            {"role": "system", "content": "You output strictly valid JSON."},
+            {"role": "user", "content": user_content}
+        ]
+        preferred_model = "inclusionai/ling-3.0-flash-vl:free"
+    else:
+        messages = [
+            {"role": "system", "content": "You output strictly valid JSON."},
+            {"role": "user", "content": prompt}
+        ]
+        preferred_model = current_app.config.get("OPENROUTER_MODEL") or DEFAULT_MODEL
 
     try:
-        preferred_model = current_app.config.get("OPENROUTER_MODEL") or DEFAULT_MODEL
         result = call_openrouter_chat(messages, preferred_model=preferred_model, temperature=0.2)
         raw_output = result["text"].strip()
 
@@ -266,3 +296,4 @@ def parse_timetable_ai():
     except Exception as err:
         logger.exception("AI parse-timetable failed")
         return jsonify({"ok": False, "error": str(err)}), 500
+
