@@ -525,30 +525,82 @@
 
 		/* Activity Card - insulated inside cell to ensure unbroken continuous column lines */
 		.schedule-card {
-			position: relative;
+			position: absolute;
+			top: 3px;
+			left: 5px;
+			right: 5px;
 			display: flex;
+			flex-direction: column;
 			justify-content: center;
 			align-items: center;
-			width: 100%;
-			height: calc(100% - 6px);
 			border-radius: 8px;
-			padding: 0 4px;
+			padding: 4px 6px;
 			text-align: center;
 			box-sizing: border-box;
 			cursor: pointer;
 			transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 			border: 1px solid transparent;
+			z-index: 5;
+		}
+
+		.schedule-card.is-multi-hour {
+			justify-content: center;
+			gap: 4px;
+		}
+
+		.card-multi-content {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 3px;
+			width: 100%;
+			padding: 2px 4px;
+		}
+
+		.grid-slot-time-range {
+			font-family: 'Inter', sans-serif;
+			font-size: 9.5px;
+			font-weight: 500;
+			color: #6E6A66;
+			line-height: 1.1;
+			white-space: nowrap;
+		}
+
+		.grid-slot-pill {
+			font-family: 'Inter', sans-serif;
+			font-size: 8.5px;
+			font-weight: 600;
+			color: var(--primary-green);
+			background: rgba(74, 107, 93, 0.12);
+			padding: 1px 5px;
+			border-radius: 4px;
+			line-height: 1.2;
+			white-space: nowrap;
+			max-width: 90%;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			margin-top: 1px;
+		}
+
+		/* Covered cell during multi-hour activity span */
+		.grid-slot-cell.span-covered-cell {
+			background: transparent;
+			border-right: 1px solid #EAE5DB;
+			pointer-events: none;
 		}
 
 		.schedule-card:hover {
 			transform: translateY(-2px);
-			box-shadow: 0 4px 12px rgba(74, 107, 93, 0.12);
+			box-shadow: 0 6px 16px rgba(74, 107, 93, 0.16);
 			border-color: rgba(74, 107, 93, 0.3);
+			z-index: 10;
 		}
 
 		.schedule-card.selected {
 			box-shadow: 0 0 0 2px var(--primary-green), 0 6px 16px rgba(74, 107, 93, 0.2);
 			border-color: var(--primary-green);
+			z-index: 10;
 		}
 
 		.schedule-card.slot-fixed { background: var(--fixed-schedule); }
@@ -1363,6 +1415,59 @@
 			color: #615D59;
 		}
 
+		.drawer-duration-control {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			padding: 12px 14px;
+			background: var(--bg-app);
+			border: 1px solid var(--border-subtle);
+			border-radius: 12px;
+		}
+
+		.drawer-duration-label {
+			font-family: 'Inter', sans-serif;
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.6px;
+			color: var(--text-muted);
+		}
+
+		.duration-pill-group {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 6px;
+			width: 100%;
+		}
+
+		.duration-pill-btn {
+			padding: 7px 0;
+			font-family: 'Inter', sans-serif;
+			font-size: 11.5px;
+			font-weight: 600;
+			color: var(--text-main);
+			background: #FFFFFF;
+			border: 1px solid var(--border-input);
+			border-radius: 8px;
+			cursor: pointer;
+			transition: all 0.15s ease;
+			text-align: center;
+		}
+
+		.duration-pill-btn:hover {
+			border-color: var(--primary-green);
+			background: var(--primary-green-light);
+			color: var(--primary-green);
+		}
+
+		.duration-pill-btn.active {
+			background: var(--primary-green);
+			border-color: var(--primary-green);
+			color: #FFFFFF;
+			box-shadow: 0 2px 6px rgba(74, 107, 93, 0.25);
+		}
+
 		.drawer-insight-box {
 			display: flex;
 			flex-direction: row;
@@ -1902,6 +2007,16 @@
 					<span class="drawer-info-text" id="drawerInstructorText">Dr. Julian Vance</span>
 				</div>
 			</div>
+			<!-- Interactive Duration Adjustment Controls -->
+			<div class="drawer-duration-control">
+				<span class="drawer-duration-label">Adjust Card Duration</span>
+				<div class="duration-pill-group" id="drawerDurationGroup">
+					<button class="duration-pill-btn" type="button" data-dur="1">1 hr</button>
+					<button class="duration-pill-btn" type="button" data-dur="2">2 hrs</button>
+					<button class="duration-pill-btn" type="button" data-dur="3">3 hrs</button>
+					<button class="duration-pill-btn" type="button" data-dur="4">4 hrs</button>
+				</div>
+			</div>
 			<div class="drawer-section">
 				<h3 class="drawer-section-title">Session Overview</h3>
 				<p class="drawer-desc-text" id="drawerDescText">Session description goes here.</p>
@@ -1974,6 +2089,8 @@
 					<select class="form-select" id="addDuration">
 						<option value="1">1 hour</option>
 						<option value="2">2 hours</option>
+						<option value="3">3 hours</option>
+						<option value="4">4 hours</option>
 					</select>
 				</div>
 				<div class="form-group">
@@ -2049,7 +2166,7 @@
 		   DATA-DRIVEN TIMETABLE & AUTOMATED FREE TIME GAP ENGINE
 		   ========================================================================= */
 		const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-		const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+		const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
 		function formatHour(h) {
 			const ampm = h >= 12 ? 'PM' : 'AM';
@@ -2057,7 +2174,7 @@
 			return `${num}:00 ${ampm}`;
 		}
 
-		// Initial authentic commitments
+		// Initial authentic commitments with realistic multi-hour sessions
 		const DEFAULT_ACTIVITIES = [
 			{
 				id: 'lit-mon',
@@ -2090,13 +2207,13 @@
 				title: 'Research Session',
 				day: 'Mon',
 				startHour: 17,
-				duration: 1,
+				duration: 2,
 				type: 'flex',
 				highlight: true,
 				location: 'Main Library - Room 4B',
 				instructor: 'Self-directed',
 				phase: 'Phase 1: Source material research',
-				desc: 'Source material research and literature index curation for the "Echoes of Modernism" assignment.',
+				desc: 'Source material research and literature index curation for the "Echoes of Modernism" assignment (Phase 1).',
 				tags: ['Essay Task', 'Independent', 'Flexible']
 			},
 			{
@@ -2104,12 +2221,12 @@
 				title: 'Chemistry Study Lab',
 				day: 'Tue',
 				startHour: 13,
-				duration: 1,
+				duration: 2,
 				type: 'flex',
 				code: 'CHEM 201-L',
 				location: 'Chemistry Complex 4B',
 				instructor: 'TA Michael Chang',
-				desc: 'Collaborative problem sets, titration post-lab analysis, and quiz preparation.',
+				desc: 'Collaborative problem sets, titration post-lab analysis, and quiz preparation (2-hour session).',
 				tags: ['Lab', 'Study Group', 'Flexible']
 			},
 			{
@@ -2155,13 +2272,13 @@
 				title: 'Essay Writing',
 				day: 'Wed',
 				startHour: 19,
-				duration: 1,
+				duration: 2,
 				type: 'flex',
 				highlight: true,
 				location: 'Study Hub North',
 				instructor: 'Self-directed',
 				phase: 'Phase 2: Draft outline & body typing',
-				desc: 'Draft outline synthesis and primary argument drafting for "Echoes of Modernism".',
+				desc: 'Draft outline synthesis and primary argument drafting for "Echoes of Modernism" (Phase 2).',
 				tags: ['Essay Task', 'Deep Work', 'Flexible']
 			},
 			{
@@ -2194,13 +2311,13 @@
 				title: 'Final Review (Essay)',
 				day: 'Fri',
 				startHour: 15,
-				duration: 1,
+				duration: 2,
 				type: 'flex',
 				highlight: true,
 				location: 'Quiet Reading Room',
 				instructor: 'Self-directed',
 				phase: 'Phase 3: Final review & proofing',
-				desc: 'Comprehensive proofreading, citation validation, and submission finalization for English term paper.',
+				desc: 'Comprehensive proofreading, citation validation, and submission finalization for English term paper (Phase 3).',
 				tags: ['Essay Task', 'Final Submission']
 			},
 			{
@@ -2208,21 +2325,22 @@
 				title: 'Outdoor Hike / Personal',
 				day: 'Sat',
 				startHour: 13,
-				duration: 1,
+				duration: 2,
 				type: 'flex',
 				location: 'Eagle Peak Trail',
 				instructor: 'Wellness & Rest',
-				desc: 'Recovery trail hike, mindfulness recharge, and disconnection from screen fatigue.',
+				desc: 'Recovery trail hike, mindfulness recharge, and disconnection from screen fatigue (2 hours).',
 				tags: ['Wellness', 'Recovery', 'Personal']
 			}
 		];
 
-		// Active activities state
-		let activities = JSON.parse(localStorage.getItem('emora_timetable_activities') || 'null') || [...DEFAULT_ACTIVITIES];
+		// Active activities state with versioned persistence
+		const STORAGE_KEY = 'emora_timetable_activities_v2';
+		let activities = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || [...DEFAULT_ACTIVITIES];
 		let selectedActivityId = null;
 
 		function saveActivities() {
-			localStorage.setItem('emora_timetable_activities', JSON.stringify(activities));
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(activities));
 		}
 
 		/**
@@ -2251,13 +2369,20 @@
 					a.hasChainBottom = false;
 				});
 
-				// Place activities into cell matrix
+				// Place activities into cell matrix (activity-start for initial cell, activity-covered for spanning cells)
 				dayActs.forEach(act => {
-					for (let h = act.startHour; h < act.startHour + act.duration && h <= 19; h++) {
-						matrix[h][day] = {
-							type: 'activity',
-							activity: act
-						};
+					for (let h = act.startHour; h < act.startHour + act.duration && h <= 20; h++) {
+						if (h === act.startHour) {
+							matrix[h][day] = {
+								type: 'activity-start',
+								activity: act
+							};
+						} else {
+							matrix[h][day] = {
+								type: 'activity-covered',
+								activity: act
+							};
+						}
 					}
 				});
 
@@ -2277,7 +2402,7 @@
 						// Determine exact center row of the gap
 						const centerHour = endPrev + Math.floor((gapHours - 1) / 2);
 
-						for (let h = endPrev; h < startNext && h <= 19; h++) {
+						for (let h = endPrev; h < startNext && h <= 20; h++) {
 							if (h === centerHour) {
 								matrix[h][day] = {
 									type: 'gap-badge',
@@ -2302,7 +2427,7 @@
 		}
 
 		/**
-		 * Render schedule grid dynamically
+		 * Render schedule grid dynamically supporting multi-hour continuous cards
 		 */
 		function renderSchedule() {
 			const container = document.getElementById('scheduleRowsContainer');
@@ -2318,7 +2443,7 @@
 
 				DAYS.forEach(day => {
 					const cell = matrix[h][day];
-					if (cell.type === 'activity') {
+					if (cell.type === 'activity-start') {
 						const act = cell.activity;
 						const isSelected = selectedActivityId === act.id;
 						const typeClass = act.type === 'fixed' ? 'slot-fixed' : 'slot-flex';
@@ -2326,13 +2451,29 @@
 						const bottomChainClass = act.hasChainBottom ? 'has-chain-bottom' : '';
 						const selectedClass = isSelected ? 'selected' : '';
 						const textHighlight = act.highlight ? 'bold-orange' : '';
+						const isMultiHour = act.duration >= 2;
+						const cardHeightStyle = `height: calc(56px * ${act.duration} - 6px);`;
 
 						html += `
 						<div class="grid-slot-cell" data-day="${day}" data-hour="${h}">
-							<div class="schedule-card ${typeClass} ${topChainClass} ${bottomChainClass} ${selectedClass}" data-id="${act.id}" title="Click to view details: ${act.title}">
-								<span class="grid-slot-text ${textHighlight}">${act.title}</span>
+							<div class="schedule-card ${typeClass} ${topChainClass} ${bottomChainClass} ${selectedClass} ${isMultiHour ? 'is-multi-hour' : ''}" 
+								 data-id="${act.id}" 
+								 data-duration="${act.duration}"
+								 style="${cardHeightStyle}" 
+								 title="Click to view details: ${act.title} (${act.duration} hr${act.duration > 1 ? 's' : ''})">
+								${isMultiHour ? `
+								<div class="card-multi-content">
+									<span class="grid-slot-text ${textHighlight}" style="font-weight:600;">${act.title}</span>
+									<span class="grid-slot-time-range">${formatHour(act.startHour)} &ndash; ${formatHour(act.startHour + act.duration)}</span>
+									${act.code || act.location ? `<span class="grid-slot-pill">${act.code || act.location}</span>` : ''}
+								</div>` : `
+								<span class="grid-slot-text ${textHighlight}">${act.title}</span>`}
 							</div>
 						</div>`;
+					} else if (cell.type === 'activity-covered') {
+						// Cell is covered by a multi-hour card starting above
+						html += `
+						<div class="grid-slot-cell span-covered-cell" data-day="${day}" data-hour="${h}"></div>`;
 					} else if (cell.type === 'gap-badge') {
 						html += `
 						<div class="grid-slot-cell chain-gap-slot" data-day="${day}" data-hour="${h}" data-gap="${cell.duration}" data-prev="${cell.prev.title}" data-next="${cell.next.title}" title="${cell.duration}h Free Time: Auto-calculated gap between ${cell.prev.title} and ${cell.next.title}">
@@ -2398,7 +2539,7 @@
 		}
 
 		/**
-		 * Activity Detail Slide-over Drawer
+		 * Activity Detail Slide-over Drawer with Interactive Duration Controls
 		 */
 		const drawer = document.getElementById('activityDrawer');
 		const overlay = document.getElementById('drawerOverlay');
@@ -2429,7 +2570,7 @@
 			typeBadge.textContent = act.type === 'fixed' ? 'Fixed Schedule' : 'Flexible Workflow';
 
 			const endHour = act.startHour + act.duration;
-			timeText.innerHTML = `<strong>${act.day}</strong> &bull; ${formatHour(act.startHour)} &ndash; ${formatHour(endHour)} (${act.duration} hr)`;
+			timeText.innerHTML = `<strong>${act.day}</strong> &bull; ${formatHour(act.startHour)} &ndash; ${formatHour(endHour)} (${act.duration} hr${act.duration > 1 ? 's' : ''})`;
 
 			if (act.location) {
 				locRow.style.display = 'flex';
@@ -2448,6 +2589,16 @@
 			descText.textContent = act.desc || 'No detailed syllabus notes added.';
 
 			tagsWrap.innerHTML = (act.tags || []).map(t => `<span class="drawer-tag-pill">${t}</span>`).join('');
+
+			// Highlight active duration pill
+			document.querySelectorAll('.duration-pill-btn').forEach(btn => {
+				const dur = parseInt(btn.dataset.dur);
+				if (dur === act.duration) {
+					btn.classList.add('active');
+				} else {
+					btn.classList.remove('active');
+				}
+			});
 
 			// Automatic Contextual free time insight
 			const dayActs = activities.filter(a => a.day === act.day).sort((a, b) => a.startHour - b.startHour);
@@ -2476,6 +2627,43 @@
 			overlay.classList.add('open');
 		}
 
+		// Duration Pill Button Event Listeners (Adjust Duration in real time)
+		document.querySelectorAll('.duration-pill-btn').forEach(btn => {
+			btn.addEventListener('click', () => {
+				if (!selectedActivityId) return;
+				const act = activities.find(a => a.id === selectedActivityId);
+				if (!act) return;
+
+				const newDur = parseInt(btn.dataset.dur);
+				if (newDur === act.duration) return;
+
+				// Boundary check
+				if (act.startHour + newDur > 21) {
+					showGapToast(`Cannot extend beyond 9:00 PM closing limit.`, act.day);
+					return;
+				}
+
+				// Check collision with other activities on the same day
+				const dayOthers = activities.filter(a => a.day === act.day && a.id !== act.id);
+				const collision = dayOthers.find(other => {
+					const actEnd = act.startHour + newDur;
+					const otherEnd = other.startHour + other.duration;
+					return Math.max(act.startHour, other.startHour) < Math.min(actEnd, otherEnd);
+				});
+
+				if (collision) {
+					showGapToast(`Conflict: overlaps with "${collision.title}" at ${formatHour(collision.startHour)}.`, act.day);
+					return;
+				}
+
+				act.duration = newDur;
+				saveActivities();
+				openActivityDrawer(act.id); // Refresh drawer details
+				renderSchedule(); // Real-time matrix recalculation
+				showGapToast(`Updated "${act.title}" to ${newDur} hr${newDur > 1 ? 's' : ''}. Free time gaps recalculated!`, act.day);
+			});
+		});
+
 		function closeActivityDrawer() {
 			selectedActivityId = null;
 			drawer.classList.remove('open');
@@ -2498,6 +2686,7 @@
 				activity: act.title,
 				day: act.day,
 				time: formatHour(act.startHour),
+				duration: `${act.duration}h`,
 				type: act.type
 			});
 			window.location.href = `ai.html?${params.toString()}`;
@@ -2516,7 +2705,7 @@
 		});
 
 		/**
-		 * Quick Add Commitment Modal
+		 * Quick Add Commitment Modal supporting 1 to 4 hour sessions
 		 */
 		const quickAddModal = document.getElementById('quickAddModal');
 
@@ -2524,6 +2713,24 @@
 			document.getElementById('addDay').value = day;
 			document.getElementById('addHour').value = hour;
 			document.getElementById('addTitle').value = '';
+
+			// Calculate max available duration before next commitment
+			const nextAct = activities
+				.filter(a => a.day === day && a.startHour > hour)
+				.sort((a, b) => a.startHour - b.startHour)[0];
+			const maxAvailable = nextAct ? (nextAct.startHour - hour) : (21 - hour);
+
+			const durSelect = document.getElementById('addDuration');
+			durSelect.innerHTML = '';
+			const maxOptions = Math.min(4, Math.max(1, maxAvailable));
+			for (let d = 1; d <= maxOptions; d++) {
+				const opt = document.createElement('option');
+				opt.value = d;
+				opt.textContent = `${d} hour${d > 1 ? 's' : ''}`;
+				durSelect.appendChild(opt);
+			}
+			durSelect.value = "1";
+
 			document.getElementById('quickAddModal').classList.add('open');
 			document.getElementById('drawerOverlay').classList.add('open');
 			document.getElementById('addTitle').focus();
@@ -2547,6 +2754,25 @@
 
 			if (!title) return;
 
+			// Check schedule limits
+			if (startHour + duration > 21) {
+				showGapToast(`Cannot schedule past 9:00 PM limit.`, day);
+				return;
+			}
+
+			// Collision detection
+			const collision = activities.find(a => {
+				if (a.day !== day) return false;
+				const aEnd = a.startHour + a.duration;
+				const newEnd = startHour + duration;
+				return Math.max(a.startHour, startHour) < Math.min(aEnd, newEnd);
+			});
+
+			if (collision) {
+				showGapToast(`Time conflict with "${collision.title}" at ${formatHour(collision.startHour)}.`, day);
+				return;
+			}
+
 			// Add new commitment to state
 			const newAct = {
 				id: 'act-' + Date.now(),
@@ -2563,7 +2789,7 @@
 			saveActivities();
 			closeQuickAdd();
 			renderSchedule(); // Automatically recalculates all gaps in real time!
-			showGapToast(`Added "${title}". Free time gaps updated!`);
+			showGapToast(`Added "${title}" (${duration} hr${duration > 1 ? 's' : ''}). Free time gaps updated!`, day);
 		});
 
 		/**
