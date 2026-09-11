@@ -158,6 +158,10 @@ def clean_and_standardize_events(raw_output):
             else:
                 session_type = "Class"
 
+        # Ensure title cleanly reflects session type (e.g. 'C MT1134 Lecture')
+        if session_type and session_type.lower() not in name.lower():
+            name = f"{name} {session_type}".strip()
+
         category = item.get("category") or "academic"
 
         standardized.append({
@@ -372,7 +376,12 @@ def parse_timetable_ai():
 
     # Fixed, strict JSON schema instructions with few-shot example
     prompt = (
-        "Extract all scheduled classes, lectures, tutorials, and events from this timetable input.\n"
+        "You are an expert timetable parsing AI. Extract ALL scheduled classes, lectures, tutorials, and events from this weekly timetable.\n"
+        "CRITICAL SCANNING RULES:\n"
+        "1. This is a multi-column timetable spanning Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, and Sunday.\n"
+        "2. You MUST inspect every single day column from left to right across the ENTIRE timetable (DO NOT stop after Monday or Tuesday!).\n"
+        "3. Pay special attention to Thursday and Friday: there are classes scheduled on Thursday (e.g. 10:00 AM-12:00 PM Tutorial) and Friday (e.g. 3:00 PM-5:00 PM Lecture). You MUST extract them.\n"
+        "4. Include course title, full session type (Lecture/Tutorial/Lab), day, 24-hour start_time (HH:MM), end_time (HH:MM), and room/location.\n"
         "You MUST output ONLY a valid JSON array of objects. Do not include any explanation or conversational text.\n\n"
         "Follow this EXACT JSON schema:\n"
         "[\n"
@@ -381,7 +390,7 @@ def parse_timetable_ai():
         "    \"day\": \"Monday\",\n"
         "    \"start_time\": \"14:00\",\n"
         "    \"end_time\": \"16:00\",\n"
-        "    \"location\": \"CQMX0001-FCI\",\n"
+        "    \"location\": \"CQMX0001-FCI (Lecture Theater)\",\n"
         "    \"type\": \"Lecture\",\n"
         "    \"category\": \"academic\"\n"
         "  }\n"

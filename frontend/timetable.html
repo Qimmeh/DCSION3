@@ -2914,8 +2914,9 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 		const drawer = document.getElementById('activityDrawer');
 		const overlay = document.getElementById('drawerOverlay');
 
-		function openActivityDrawer(actId) {
-			const act = activities.find(a => a.id === actId);
+		function openActivityDrawer(actId, sourceList = null) {
+			const pool = sourceList || activities;
+			const act = pool.find(a => a.id === actId) || activities.find(a => a.id === actId) || (typeof proposedActivities !== 'undefined' && proposedActivities.find(a => a.id === actId));
 			if (!act) return;
 
 			selectedActivityId = actId;
@@ -3519,7 +3520,7 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 						tags: [ev.type || 'Lecture', 'C MT1134', 'Proposed']
 					};
 				});
-				if (mapped.length >= 4) {
+				if (mapped.length > 0) {
 					proposedActivities = mapped;
 				}
 			}
