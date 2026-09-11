@@ -536,6 +536,40 @@
 				padding: 24px 16px;
 			}
 		}
+
+		/* Typing Indicator & Model Badge */
+		.typing-indicator {
+			display: inline-flex;
+			align-items: center;
+			gap: 5px;
+			padding: 8px 14px;
+			background: var(--bg-surface);
+			border: 1px solid var(--border-subtle);
+			border-radius: 12px;
+			width: fit-content;
+		}
+		.typing-dot {
+			width: 6px;
+			height: 6px;
+			background: var(--primary-green);
+			border-radius: 50%;
+			animation: typingPulse 1.2s infinite ease-in-out;
+		}
+		.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+		.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+		@keyframes typingPulse {
+			0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+			30% { transform: translateY(-4px); opacity: 1; }
+		}
+		.model-badge {
+			font-size: 11px;
+			font-weight: 500;
+			color: var(--primary-green);
+			background: var(--primary-green-light);
+			padding: 2px 8px;
+			border-radius: 10px;
+			margin-left: 8px;
+		}
 	</style>
 </head>
 <body>
@@ -677,6 +711,7 @@
 		</main>
 	</div>
 
+	<script src="config.js"></script>
 	<script>
 		// Tab Navigation Routing
 		const NAV_PAGES = {
@@ -697,11 +732,38 @@
 			});
 		});
 
-		// Interactive Suggested Prompt insertion
+		// API Base URL resolver
+		const API_BASE = (window.DCSION3_CONFIG && window.DCSION3_CONFIG.API_BASE_URL) || '';
+
 		const chatInput = document.getElementById('chatInput');
 		const chatForm = document.getElementById('chatForm');
 		const chatContainer = document.getElementById('chatContainer');
+		const telemetryText = document.querySelector('.telemetry-text');
 
+		// Conversation memory for context
+		let conversationHistory = [
+			{ role: 'assistant', content: "Good morning Clara! Based on your schedule, Wednesday has a high probability of stress overload due to overlapping academic and paid work commitments. Would you like me to distribute your 2-hour writing session across Thursday and Friday instead?" },
+			{ role: 'user', content: "Yes, let's keep Friday afternoon free for rest, but Thursday works well." }
+		];
+
+		// Check AI service status and update banner
+		async function checkAiStatus() {
+			try {
+				const res = await fetch(`${API_BASE}/api/v1/ai/status`);
+				if (res.ok) {
+					const data = await res.json();
+					const modelName = (data.configured_model || '').replace('google/', '').replace(':free', '');
+					if (telemetryText) {
+						telemetryText.innerHTML = `Live AI Assistant Online: <strong>${data.provider}</strong> (${modelName}) &bull; Workload telemetry connected.`;
+					}
+				}
+			} catch (e) {
+				console.log("Telemetry check skipped:", e);
+			}
+		}
+		checkAiStatus();
+
+		// Interactive Suggested Prompt insertion & quick send
 		document.querySelectorAll('.prompt-chip').forEach((chip) => {
 			chip.addEventListener('click', () => {
 				const prompt = chip.dataset.prompt;
@@ -712,18 +774,34 @@
 			});
 		});
 
+		// Helper to render simple markdown formatting
+		function formatMessageText(text) {
+			if (!text) return '';
+			let sanitized = text
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;');
+			// Bold **text**
+			sanitized = sanitized.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+			// Convert linebreaks
+			return sanitized.split('\n\n').map(p => `<p class="message-body-text" style="margin-bottom:8px;">${p.replace(/\n/g, '<br>')}</p>`).join('');
+		}
+
+		function scrollToBottom() {
+			chatContainer.scrollTop = chatContainer.scrollHeight;
+		}
+
 		if (chatForm && chatInput && chatContainer) {
-			chatForm.addEventListener('submit', (e) => {
+			chatForm.addEventListener('submit', async (e) => {
 				e.preventDefault();
 				const msg = chatInput.value.trim();
 				if (!msg) return;
 
-				// Add divider
+				// 1. Add divider and User message
 				const div = document.createElement('div');
 				div.className = 'chat-divider-line';
 				chatContainer.appendChild(div);
 
-				// Add user message
 				const userBlock = document.createElement('div');
 				userBlock.className = 'message-block';
 				userBlock.innerHTML = `
@@ -731,29 +809,81 @@
 						<h2 class="sender-title">You</h2>
 						<span class="message-time-label">Just now</span>
 					</div>
-					<p class="message-body-text">${msg}</p>
+					<p class="message-body-text">${msg.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
 				`;
 				chatContainer.appendChild(userBlock);
-
 				chatInput.value = '';
+				scrollToBottom();
 
-				// Simulated intelligent response
-				setTimeout(() => {
-					const botDiv = document.createElement('div');
-					botDiv.className = 'chat-divider-line';
-					chatContainer.appendChild(botDiv);
+				// 2. Add typing indicator
+				const botDiv = document.createElement('div');
+				botDiv.className = 'chat-divider-line';
+				chatContainer.appendChild(botDiv);
+
+				const typingBlock = document.createElement('div');
+				typingBlock.className = 'message-block';
+				typingBlock.id = 'typingIndicator';
+				typingBlock.innerHTML = `
+					<div class="message-header-row">
+						<h2 class="sender-title">Emora Companion</h2>
+						<span class="message-time-label">Thinking...</span>
+					</div>
+					<div class="typing-indicator">
+						<span class="typing-dot"></span>
+						<span class="typing-dot"></span>
+						<span class="typing-dot"></span>
+					</div>
+				`;
+				chatContainer.appendChild(typingBlock);
+				scrollToBottom();
+
+				// Save user message to history
+				conversationHistory.push({ role: 'user', content: msg });
+
+				try {
+					const response = await fetch(`${API_BASE}/api/v1/ai/chat`, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							message: msg,
+							history: conversationHistory,
+							include_context: true
+						})
+					});
+
+					const data = await response.json();
+					typingBlock.remove();
+
+					const replyText = data.ok ? data.reply : (data.fallback_reply || data.error || 'Unable to connect to AI.');
+					const modelUsed = data.model ? data.model.replace('google/', '').replace(':free', '') : 'AI';
+
+					conversationHistory.push({ role: 'assistant', content: replyText });
 
 					const botBlock = document.createElement('div');
 					botBlock.className = 'message-block';
 					botBlock.innerHTML = `
 						<div class="message-header-row">
-							<h2 class="sender-title">Emora Companion</h2>
+							<h2 class="sender-title">Emora Companion <span class="model-badge">${modelUsed}</span></h2>
 							<span class="message-time-label">Just now</span>
 						</div>
-						<p class="message-body-text">Noted! I've updated your schedule preferences. I'll maintain clear protected time after 5 PM on Friday for your rest and recovery.</p>
+						${formatMessageText(replyText)}
 					`;
 					chatContainer.appendChild(botBlock);
-				}, 600);
+					scrollToBottom();
+				} catch (err) {
+					typingBlock.remove();
+					const errBlock = document.createElement('div');
+					errBlock.className = 'message-block';
+					errBlock.innerHTML = `
+						<div class="message-header-row">
+							<h2 class="sender-title" style="color:var(--alert-orange);">Emora Companion</h2>
+							<span class="message-time-label">Error</span>
+						</div>
+						<p class="message-body-text">Could not reach the AI service. Please ensure the backend server is running on port 5000.</p>
+					`;
+					chatContainer.appendChild(errBlock);
+					scrollToBottom();
+				}
 			});
 		}
 	</script>

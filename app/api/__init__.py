@@ -96,4 +96,6 @@ from app.api import (
     burnout_api,
     scheduler_api,
     calendar_api,
+    ai_api,
 )
+

@@ -43,3 +43,7 @@ class Config:
         "pool_pre_ping": True,
         "pool_recycle": 300,
     }
+
+    OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+    OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "google/gemma-4-31b-it:free")
+
