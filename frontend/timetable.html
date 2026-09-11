@@ -1177,6 +1177,10 @@
 		}
 
 		.popover-confirm-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
 			padding: 9px 16px;
 			background: #4A6B5D;
 			border-radius: 12px;
@@ -1186,6 +1190,7 @@
 			font-weight: 600;
 			font-size: 13px;
 			color: #FFFFFF;
+			transition: background 0.15s ease;
 		}
 
 		/* Responsive layout */
@@ -2299,9 +2304,11 @@
 
 				<!-- Textarea Frame -->
 				<div class="popover-textarea-frame">
-					<label class="popover-textarea-label" for="scheduleTextInput">Describe schedule or paste syllabus</label>
-					<textarea class="popover-text-box" id="scheduleTextInput" style="width:100%; min-height:80px; font-family:'Inter',sans-serif; font-size:12px; line-height:1.4; resize:vertical;" placeholder="Thu 10-12 AM · Neuroscience Lecture&#10;Thu 2-4 PM · Neurobiology Lab (NEUR 301-L)">Thu 10:00 AM – 12:00 PM · Neuroscience Lecture (NEUR 301)
-Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
+					<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+						<label class="popover-textarea-label" for="scheduleTextInput" style="margin-bottom:0;">Describe schedule or paste syllabus</label>
+						<span style="font-size:10.5px; color:#8C8377; font-family:'Inter',sans-serif; background:#EDE8DF; padding:1px 6px; border-radius:4px;">Ctrl+Enter ↵</span>
+					</div>
+					<textarea class="popover-text-box" id="scheduleTextInput" style="width:100%; min-height:85px; font-family:'Inter',sans-serif; font-size:12px; line-height:1.45; resize:vertical;" placeholder="Paste course list, syllabus, or type commitments (e.g. 'Monday 2-4 PM C MT1134 Lecture', 'Friday 3-5 PM C MT1134 Lecture')..."></textarea>
 					<span class="popover-footnote">Emora AI extracts scheduled courses and generates an interactive preview window.</span>
 				</div>
 
@@ -2318,8 +2325,9 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 					<button class="popover-cancel-btn" id="closeImportBtn" type="button">
 						<span>Cancel</span>
 					</button>
-					<button class="popover-confirm-btn" id="confirmImportBtn" type="button">
-						<span id="confirmImportBtnText">Extract &amp; Preview</span>
+					<button class="popover-confirm-btn" id="confirmImportBtn" type="button" title="Send schedule prompt to AI">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+						<span id="confirmImportBtnText">Send Prompt</span>
 					</button>
 				</div>
 			</div>
@@ -3528,7 +3536,15 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 
 		confirmImportBtn.addEventListener('click', () => {
 			const text = document.getElementById('scheduleTextInput')?.value?.trim() || null;
-			triggerAiExtraction('Course Schedule', null, text);
+			triggerAiExtraction(text ? 'Your Syllabus Prompt' : 'Course Schedule', null, text);
+		});
+
+		// Ctrl+Enter shortcut on schedule prompt textarea
+		document.getElementById('scheduleTextInput')?.addEventListener('keydown', (e) => {
+			if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+				e.preventDefault();
+				confirmImportBtn.click();
+			}
 		});
 
 		async function triggerAiExtraction(sourceName, file = null, text = null) {
@@ -3608,7 +3624,7 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 				}
 			}
 
-			statusMsg.textContent = `Done! AI extracted ${proposedActivities.length} scheduled courses from C MT1134. Opening preview...`;
+			statusMsg.textContent = `Done! AI extracted ${proposedActivities.length} scheduled courses. Opening preview...`;
 			btnText.textContent = 'Open Preview';
 
 			const openBtn = document.getElementById('openPreviewBtn');
@@ -3617,7 +3633,7 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 			setTimeout(() => {
 				importPopover.classList.remove('open');
 				statusBox.style.display = 'none';
-				btnText.textContent = 'Extract & Preview';
+				btnText.textContent = 'Send Prompt';
 				openPreviewModal();
 			}, 600);
 		}
