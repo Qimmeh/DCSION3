@@ -49,3 +49,15 @@ def timetable():
 @bp.route("/timetable.html")
 def timetable_page():
     return render_template("timetable.html")
+
+
+@bp.route("/ai")
+@bp.route("/ai.html")
+def ai_page():
+    return render_template("ai.html")
+
+
+@bp.route("/insights")
+@bp.route("/insights.html")
+def insights_page():
+    return render_template("insights.html")
