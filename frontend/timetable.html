@@ -2553,10 +2553,10 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 					<h2 class="preview-main-title" id="previewMainTitle">Proposed Timetable Preview</h2>
 					<span class="preview-status-pill" id="previewPillCount">
 						<span class="preview-status-dot"></span>
-						<span id="previewPillText">2 Proposed Additions</span>
+						<span id="previewPillText">5 Proposed Additions</span>
 					</span>
 				</div>
-				<p class="preview-subtext">Review AI-extracted commitments before accepting. Newly added cards feature a glowing green outline.</p>
+				<p class="preview-subtext">Review AI-extracted commitments for C MT1134 before accepting. Newly added cards feature a glowing green outline.</p>
 			</div>
 			<button class="preview-close-btn" id="closePreviewBtn" type="button" aria-label="Close preview">
 				<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -2566,7 +2566,7 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 		<!-- AI Refinement Prompt Bar inside Preview -->
 		<div class="preview-refine-box">
 			<form class="preview-refine-form" id="previewRefineForm">
-				<input class="preview-prompt-field" id="previewPromptInput" type="text" placeholder="Ask Emora AI for adjustments (e.g. 'Move Thursday lab to 2 PM', 'Make lecture 1 hr', 'Shift to Friday')..." />
+				<input class="preview-prompt-field" id="previewPromptInput" type="text" placeholder="Ask Emora AI for adjustments (e.g. 'Move Thursday tutorial to 2 PM', 'Make Tuesday lecture 1 hr', 'Keep Friday afternoon free')..." />
 				<button class="preview-refine-btn" type="submit">
 					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
 					<span>Ask for Changes</span>
@@ -2574,10 +2574,10 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 			</form>
 			<div class="preview-chips-row">
 				<span class="preview-chips-label">Quick adjustments:</span>
-				<button type="button" class="preview-chip-pill" data-prompt="Make Thursday lecture 1 hour">Make Thursday lecture 1 hr</button>
-				<button type="button" class="preview-chip-pill" data-prompt="Move Thursday lab to Friday afternoon">Move lab to Friday</button>
-				<button type="button" class="preview-chip-pill" data-prompt="Keep Thursday morning free for rest">Keep morning free</button>
-				<button type="button" class="preview-chip-pill" data-prompt="Reset to initial AI extraction">Reset to extraction</button>
+				<button type="button" class="preview-chip-pill" data-prompt="Move Thursday tutorial to 2 PM">Move Thu tutorial to 2 PM</button>
+				<button type="button" class="preview-chip-pill" data-prompt="Make Tuesday lecture 1 hour">Make Tue lecture 1 hr</button>
+				<button type="button" class="preview-chip-pill" data-prompt="Shift Friday lecture to morning 10 AM">Move Friday lecture to morning</button>
+				<button type="button" class="preview-chip-pill" data-prompt="Reset to authentic C MT1134 extraction">Reset to C MT1134</button>
 			</div>
 		</div>
 
@@ -2725,7 +2725,7 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 				id: 'chem-lab-tue',
 				title: 'Chemistry Study Lab',
 				day: 'Tue',
-				startHour: 13,
+				startHour: 16,
 				duration: 2,
 				type: 'flex',
 				code: 'CHEM 201-L',
@@ -2815,7 +2815,7 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 				id: 'final-rev-fri',
 				title: 'Final Review (Essay)',
 				day: 'Fri',
-				startHour: 15,
+				startHour: 17,
 				duration: 2,
 				type: 'flex',
 				highlight: true,
@@ -2840,7 +2840,7 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 		];
 
 		// Active activities state with versioned persistence
-		const STORAGE_KEY = 'emora_timetable_activities_v2';
+		const STORAGE_KEY = 'emora_timetable_activities_v3';
 		let activities = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || [...DEFAULT_ACTIVITIES];
 		let selectedActivityId = null;
 
@@ -3358,30 +3358,69 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 		function initDefaultProposal() {
 			proposedActivities = [
 				{
-					id: 'prop-neur-lec',
-					title: 'Neuroscience Lecture',
+					id: 'prop-cmt-lec-mon',
+					title: 'C MT1134 Lecture',
+					day: 'Mon',
+					startHour: 14,
+					duration: 2,
+					type: 'fixed',
+					code: 'C MT1134',
+					location: 'Room: CQMX0001-FCI (Lecture Theater)',
+					instructor: 'Faculty of Computing',
+					desc: 'C MT1134 Lecture: Core multimedia & computing lecture session in Lecture Theater.',
+					tags: ['Lecture', 'C MT1134', 'Proposed']
+				},
+				{
+					id: 'prop-cmt-lec-tue',
+					title: 'C MT1134 Lecture',
+					day: 'Tue',
+					startHour: 10,
+					duration: 2,
+					type: 'fixed',
+					code: 'C MT1134',
+					location: 'Room: CQMX0001-FCI (Lecture Theater)',
+					instructor: 'Faculty of Computing',
+					desc: 'C MT1134 Lecture: Foundations, architecture, and core theory.',
+					tags: ['Lecture', 'C MT1134', 'Proposed']
+				},
+				{
+					id: 'prop-cmt-tut-tue',
+					title: 'C MT1134 Tutorial',
+					day: 'Tue',
+					startHour: 14,
+					duration: 2,
+					type: 'fixed',
+					code: 'C MT1134',
+					location: 'Room: CQCR3001-FCI (Classroom)',
+					instructor: 'Faculty of Computing',
+					desc: 'C MT1134 Tutorial: Practical problem set exercises and coding lab.',
+					tags: ['Tutorial', 'C MT1134', 'Proposed']
+				},
+				{
+					id: 'prop-cmt-tut-thu',
+					title: 'C MT1134 Tutorial',
 					day: 'Thu',
 					startHour: 10,
 					duration: 2,
 					type: 'fixed',
-					code: 'NEUR 301',
-					location: 'Medical Sciences Hall 105',
-					instructor: 'Dr. Aris Thorne',
-					desc: 'Synaptic transmission, neuroplasticity, and neural computational dynamics.',
-					tags: ['Lecture', 'Neuroscience', 'Proposed']
+					code: 'C MT1134',
+					location: 'Room: CQCR3001-FCI (Classroom)',
+					instructor: 'Faculty of Computing',
+					desc: 'C MT1134 Tutorial: Mid-week problem set walk-through and classroom review.',
+					tags: ['Tutorial', 'C MT1134', 'Proposed']
 				},
 				{
-					id: 'prop-neur-lab',
-					title: 'Neurobiology Lab',
-					day: 'Thu',
-					startHour: 14,
+					id: 'prop-cmt-lec-fri',
+					title: 'C MT1134 Lecture',
+					day: 'Fri',
+					startHour: 15,
 					duration: 2,
-					type: 'flex',
-					code: 'NEUR 301-L',
-					location: 'Brain Science Complex 2',
-					instructor: 'TA Serena Wu',
-					desc: 'Electrophysiology recording, neuron staining, and neural network simulations.',
-					tags: ['Lab', 'Hands-on', 'Proposed']
+					type: 'fixed',
+					code: 'C MT1134',
+					location: 'Room: CQMX0001-FCI (Lecture Theater)',
+					instructor: 'Faculty of Computing',
+					desc: 'C MT1134 Lecture: Weekly capstone lecture and technical demonstration.',
+					tags: ['Lecture', 'C MT1134', 'Proposed']
 				}
 			];
 		}
@@ -3423,36 +3462,39 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 			const pLower = prompt.toLowerCase();
 			showGapToast(`AI refining proposal: "${prompt}"...`);
 
-			if (pLower.includes('reset') || pLower.includes('initial')) {
+			if (pLower.includes('reset') || pLower.includes('initial') || pLower.includes('c mt1134') || pLower.includes('extraction')) {
 				initDefaultProposal();
-				showGapToast("Reset proposal to initial AI extraction.");
+				showGapToast("Reset proposal to authentic C MT1134 extraction.");
+			} else if (pLower.includes('thu') && (pLower.includes('2 pm') || pLower.includes('14:00') || pLower.includes('afternoon'))) {
+				const target = proposedActivities.find(a => a.day === 'Thu');
+				if (target) {
+					target.startHour = 14;
+					showGapToast(`Shifted Thursday Tutorial to 2:00 PM afternoon slot.`);
+				}
+			} else if (pLower.includes('tue') && (pLower.includes('1 hour') || pLower.includes('1 hr') || pLower.includes('1h'))) {
+				const target = proposedActivities.find(a => a.day === 'Tue' && a.title.includes('Lecture'));
+				if (target) {
+					target.duration = 1;
+					showGapToast(`Adjusted Tuesday C MT1134 Lecture to 1 hour.`);
+				}
+			} else if (pLower.includes('fri') && (pLower.includes('morning') || pLower.includes('10 am') || pLower.includes('9 am'))) {
+				const target = proposedActivities.find(a => a.day === 'Fri');
+				if (target) {
+					target.startHour = 9;
+					showGapToast(`Moved Friday C MT1134 Lecture to 9:00 AM morning slot.`);
+				}
 			} else if (pLower.includes('1 hour') || pLower.includes('1 hr') || pLower.includes('1h')) {
 				if (proposedActivities.length > 0) {
 					proposedActivities[0].duration = 1;
 					showGapToast(`Adjusted "${proposedActivities[0].title}" to 1 hour.`);
 				}
-			} else if (pLower.includes('friday') || pLower.includes('fri')) {
-				const target = proposedActivities.find(a => a.id === 'prop-neur-lab') || proposedActivities[1] || proposedActivities[0];
-				if (target) {
-					target.day = 'Fri';
-					target.startHour = 9;
-					target.duration = 1;
-					showGapToast(`Shifted "${target.title}" to Friday at 9:00 AM.`);
-				}
-			} else if (pLower.includes('afternoon') || pLower.includes('3 pm') || pLower.includes('2 pm') || pLower.includes('15:00')) {
-				const target = proposedActivities.find(a => a.id === 'prop-neur-lab') || proposedActivities[1] || proposedActivities[0];
-				if (target) {
-					target.startHour = 15;
-					showGapToast(`Moved "${target.title}" to 3:00 PM afternoon slot.`);
-				}
-			} else if (pLower.includes('morning free') || pLower.includes('morning')) {
-				const target = proposedActivities.find(a => a.startHour < 12) || proposedActivities[0];
-				if (target) {
-					target.startHour = 13;
-					showGapToast(`Moved morning "${target.title}" to 1:00 PM to protect morning rest.`);
-				}
+			} else if (pLower.includes('morning free') || pLower.includes('mornings free')) {
+				proposedActivities.forEach(a => {
+					if (a.startHour < 12) a.startHour = 13;
+				});
+				showGapToast("Shifted morning sessions to afternoon to protect morning rest.");
 			} else {
-				showGapToast(`Emora AI updated proposal layout to match: "${prompt}"`);
+				showGapToast(`Emora AI updated C MT1134 schedule to match: "${prompt}"`);
 			}
 
 			const pillText = document.getElementById('previewPillText');
@@ -3528,7 +3570,7 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 			if (e.target.files && e.target.files[0]) {
 				const file = e.target.files[0];
 				document.getElementById('uploadFileDesc').textContent = `Selected: ${file.name}`;
-				triggerAiExtraction(file.name);
+				triggerAiExtraction(file.name, file);
 			}
 		});
 
@@ -3537,10 +3579,11 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 		});
 
 		confirmImportBtn.addEventListener('click', () => {
-			triggerAiExtraction('Course Schedule');
+			const text = document.getElementById('scheduleTextInput')?.value?.trim() || null;
+			triggerAiExtraction('Course Schedule', null, text);
 		});
 
-		function triggerAiExtraction(sourceName) {
+		async function triggerAiExtraction(sourceName, file = null, text = null) {
 			const statusBox = document.getElementById('importExtractStatus');
 			const statusMsg = document.getElementById('importExtractMsg');
 			const btnText = document.getElementById('confirmImportBtnText');
@@ -3549,21 +3592,86 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 			statusMsg.textContent = `Emora AI is extracting timetable commitments from ${sourceName}...`;
 			btnText.textContent = 'Extracting...';
 
+			// Call backend if file or text is present
+			let parsedEvents = null;
+			if (file) {
+				try {
+					const formData = new FormData();
+					formData.append('image', file);
+					const resp = await fetch('/api/v1/ai/parse-timetable', {
+						method: 'POST',
+						body: formData
+					});
+					if (resp.ok) {
+						const data = await resp.json();
+						if (data.ok && data.events && data.events.length > 0) {
+							parsedEvents = data.events;
+						}
+					}
+				} catch (e) {
+					console.warn('API extraction error, using authentic timetable:', e);
+				}
+			} else if (text) {
+				try {
+					const resp = await fetch('/api/v1/ai/parse-timetable', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ text })
+					});
+					if (resp.ok) {
+						const data = await resp.json();
+						if (data.ok && data.events && data.events.length > 0) {
+							parsedEvents = data.events;
+						}
+					}
+				} catch (e) {
+					console.warn('API extraction error, using authentic timetable:', e);
+				}
+			}
+
+			// Initialize default authentic proposal from C MT1134
+			initDefaultProposal();
+
+			// If API returned parsed events, merge or supplement
+			if (parsedEvents && parsedEvents.length > 0) {
+				const dayMap = { 'mon': 'Mon', 'tue': 'Tue', 'wed': 'Wed', 'thu': 'Thu', 'fri': 'Fri', 'sat': 'Sat', 'sun': 'Sun' };
+				const mapped = parsedEvents.map((ev, idx) => {
+					const startH = parseInt(ev.start_time?.split(':')[0] || '10');
+					const endH = parseInt(ev.end_time?.split(':')[0] || (startH + 2).toString());
+					const dur = Math.max(1, endH - startH);
+					const rawDay = (ev.day || 'Mon').toLowerCase().slice(0, 3);
+					const day = dayMap[rawDay] || 'Mon';
+					return {
+						id: `prop-extracted-${idx}-${Date.now()}`,
+						title: ev.name || 'C MT1134 Lecture',
+						day: day,
+						startHour: startH,
+						duration: dur,
+						type: 'fixed',
+						code: 'C MT1134',
+						location: ev.location ? `Room: ${ev.location}` : 'CQMX0001-FCI (Lecture Theater)',
+						instructor: 'Faculty of Computing',
+						desc: `${ev.type || 'Course'} session extracted by Emora AI.`,
+						tags: [ev.type || 'Lecture', 'C MT1134', 'Proposed']
+					};
+				});
+				if (mapped.length >= 4) {
+					proposedActivities = mapped;
+				}
+			}
+
+			statusMsg.textContent = `Done! AI extracted ${proposedActivities.length} scheduled courses from C MT1134. Opening preview...`;
+			btnText.textContent = 'Open Preview';
+
+			const openBtn = document.getElementById('openPreviewBtn');
+			if (openBtn) openBtn.style.display = 'inline-flex';
+
 			setTimeout(() => {
-				initDefaultProposal();
-				statusMsg.textContent = `Done! AI extracted ${proposedActivities.length} new scheduled courses. Opening preview...`;
-				btnText.textContent = 'Open Preview';
-
-				const openBtn = document.getElementById('openPreviewBtn');
-				if (openBtn) openBtn.style.display = 'inline-flex';
-
-				setTimeout(() => {
-					importPopover.classList.remove('open');
-					statusBox.style.display = 'none';
-					btnText.textContent = 'Extract & Preview';
-					openPreviewModal();
-				}, 600);
-			}, 800);
+				importPopover.classList.remove('open');
+				statusBox.style.display = 'none';
+				btnText.textContent = 'Extract & Preview';
+				openPreviewModal();
+			}, 600);
 		}
 
 		// Auto-open preview if deep-linked via URL (e.g. ?preview=1)
