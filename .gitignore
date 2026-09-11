@@ -20,6 +20,8 @@ instance/
 # OS generated files
 .DS_Store
 Thumbs.db
+image.png
+
 
 # Node dependencies
 node_modules/
