@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>emora | Insights</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		/* --- Design Tokens & Global Reset --- */
+		:root {
+			--bg-app: #FAF9F6;
+			--bg-surface: #FFFFFF;
+			--primary-green: #4A6B5D;
+			--primary-green-light: #EBF0EE;
+			--alert-orange: #D97A53;
+			--alert-bg: #FBF3EE;
+			--text-main: #2C2A29;
+			--text-muted: #7A7774;
+			--border-subtle: #ECEAE4;
+		}
+
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			background: var(--bg-app);
+			font-family: 'Inter', sans-serif;
+			color: var(--text-main);
+			min-height: 100vh;
+			margin: 0;
+			-webkit-font-smoothing: antialiased;
+		}
+
+		/* screen-insights */
+		.screen-insights {
+			display: flex;
+			flex-direction: row;
+			align-items: flex-start;
+			width: 100%;
+			min-height: 100vh;
+			background: var(--bg-app);
+		}
+
+		/* sidebar - fixed to left edge */
+		.sidebar {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			align-items: flex-start;
+			padding: 32px 24px;
+			width: 240px;
+			min-width: 240px;
+			height: 100vh;
+			position: fixed;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			background: var(--bg-surface);
+			border-right: 1px solid var(--border-subtle);
+			z-index: 100;
+			overflow-y: auto;
+			transform: translateX(-100%);
+			transition: transform .32s cubic-bezier(.16,1,.3,1);
+			box-shadow: 0 20px 60px rgba(0,0,0,.18);
+		}
+
+		body.sidebar-open .sidebar {
+			transform: translateX(0);
+		}
+
+		.sidebar-top {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 40px;
+			width: 100%;
+		}
+
+		/* brand */
+		.brand {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 12px;
+			text-decoration: none;
+		}
+
+		.brand-icon {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 32px;
+			height: 32px;
+			background: var(--primary-green);
+			border-radius: 8px;
+			flex-shrink: 0;
+		}
+
+		.brand-icon span {
+			font-family: 'Fraunces', serif;
+			font-weight: 700;
+			font-size: 18px;
+			line-height: 1;
+			color: #FFFFFF;
+		}
+
+		.brand-text-col {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 2px;
+		}
+
+		.brand-name {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 18px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.brand-sub {
+			font-family: 'Inter', sans-serif;
+			font-weight: 500;
+			font-size: 10px;
+			line-height: 1.2;
+			letter-spacing: 1px;
+			text-transform: uppercase;
+			color: var(--primary-green);
+		}
+
+		.sidebar-close-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			border-radius: 9px;
+			border: 1px solid var(--border-subtle);
+			background: var(--bg-surface);
+			color: var(--text-muted);
+			font-size: 14px;
+			flex: 0 0 auto;
+			transition: all .2s cubic-bezier(.16,1,.3,1);
+		}
+
+		.sidebar-close-btn:hover {
+			border-color: var(--primary-green);
+			color: var(--primary-green);
+			background: #fff0e6;
+			transform: scale(1.08);
+		}
+
+		.hamburger-btn {
+			position: fixed;
+			top: 26px;
+			left: 26px;
+			z-index: 40;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			border: 1px solid var(--border-subtle);
+			background: var(--bg-surface);
+			color: var(--text-main);
+			width: 40px;
+			height: 40px;
+			border-radius: 11px;
+			font-size: 18px;
+			box-shadow: 0 4px 16px rgba(32,36,45,.08);
+			transition: all .22s cubic-bezier(.16,1,.3,1);
+		}
+
+		.hamburger-btn:hover {
+			border-color: var(--primary-green);
+			color: var(--primary-green);
+			transform: scale(1.05);
+			box-shadow: 0 6px 20px rgba(243,123,50,.18);
+		}
+
+		body.sidebar-open .hamburger-btn {
+			opacity: 0;
+			pointer-events: none;
+			transform: scale(.8);
+		}
+
+		.sidebar-overlay {
+			position: fixed;
+			inset: 0;
+			background: rgba(15,12,9,.42);
+			backdrop-filter: blur(2px);
+			z-index: 45;
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity .28s cubic-bezier(.16,1,.3,1);
+		}
+
+		body.sidebar-open .sidebar-overlay {
+			opacity: 1;
+			pointer-events: auto;
+		}
+
+		/* tabs */
+		.tabs {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 8px;
+			width: 100%;
+		}
+
+		.tab-item {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 12px 16px;
+			gap: 12px;
+			width: 100%;
+			border-radius: 8px;
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			text-align: left;
+			transition: background 0.15s ease;
+		}
+
+		.tab-item:hover {
+			background: #F5F7F6;
+		}
+
+		.tab-item.active {
+			background: var(--primary-green-light);
+		}
+
+		.icon-wrapper {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 18px;
+			height: 18px;
+			flex-shrink: 0;
+		}
+
+		.icon-wrapper svg {
+			width: 18px;
+			height: 18px;
+			stroke: var(--text-muted);
+			stroke-width: 2;
+			fill: none;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		.tab-item.active .icon-wrapper svg {
+			stroke: var(--primary-green);
+		}
+
+		.tab-label {
+			font-family: 'Inter', sans-serif;
+			font-weight: 500;
+			font-size: 14px;
+			line-height: 1.2;
+			color: var(--text-main);
+			flex-grow: 1;
+		}
+
+		.tab-item.active .tab-label {
+			font-weight: 600;
+			color: var(--primary-green);
+		}
+
+		/* profile-card */
+		.profile-card {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+			width: 100%;
+		}
+
+		.profile-box {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 12px;
+			gap: 12px;
+			width: 100%;
+			border-radius: 12px;
+			background: #FAF9F6;
+		}
+
+		.profile-avatar {
+			width: 36px;
+			height: 36px;
+			border-radius: 18px;
+			background: #EBF0EE;
+			border: 1px solid #D1DED8;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: var(--primary-green);
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 14px;
+			flex-shrink: 0;
+		}
+
+		.profile-meta {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 2px;
+			overflow: hidden;
+		}
+
+		.profile-name {
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 13px;
+			line-height: 1.2;
+			color: var(--text-main);
+			white-space: nowrap;
+		}
+
+		.profile-email {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 11px;
+			line-height: 1.2;
+			color: var(--text-muted);
+			white-space: nowrap;
+		}
+
+		.theme-toggle {
+			width: 100%;
+			border: 1px solid var(--border-subtle);
+			background: var(--bg-surface);
+			color: var(--text-muted);
+			padding: 10px 12px;
+			border-radius: 9px;
+			text-align: left;
+			font-size: 12px;
+			line-height: 1.2;
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			cursor: pointer;
+			transition: border-color .15s ease, color .15s ease, background .15s ease;
+		}
+
+		.theme-toggle:hover {
+			border-color: var(--primary-green);
+			color: var(--text-main);
+			background: #fff;
+		}
+
+		/* content-area */
+		.content-area {
+			margin-left: 240px;
+			width: calc(100% - 240px);
+			max-width: 1320px;
+			min-height: 100vh;
+			padding: 40px 48px 64px 48px;
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 28px;
+		}
+
+		/* header */
+		.header-col {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 6px;
+			width: 100%;
+		}
+
+		.page-heading {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 28px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.page-subheading {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 13px;
+			line-height: 1.4;
+			color: var(--text-muted);
+		}
+
+		/* Universal Card Section */
+		.insights-card-section {
+			background: var(--bg-surface);
+			border-radius: 16px;
+			padding: 28px 32px;
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 24px;
+			width: 100%;
+		}
+
+		.section-head {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 4px;
+			width: 100%;
+		}
+
+		.section-head-title {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 20px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.section-head-desc {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 13px;
+			line-height: 1.4;
+			color: var(--text-muted);
+		}
+
+		/* 1. Trends Row: 3 columns */
+		.trend-cards-row {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 20px;
+			width: 100%;
+		}
+
+		.trend-box {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			padding: 20px;
+			gap: 12px;
+			background: var(--bg-app);
+			border-radius: 12px;
+			min-height: 140px;
+		}
+
+		.trend-box-title {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 18px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.trend-box-desc {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 13px;
+			line-height: 1.4;
+			color: var(--text-muted);
+			flex-grow: 1;
+		}
+
+		.metric-indicator-row {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 8px;
+			margin-top: 4px;
+		}
+
+		.metric-dot {
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			flex-shrink: 0;
+		}
+
+		.metric-dot.green { background: var(--primary-green); }
+		.metric-dot.orange { background: var(--alert-orange); }
+
+		.metric-indicator-text {
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 12px;
+			line-height: 1.2;
+		}
+
+		.metric-indicator-text.green { color: var(--primary-green); }
+		.metric-indicator-text.orange { color: var(--alert-orange); }
+
+		/* 2. Patterns Row: 2 columns (Heatmap + Category Distribution) */
+		.patterns-row {
+			display: grid;
+			grid-template-columns: 2fr 1fr;
+			gap: 24px;
+			width: 100%;
+			align-items: stretch;
+		}
+
+		.monthly-stress-pattern-box {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			padding: 24px;
+			gap: 16px;
+			background: var(--bg-app);
+			border-radius: 12px;
+			width: 100%;
+		}
+
+		.box-title-sm {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 18px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.box-desc-sm {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 13px;
+			line-height: 1.4;
+			color: var(--text-muted);
+		}
+
+		/* Heatmap 4 Weeks Grid */
+		.heatmap-frame {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			width: 100%;
+			padding: 8px 0;
+		}
+
+		.heatmap-week-row {
+			display: grid;
+			grid-template-columns: 60px 1fr;
+			align-items: center;
+			gap: 12px;
+			width: 100%;
+		}
+
+		.heatmap-week-label {
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 12px;
+			line-height: 1;
+			color: var(--text-main);
+		}
+
+		.heatmap-bars-frame {
+			display: grid;
+			grid-template-columns: repeat(7, 1fr);
+			gap: 6px;
+			align-items: center;
+		}
+
+		.heatmap-bar {
+			height: 8px;
+			border-radius: 4px;
+		}
+
+		.heatmap-bar.normal { background: var(--primary-green-light); }
+		.heatmap-bar.midmonth-peak { background: var(--alert-bg); }
+
+		.heatmap-callout-row {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 8px;
+			margin-top: 4px;
+		}
+
+		/* Category Distribution Box */
+		.category-distribution-box {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			padding: 24px;
+			gap: 16px;
+			background: var(--bg-app);
+			border-radius: 12px;
+			width: 100%;
+		}
+
+		.dist-progress-list {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+			width: 100%;
+		}
+
+		.dist-item {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			width: 100%;
+		}
+
+		.dist-item-label-row {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+		}
+
+		.dist-name {
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 13px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.dist-hours {
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 13px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.dist-bar-track {
+			height: 6px;
+			border-radius: 3px;
+			width: 100%;
+		}
+
+		.dist-bar-track.orange { background: var(--alert-orange); }
+		.dist-bar-track.neutral { background: var(--text-muted); }
+		.dist-bar-track.green { background: var(--primary-green); }
+
+		/* Stress Summary: 2 cards row */
+		.stress-summary-row {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 20px;
+			width: 100%;
+		}
+
+		.stress-summary-card {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			padding: 20px;
+			gap: 10px;
+			background: var(--bg-app);
+			border-radius: 12px;
+		}
+
+		.stress-summary-card-title {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 18px;
+			line-height: 1.2;
+			color: var(--text-main);
+		}
+
+		.stress-summary-card-desc {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 13px;
+			line-height: 1.4;
+			color: var(--text-muted);
+			flex-grow: 1;
+		}
+
+		.stress-summary-stat-row {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 8px;
+			margin-top: 4px;
+		}
+
+		/* 3. Recommendations Section */
+		.recommendations-section {
+			gap: 20px;
+		}
+
+		.rec-list-frame {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+			width: 100%;
+		}
+
+		.rec-item-row {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 16px;
+			width: 100%;
+		}
+
+		.rec-icon-circle {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 36px;
+			height: 36px;
+			background: var(--primary-green-light);
+			border-radius: 18px;
+			flex-shrink: 0;
+		}
+
+		.rec-icon-wrap {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 16px;
+			height: 16px;
+		}
+
+		.rec-icon-wrap svg {
+			width: 16px;
+			height: 16px;
+			stroke: var(--primary-green);
+			stroke-width: 2;
+			fill: none;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		.rec-text {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 14px;
+			line-height: 1.4;
+			color: var(--text-muted);
+			flex-grow: 1;
+		}
+
+		/* 4. Outcomes Section: 4 cards row */
+		.outcome-cards-row {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 16px;
+			width: 100%;
+		}
+
+		.outcome-card {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			padding: 20px;
+			gap: 10px;
+			background: var(--bg-app);
+			border-radius: 12px;
+			min-height: 154px;
+		}
+
+		.outcome-title {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 16px;
+			line-height: 1.25;
+			color: var(--text-main);
+		}
+
+		.outcome-desc {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 12px;
+			line-height: 1.4;
+			color: var(--text-muted);
+			flex-grow: 1;
+		}
+
+		.outcome-indicator-row {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 8px;
+			margin-top: 4px;
+		}
+
+		/* Outcome note banner */
+		.outcome-note-banner {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 14px 18px;
+			gap: 12px;
+			background: var(--bg-app);
+			border-radius: 12px;
+			width: 100%;
+		}
+
+		.info-circle {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 24px;
+			height: 24px;
+			background: var(--primary-green-light);
+			border-radius: 50%;
+			flex-shrink: 0;
+		}
+
+		.info-circle span {
+			font-family: 'Inter', sans-serif;
+			font-weight: 700;
+			font-size: 12px;
+			line-height: 1;
+			color: var(--primary-green);
+		}
+
+		.outcome-note-text {
+			font-family: 'Inter', sans-serif;
+			font-weight: 400;
+			font-size: 13px;
+			line-height: 1.4;
+			color: var(--text-muted);
+		}
+
+		/* ---------- Night mode ---------- */
+		body.night {
+			--bg-app: #120f0d;
+			--bg-surface: #1d160f;
+			--primary-green: #7cb89a;
+			--primary-green-light: #1f352d;
+			--alert-orange: #ff9a5c;
+			--alert-bg: #3a2620;
+			--text-main: #f7ede0;
+			--text-muted: #b9a891;
+			--border-subtle: #3c2f21;
+			background:
+				radial-gradient(circle at 80% -8%, rgba(255,143,77,.16), transparent 30rem),
+				linear-gradient(165deg, #1a130d 0%, #14100c 55%, #100c09 100%) !important;
+			color: var(--text-main);
+		}
+
+		body.night .screen-insights,
+		body.night .content-area,
+		body.night .sidebar {
+			background: transparent;
+		}
+
+		body.night .sidebar {
+			background: linear-gradient(180deg, #1d160f 0%, #17110c 100%) !important;
+			border-color: var(--border-subtle) !important;
+		}
+
+		body.night .sidebar::after {
+			content: "";
+			position: absolute;
+			width: 170px;
+			height: 170px;
+			left: -105px;
+			bottom: 110px;
+			border: 1px solid rgba(255,143,77,.18);
+			border-radius: 50%;
+			box-shadow: 0 0 0 22px rgba(255,143,77,.07), 0 0 0 44px rgba(255,143,77,.035);
+			pointer-events: none;
+		}
+
+		body.night .brand-sub,
+		body.night .eyebrow,
+		body.night .brand-name {
+			color: var(--text-main);
+		}
+
+		body.night .brand-sub {
+			color: #ff9a5c;
+		}
+
+		body.night .tabs .tab-item:hover,
+		body.night .tab-item.active {
+			background: var(--bg-surface);
+			box-shadow: 0 5px 16px rgba(0,0,0,.35);
+		}
+
+		body.night .tab-item .icon-wrapper svg,
+		body.night .tab-item.active .icon-wrapper svg {
+			stroke: var(--text-muted);
+		}
+
+		body.night .tab-item.active .icon-wrapper svg,
+		body.night .tab-item.active .tab-label {
+			stroke: #ff8f4d;
+			color: #ff8f4d;
+		}
+
+		body.night .profile-box,
+		body.night .insights-card-section,
+		body.night .trend-box,
+		body.night .monthly-stress-pattern-box,
+		body.night .category-distribution-box,
+		body.night .stress-summary-card,
+		body.night .outcome-card,
+		body.night .outcome-note-banner {
+			background: rgba(33,26,19,.92);
+			border-color: var(--border-subtle);
+		}
+
+		body.night .profile-box {
+			border: 1px solid var(--border-subtle);
+		}
+
+		body.night .profile-avatar {
+			background: #3a2620;
+			border-color: #5c3a2e;
+			color: #ffb27a;
+		}
+
+		body.night .box-title-sm,
+		body.night .trend-box-title,
+		body.night .stress-summary-card-title,
+		body.night .outcome-title,
+		body.night .section-head-title,
+		body.night .page-heading,
+		body.night .brand-name,
+		body.night .tab-label,
+		body.night .profile-name,
+		body.night .dist-name,
+		body.night .dist-hours,
+		body.night .heatmap-week-label,
+		body.night .metric-indicator-text,
+		body.night .outcome-note-text,
+		body.night .rec-text,
+		body.night .page-subheading,
+		body.night .section-head-desc {
+			color: var(--text-main);
+		}
+
+		body.night .page-subheading,
+		body.night .section-head-desc,
+		body.night .trend-box-desc,
+		body.night .box-desc-sm,
+		body.night .stress-summary-card-desc,
+		body.night .outcome-desc,
+		body.night .profile-email,
+		body.night .rec-text,
+		body.night .outcome-note-text {
+			color: var(--text-muted);
+		}
+
+		body.night .heatmap-bar.normal {
+			background: #24352d;
+		}
+
+		body.night .heatmap-bar.midmonth-peak {
+			background: rgba(255,143,77,.4);
+		}
+
+		body.night .theme-toggle {
+			width: 100%;
+			border: 1px solid var(--border-subtle);
+			background: var(--bg-surface);
+			color: var(--text-muted);
+			padding: 10px 12px;
+			border-radius: 9px;
+			text-align: left;
+			font-size: 12px;
+			cursor: pointer;
+			transition: border-color .15s ease, color .15s ease;
+		}
+
+		body.night .theme-toggle:hover {
+			border-color: #ff8f4d;
+			color: var(--text-main);
+		}
+
+		body.night .hamburger-btn {
+			background: var(--bg-surface);
+			border-color: var(--border-subtle);
+			color: var(--text-main);
+			box-shadow: 0 4px 16px rgba(0,0,0,.35);
+		}
+
+		body.night .hamburger-btn:hover {
+			border-color: #ff8f4d;
+			color: #ff8f4d;
+		}
+
+		body.night .sidebar-close-btn {
+			background: var(--bg-surface);
+			border-color: var(--border-subtle);
+			color: var(--text-muted);
+		}
+
+		body.night .sidebar-close-btn:hover {
+			border-color: #ff8f4d;
+			color: #ff8f4d;
+		}
+
+		/* Responsive layout */
+		@media (max-width: 1100px) {
+			.trend-cards-row { grid-template-columns: 1fr; }
+			.patterns-row { grid-template-columns: 1fr; }
+			.stress-summary-row { grid-template-columns: 1fr; }
+			.outcome-cards-row { grid-template-columns: repeat(2, 1fr); }
+		}
+
+		@media (max-width: 768px) {
+			.sidebar {
+				position: relative;
+				width: 100%;
+				height: auto;
+			}
+			.content-area {
+				margin-left: 0;
+				width: 100%;
+				padding: 24px 16px;
+			}
+			.outcome-cards-row { grid-template-columns: 1fr; }
+		}
+
+		/* Shared dashboard shell refinements */
+		body {
+			background: linear-gradient(180deg, #fbe4d2 0 132px, #f5f6fa 300px);
+			font-family: "Manrope", sans-serif;
+			overflow-x: hidden;
+		}
+
+		.sidebar {
+			background: #fff7f0;
+			border-right: 1px solid #f0e1d5;
+			box-shadow: 0 20px 60px rgba(0,0,0,.18);
+			width: 268px;
+			min-width: 268px;
+			padding: 26px 20px;
+		}
+
+		.brand {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+			margin: 0 4px 38px;
+		}
+
+		.brand-icon {
+			width: 32px;
+			height: 32px;
+			border-radius: 50%;
+			background: #f37b32;
+			border: none;
+		}
+
+		.brand-icon span {
+			font-family: "Sora", sans-serif;
+			font-size: 16px;
+			line-height: 1;
+			font-weight: 700;
+			color: #fff;
+		}
+
+		.brand-name {
+			font-family: "Sora", sans-serif;
+			font-size: 15px;
+			font-weight: 700;
+			line-height: 1.05;
+			color: #17191d;
+		}
+
+		.brand-sub {
+			display: block;
+			color: #ed7130;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: .06em;
+			text-transform: uppercase;
+			margin-top: 3px;
+		}
+
+		.tabs {
+			gap: 5px;
+		}
+
+		.tab-item {
+			border-radius: 10px;
+			padding: 11px 12px;
+			transition: all .2s ease;
+		}
+
+		.tab-item:hover {
+			background: #fff;
+			box-shadow: 0 5px 14px rgba(208,111,49,.1);
+		}
+
+		.tab-item.active {
+			background: #fff;
+			box-shadow: 0 5px 14px rgba(208,111,49,.1);
+		}
+
+		.tab-item.active .tab-label {
+			color: #17191d;
+			font-weight: 700;
+		}
+
+		.tab-item.active .icon-wrapper svg {
+			stroke: #f37b32;
+		}
+
+		.profile-box {
+			background: #fff;
+			border-radius: 12px;
+			padding: 10px 12px;
+			margin-bottom: 14px;
+			border: 1px solid #f0e1d5;
+		}
+
+		.profile-avatar {
+			background: #ffeadb;
+			color: #ed7130;
+			border: 1px solid #f0d2ba;
+			font-family: "Sora", sans-serif;
+			font-size: 13px;
+			font-weight: 700;
+		}
+
+		.profile-name {
+			font-size: 13px;
+			font-weight: 700;
+			color: #17191d;
+		}
+
+		.profile-email {
+			font-size: 11px;
+			color: #7d8188;
+		}
+
+		.content-area {
+			margin-left: 268px;
+			width: calc(100% - 268px);
+			max-width: none;
+			padding: 42px 46px 60px;
+		}
+
+		.page-heading,
+		.section-head-title,
+		.box-title-sm,
+		.stress-summary-card-title,
+		.outcome-title {
+			font-family: "Sora", sans-serif;
+		}
+	</style>
+</head>
+<body>
+	<button class="hamburger-btn" id="hamburgerBtn" aria-label="Open navigation menu" title="Open navigation">☰</button>
+	<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+	<div class="screen-insights">
+		<!-- sidebar -->
+		<aside class="sidebar" id="sidebar">
+			<div class="sidebar-top">
+				<!-- brand -->
+				<div class="brand">
+					<div class="brand-icon">
+						<span>e</span>
+					</div>
+					<div class="brand-text-col">
+						<div class="brand-name">emora</div>
+						<div class="brand-sub">Wellbeing &amp; Work</div>
+					</div>
+					<button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close navigation" title="Close navigation">✕</button>
+				</div>
+
+				<!-- tabs -->
+				<nav class="tabs" aria-label="Sidebar navigation">
+					<!-- tab-home -->
+					<button class="tab-item" data-page="home">
+						<div class="icon-wrapper">
+							<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+						</div>
+						<span class="tab-label">Home</span>
+					</button>
+					<!-- tab-timetable -->
+					<button class="tab-item" data-page="timetable">
+						<div class="icon-wrapper">
+							<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+						</div>
+						<span class="tab-label">Timetable</span>
+					</button>
+					<!-- tab-ai -->
+					<button class="tab-item" data-page="ai">
+						<div class="icon-wrapper">
+							<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+						</div>
+						<span class="tab-label">AI Assistant</span>
+					</button>
+					<!-- tab-journal -->
+					<button class="tab-item" data-page="journal">
+						<div class="icon-wrapper">
+							<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+						</div>
+						<span class="tab-label">Journal</span>
+					</button>
+					<!-- tab-insights (Active) -->
+					<button class="tab-item active" data-page="insights">
+						<div class="icon-wrapper">
+							<svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+						</div>
+						<span class="tab-label">Insights</span>
+					</button>
+				</nav>
+			</div>
+
+			<!-- profile-card -->
+			<div class="profile-card">
+				<div class="profile-box">
+					<div class="profile-avatar">CJ</div>
+					<div class="profile-meta">
+						<div class="profile-name">Clara Jensen</div>
+						<div class="profile-email">clara@university.edu</div>
+					</div>
+				</div>
+				<button class="theme-toggle" id="themeToggle" type="button">◐ &nbsp; Switch to night mode</button>
+			</div>
+		</aside>
+
+		<!-- content-area -->
+		<main class="content-area">
+			<!-- header -->
+			<header class="header-col">
+				<h1 class="page-heading">Long-Term Balance Insights</h1>
+				<p class="page-subheading">Academic, work, and personal trends gathered over the last 30 days, plus evidence of how your schedule is improving.</p>
+			</header>
+
+			<!-- 1. trends-section -->
+			<section class="insights-card-section" aria-labelledby="trendsTitle">
+				<div class="section-head">
+					<h2 class="section-head-title" id="trendsTitle">Long-term trends</h2>
+					<p class="section-head-desc">A broader view of how academic, work, and personal time are shifting over time.</p>
+				</div>
+				<div class="trend-cards-row">
+					<!-- Academic load -->
+					<article class="trend-box">
+						<h3 class="trend-box-title">Academic load</h3>
+						<p class="trend-box-desc">Lecture and study time has remained steady while essay drafting moved earlier in the week.</p>
+						<div class="metric-indicator-row">
+							<div class="metric-dot green"></div>
+							<span class="metric-indicator-text green">Drafting moved 1.2 days earlier</span>
+						</div>
+					</article>
+
+					<!-- Work rhythm -->
+					<article class="trend-box">
+						<h3 class="trend-box-title">Work rhythm</h3>
+						<p class="trend-box-desc">Shifts are becoming more predictable, with fewer late evenings and more consistent weekend rest.</p>
+						<div class="metric-indicator-row">
+							<div class="metric-dot orange"></div>
+							<span class="metric-indicator-text orange">Late shifts reduced by 18%</span>
+						</div>
+					</article>
+
+					<!-- Personal recovery -->
+					<article class="trend-box">
+						<h3 class="trend-box-title">Personal recovery</h3>
+						<p class="trend-box-desc">Restorative time is being used more intentionally, especially after long academic blocks.</p>
+						<div class="metric-indicator-row">
+							<div class="metric-dot green"></div>
+							<span class="metric-indicator-text green">Intentional rest up 12%</span>
+						</div>
+					</article>
+				</div>
+			</section>
+
+			<!-- 2. patterns-section -->
+			<section class="insights-card-section" aria-labelledby="patternsTitle">
+				<div class="section-head">
+					<h2 class="section-head-title" id="patternsTitle">Monthly stress patterns</h2>
+					<p class="section-head-desc">A broader monthly view of when stress tends to rise, with the most stressful days and times highlighted.</p>
+				</div>
+
+				<!-- patterns-row (Heatmap + Category Distribution) -->
+				<div class="patterns-row">
+					<!-- Monthly stress pattern Heatmap Box -->
+					<article class="monthly-stress-pattern-box">
+						<h3 class="box-title-sm">Monthly stress pattern</h3>
+						<p class="box-desc-sm">Stress tends to rise around mid-month deadlines and remains lower during the first and last weeks.</p>
+						
+						<!-- Heatmap 4 Weeks Grid -->
+						<div class="heatmap-frame" aria-label="Monthly 4-week stress heatmap">
+							<!-- Week 1 -->
+							<div class="heatmap-week-row">
+								<span class="heatmap-week-label">Week 1</span>
+								<div class="heatmap-bars-frame">
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+								</div>
+							</div>
+							<!-- Week 2 -->
+							<div class="heatmap-week-row">
+								<span class="heatmap-week-label">Week 2</span>
+								<div class="heatmap-bars-frame">
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+								</div>
+							</div>
+							<!-- Week 3 (Mid-month stress peak) -->
+							<div class="heatmap-week-row">
+								<span class="heatmap-week-label">Week 3</span>
+								<div class="heatmap-bars-frame">
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar midmonth-peak"></div>
+									<div class="heatmap-bar midmonth-peak"></div>
+									<div class="heatmap-bar midmonth-peak"></div>
+									<div class="heatmap-bar normal"></div>
+								</div>
+							</div>
+							<!-- Week 4 -->
+							<div class="heatmap-week-row">
+								<span class="heatmap-week-label">Week 4</span>
+								<div class="heatmap-bars-frame">
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+									<div class="heatmap-bar normal"></div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Heatmap Callout -->
+						<div class="heatmap-callout-row">
+							<div class="metric-dot orange"></div>
+							<span class="metric-indicator-text orange">Peak stress window: Week 3, Tue-Thu afternoons</span>
+						</div>
+					</article>
+
+					<!-- Category Distribution Progress Box -->
+					<article class="category-distribution-box">
+						<h3 class="box-title-sm">Category distribution</h3>
+						<p class="box-desc-sm">A snapshot of how time is currently allocated across the last 30 days.</p>
+						<div class="dist-progress-list">
+							<!-- Academic -->
+							<div class="dist-item">
+								<div class="dist-item-label-row">
+									<span class="dist-name">Academic Work &amp; Lectures</span>
+									<span class="dist-hours">42 hrs</span>
+								</div>
+								<div class="dist-bar-track orange"></div>
+							</div>
+							<!-- Work -->
+							<div class="dist-item">
+								<div class="dist-item-label-row">
+									<span class="dist-name">Shifts &amp; Paid Work</span>
+									<span class="dist-hours">12 hrs</span>
+								</div>
+								<div class="dist-bar-track neutral"></div>
+							</div>
+							<!-- Health -->
+							<div class="dist-item">
+								<div class="dist-item-label-row">
+									<span class="dist-name">Exercise, Health &amp; Recreation</span>
+									<span class="dist-hours">18 hrs</span>
+								</div>
+								<div class="dist-bar-track green"></div>
+							</div>
+						</div>
+					</article>
+				</div>
+
+				<!-- stress-summary-row -->
+				<div class="stress-summary-row">
+					<!-- Most stressful days -->
+					<article class="stress-summary-card">
+						<h3 class="stress-summary-card-title">Most stressful days</h3>
+						<p class="stress-summary-card-desc">Wednesdays remain the highest-stress day, followed by Tuesdays and Thursdays.</p>
+						<div class="stress-summary-stat-row">
+							<div class="metric-dot orange"></div>
+							<span class="metric-indicator-text orange">Wednesdays are 24% more stressful than Mondays</span>
+						</div>
+					</article>
+
+					<!-- Most stressful times -->
+					<article class="stress-summary-card">
+						<h3 class="stress-summary-card-title">Most stressful times</h3>
+						<p class="stress-summary-card-desc">Stress peaks between 14:00 and 16:00, especially when academic and work blocks overlap.</p>
+						<div class="stress-summary-stat-row">
+							<div class="metric-dot orange"></div>
+							<span class="metric-indicator-text orange">14:00-16:00 is the highest-stress window</span>
+						</div>
+					</article>
+				</div>
+			</section>
+
+			<!-- 3. recommendations-section -->
+			<section class="insights-card-section recommendations-section" aria-labelledby="recommendationsTitle">
+				<h2 class="section-head-title" id="recommendationsTitle">Schedule-based system recommendations</h2>
+				<div class="rec-list-frame">
+					<!-- Rec 1 -->
+					<div class="rec-item-row">
+						<div class="rec-icon-circle">
+							<div class="rec-icon-wrap">
+								<svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+							</div>
+						</div>
+						<p class="rec-text">Move essay drafting to Monday mornings to reduce the Wednesday afternoon spike.</p>
+					</div>
+
+					<!-- Rec 2 -->
+					<div class="rec-item-row">
+						<div class="rec-icon-circle">
+							<div class="rec-icon-wrap">
+								<svg viewBox="0 0 24 24"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path></svg>
+							</div>
+						</div>
+						<p class="rec-text">Add a 15-minute walk after Chemistry Lab to improve recovery before the next academic block.</p>
+					</div>
+
+					<!-- Rec 3 -->
+					<div class="rec-item-row">
+						<div class="rec-icon-circle">
+							<div class="rec-icon-wrap">
+								<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+							</div>
+						</div>
+						<p class="rec-text">Avoid scheduling paid work after 20:00 on days with early lectures the next morning.</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- 4. outcomes-section -->
+			<section class="insights-card-section" aria-labelledby="outcomesTitle">
+				<div class="section-head">
+					<h2 class="section-head-title" id="outcomesTitle">Outcome evidence</h2>
+					<p class="section-head-desc">A clear view of how your schedule is improving over time, without overstating causality.</p>
+				</div>
+
+				<!-- outcome-cards-row -->
+				<div class="outcome-cards-row">
+					<!-- Card 1 -->
+					<article class="outcome-card">
+						<h3 class="outcome-title">Free time used intentionally</h3>
+						<p class="outcome-desc">More free time is now marked for rest, reading, or exercise instead of drifting into low-focus work.</p>
+						<div class="outcome-indicator-row">
+							<div class="metric-dot green"></div>
+							<span class="metric-indicator-text green">+18% intentional use of free time</span>
+						</div>
+					</article>
+
+					<!-- Card 2 -->
+					<article class="outcome-card">
+						<h3 class="outcome-title">Stress level reduced</h3>
+						<p class="outcome-desc">Average stress amplitude has decreased, especially during the mid-week academic peak.</p>
+						<div class="outcome-indicator-row">
+							<div class="metric-dot orange"></div>
+							<span class="metric-indicator-text orange">-12% average stress amplitude</span>
+						</div>
+					</article>
+
+					<!-- Card 3 -->
+					<article class="outcome-card">
+						<h3 class="outcome-title">Fewer deadline conflicts</h3>
+						<p class="outcome-desc">Overlapping academic and work deadlines are becoming less common as the schedule becomes more predictable.</p>
+						<div class="outcome-indicator-row">
+							<div class="metric-dot green"></div>
+							<span class="metric-indicator-text green">-9 deadline conflicts this month</span>
+						</div>
+					</article>
+
+					<!-- Card 4 -->
+					<article class="outcome-card">
+						<h3 class="outcome-title">On-time completion</h3>
+						<p class="outcome-desc">More tasks are being completed on schedule without introducing new schedule problems.</p>
+						<div class="outcome-indicator-row">
+							<div class="metric-dot green"></div>
+							<span class="metric-indicator-text green">+7% on-time completion rate</span>
+						</div>
+					</article>
+				</div>
+
+				<!-- outcome-note banner -->
+				<div class="outcome-note-banner">
+					<div class="info-circle">
+						<span>i</span>
+					</div>
+					<p class="outcome-note-text">These changes reflect how your schedule is shifting over time. They are based on your tracked activity and do not imply direct causality.</p>
+				</div>
+			</section>
+		</main>
+	</div>
+
+	<script>
+		const body = document.body;
+		const hamburgerBtn = document.getElementById('hamburgerBtn');
+		const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+		const sidebarOverlay = document.getElementById('sidebarOverlay');
+		const themeToggle = document.getElementById('themeToggle');
+
+		function openSidebar() { body.classList.add('sidebar-open'); }
+		function closeSidebar() { body.classList.remove('sidebar-open'); }
+
+		if (hamburgerBtn) hamburgerBtn.addEventListener('click', openSidebar);
+		if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeSidebar);
+		if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') closeSidebar();
+		});
+
+		function updateThemeButtonLabel() {
+			if (!themeToggle) return;
+			const isNight = body.classList.contains('night');
+			themeToggle.innerHTML = isNight ? '☀ &nbsp; Switch to day mode' : '◐ &nbsp; Switch to night mode';
+		}
+
+		if (themeToggle) {
+			themeToggle.addEventListener('click', () => {
+				body.classList.toggle('night');
+				updateThemeButtonLabel();
+			});
+		}
+
+		updateThemeButtonLabel();
+
+		// Tab Navigation Routing
+		const NAV_PAGES = {
+			home: 'index.html',
+			timetable: 'timetable.html',
+			ai: 'ai.html',
+			tasks: 'ai.html',
+			insights: 'insights.html',
+			insight: 'insights.html'
+		};
+
+		document.querySelectorAll('[data-page]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const target = NAV_PAGES[btn.dataset.page];
+				if (target && !btn.classList.contains('active')) {
+					closeSidebar();
+					window.location.href = target;
+				}
+			});
+		});
+	</script>
+</body>
+</html>

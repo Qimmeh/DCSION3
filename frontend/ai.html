@@ -1,0 +1,1100 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>emora | AI Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #f5f6fa;
+            --surface: #ffffff;
+            --ink: #17191d;
+            --muted: #7d8188;
+            --line: #e6e7eb;
+            --accent: #f37b32;
+            --accent-soft: #ffeadb;
+            --accent-strong: #ed7130;
+            --sage: #d8f2e4;
+            --sage-ink: #567467;
+            --shadow: 0 12px 30px rgba(32, 36, 45, .07);
+            --sidebar-bg: #fff7f0;
+            --sidebar-line: #f0e1d5;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background: linear-gradient(180deg, #fbe4d2 0 132px, #f5f6fa 300px);
+            color: var(--ink);
+            font-family: "Manrope", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        button, input {
+            font: inherit;
+        }
+
+        button { cursor: pointer; }
+
+        h1, h2, h3, p {
+            margin: 0;
+        }
+
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 268px;
+            max-width: 85vw;
+            height: 100vh;
+            z-index: 50;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-line);
+            display: flex;
+            flex-direction: column;
+            padding: 26px 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transform: translateX(-100%);
+            transition: transform .32s cubic-bezier(.16,1,.3,1);
+            box-shadow: 0 20px 60px rgba(0,0,0,.18);
+        }
+
+        body.sidebar-open .sidebar {
+            transform: translateX(0);
+        }
+
+        .sidebar::after {
+            content: "";
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            left: -105px;
+            bottom: 110px;
+            border: 1px solid rgba(243,123,50,.2);
+            border-radius: 50%;
+            box-shadow: 0 0 0 22px rgba(243,123,50,.06), 0 0 0 44px rgba(243,123,50,.04);
+            pointer-events: none;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 0 4px 30px;
+        }
+
+        .brand-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            font-family: "Sora", sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            flex: 0 0 auto;
+        }
+
+        .brand-name {
+            font-family: "Sora", sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.05;
+        }
+
+        .brand-name span {
+            display: block;
+            color: var(--accent-strong);
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 3px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .sidebar-close-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            border: 1px solid var(--sidebar-line);
+            background: var(--surface);
+            color: var(--muted);
+            font-size: 14px;
+            flex: 0 0 auto;
+            transition: all .2s cubic-bezier(.16,1,.3,1);
+        }
+
+        .sidebar-close-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: #fff0e6;
+            transform: scale(1.08);
+        }
+
+        .nav-label {
+            display: none;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            width: 100%;
+            margin-top: 0;
+        }
+
+        .nav a,
+        .nav button {
+            border: 0;
+            background: transparent;
+            color: #5b5f65;
+            border-radius: 10px;
+            padding: 11px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            transition: all .2s ease;
+        }
+
+        .nav .nav-icon {
+            width: 18px;
+            text-align: center;
+            color: #7e8583;
+            font-size: 16px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .nav a.active,
+        .nav a:hover,
+        .nav button.active,
+        .nav button:hover {
+            background: #fff;
+            color: var(--ink);
+            box-shadow: 0 5px 14px rgba(208,111,49,.1);
+        }
+
+        .nav a.active .nav-icon,
+        .nav button.active .nav-icon {
+            color: var(--accent);
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            border-top: 1px solid var(--sidebar-line);
+            padding-top: 18px;
+        }
+
+        .profile-card {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .profile-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: var(--surface);
+            margin-bottom: 0;
+        }
+
+        .profile-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent-soft);
+            color: var(--accent-strong);
+            border: 1px solid #f0d2ba;
+            display: grid;
+            place-items: center;
+            font-family: "Sora", sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .profile-meta {
+            overflow: hidden;
+        }
+
+        .profile-name {
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .profile-email {
+            font-size: 11px;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .privacy {
+            display: flex;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.45;
+            padding: 0 12px 18px;
+        }
+
+        .privacy strong {
+            display: block;
+            color: var(--ink);
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+
+        .theme-toggle {
+            width: 100%;
+            border: 1px solid var(--sidebar-line);
+            background: var(--surface);
+            color: var(--muted);
+            padding: 10px 12px;
+            border-radius: 9px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            color: var(--ink);
+        }
+
+        .hamburger-btn {
+            position: fixed;
+            top: 26px;
+            left: 26px;
+            z-index: 40;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: var(--ink);
+            width: 40px;
+            height: 40px;
+            border-radius: 11px;
+            font-size: 18px;
+            box-shadow: 0 4px 16px rgba(32,36,45,.08);
+            transition: all .22s cubic-bezier(.16,1,.3,1);
+        }
+
+        .hamburger-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(243,123,50,.18);
+        }
+
+        body.sidebar-open .hamburger-btn {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(.8);
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,12,9,.42);
+            backdrop-filter: blur(2px);
+            z-index: 45;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .28s cubic-bezier(.16,1,.3,1);
+        }
+
+        body.sidebar-open .sidebar-overlay {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        main {
+            width: min(1220px, 100%);
+            margin: 0 auto;
+            padding: 42px 46px 60px;
+            flex: 1;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 34px;
+            position: relative;
+            padding-left: 56px;
+        }
+
+        .topbar::after {
+            content: "";
+            position: absolute;
+            right: 76px;
+            top: -12px;
+            width: 58px;
+            height: 58px;
+            border: 1px solid rgba(243,123,50,.24);
+            border-radius: 50%;
+            box-shadow: 0 0 0 10px rgba(243,123,50,.07);
+            pointer-events: none;
+        }
+
+        .eyebrow {
+            color: var(--accent-strong);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .greeting {
+            font-family: "Sora", sans-serif;
+            font-size: clamp(26px, 3vw, 38px);
+            font-weight: 700;
+            letter-spacing: -.03em;
+            line-height: 1.1;
+            margin-bottom: 9px;
+            max-width: 560px;
+        }
+
+        .intro {
+            color: var(--muted);
+            font-size: 14px;
+            max-width: 620px;
+            line-height: 1.6;
+        }
+
+        .alert-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent-soft);
+            color: var(--accent-strong);
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 16px;
+        }
+
+        .alert-pill::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .date-wrap {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            color: var(--muted);
+            font-size: 12px;
+            white-space: nowrap;
+            margin-top: 4px;
+        }
+
+        .avatar {
+            display: grid;
+            place-items: center;
+            width: 37px;
+            height: 37px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            font-family: "Sora", sans-serif;
+        }
+
+        .date-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .date-sub {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .card {
+            background: rgba(255,255,255,.88);
+            border: 1px solid #e7e8eb;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .chat-card {
+            padding: 26px 26px 20px;
+            min-height: 640px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 4px 4px 18px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .chat-header-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .chat-header-copy h2 {
+            font-family: "Sora", sans-serif;
+            font-size: 18px;
+            letter-spacing: -.02em;
+        }
+
+        .chat-header-copy p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #edf9f0;
+            color: #2d7c4f;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .status-badge .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #39a367;
+            display: inline-block;
+        }
+
+        .chat-messages-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            flex: 1;
+            padding: 0 2px;
+        }
+
+        .message-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .message-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .sender-title {
+            font-family: "Sora", sans-serif;
+            font-size: 16px;
+            line-height: 1.2;
+            color: var(--ink);
+        }
+
+        .message-time-label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .message-body-text {
+            color: var(--ink);
+            font-size: 14px;
+            line-height: 1.7;
+            max-width: 90%;
+        }
+
+        .chat-divider-line {
+            height: 1px;
+            width: 100%;
+            background: var(--line);
+        }
+
+        .suggested-prompts-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 0 2px;
+        }
+
+        .prompt-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            border: 1px solid #e7ddd2;
+            background: #fff;
+            color: var(--ink);
+            transition: all .2s ease;
+        }
+
+        .prompt-chip:hover {
+            background: #fff6ef;
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .prompt-chip-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            color: var(--accent-strong);
+        }
+
+        .prompt-chip-icon svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .prompt-chip-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .chat-input-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 8px 8px 16px;
+            border-radius: 12px;
+            border: 1px solid #e7ddd2;
+            background: #fff;
+            box-shadow: inset 0 0 0 1px rgba(243,123,50,.02);
+        }
+
+        .chat-input-field {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 14px;
+            color: var(--ink);
+            min-height: 42px;
+        }
+
+        .chat-input-field::placeholder {
+            color: var(--muted);
+        }
+
+        .send-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 9px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            transition: opacity .15s ease;
+        }
+
+        .send-button:hover {
+            opacity: .94;
+        }
+
+        .send-button svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        /* ---------- Night mode ---------- */
+        body.night {
+            --paper: #15100c;
+            --surface: #211a13;
+            --ink: #f7ede0;
+            --muted: #b9a891;
+            --line: #3c2f21;
+            --accent-soft: #3a2620;
+            --sage: #17322a;
+            --sage-ink: #9adbb9;
+            --shadow: 0 24px 60px rgba(0,0,0,.55);
+            background:
+                radial-gradient(circle at 80% -8%, rgba(255,143,77,.16), transparent 30rem),
+                linear-gradient(165deg, #1a130d 0%, #14100c 55%, #100c09 100%) !important;
+            color: var(--ink);
+        }
+
+        body.night .eyebrow,
+        body.night .brand-name span {
+            color: #ff9a5c;
+        }
+
+        body.night .sidebar {
+            background: linear-gradient(180deg, #1d160f 0%, #17110c 100%) !important;
+            border-color: var(--line) !important;
+        }
+
+        body.night .sidebar::after {
+            border-color: rgba(255,143,77,.18);
+            box-shadow: 0 0 0 22px rgba(255,143,77,.07), 0 0 0 44px rgba(255,143,77,.035);
+        }
+
+        body.night .nav a,
+        body.night .nav button {
+            color: #a99a89;
+        }
+
+        body.night .nav a.active,
+        body.night .nav a:hover,
+        body.night .nav button.active,
+        body.night .nav button:hover {
+            background: var(--surface);
+            color: var(--ink);
+            box-shadow: 0 5px 16px rgba(0,0,0,.35);
+        }
+
+        body.night .nav a.active .nav-icon,
+        body.night .nav button.active .nav-icon {
+            color: #ff8f4d;
+        }
+
+        body.night .profile-box {
+            background: var(--surface);
+        }
+
+        body.night .privacy strong {
+            color: var(--ink);
+        }
+
+        body.night .theme-toggle {
+            background: var(--surface);
+            border-color: var(--line);
+            color: var(--muted);
+        }
+
+        body.night .theme-toggle:hover {
+            border-color: #ff8f4d;
+            color: var(--ink);
+        }
+
+        body.night .hamburger-btn {
+            background: var(--surface);
+            border-color: var(--line);
+            color: var(--ink);
+            box-shadow: 0 4px 16px rgba(0,0,0,.35);
+        }
+
+        body.night .hamburger-btn:hover {
+            border-color: #ff8f4d;
+            color: #ff8f4d;
+        }
+
+        body.night .card {
+            background: rgba(33,26,19,.92);
+            border-color: var(--line) !important;
+            box-shadow: var(--shadow);
+        }
+
+        body.night .alert-pill {
+            background: rgba(255,143,77,.16);
+            color: #ffb27a;
+        }
+
+        body.night .alert-pill::before {
+            background: #ff8f4d;
+        }
+
+        body.night .status-badge {
+            background: rgba(57,163,103,.17);
+            color: #8dd1a4;
+        }
+
+        body.night .status-badge .dot {
+            background: #8dd1a4;
+        }
+
+        body.night .prompt-chip {
+            background: #241f1a;
+            border-color: var(--line);
+            color: var(--ink);
+        }
+
+        body.night .prompt-chip:hover {
+            background: rgba(255,143,77,.08);
+            border-color: #ff8f4d;
+        }
+
+        body.night .prompt-chip-icon {
+            color: #ffb27a;
+        }
+
+        body.night .chat-input-bar {
+            background: var(--surface);
+            border-color: var(--line);
+            box-shadow: inset 0 0 0 1px rgba(255,143,77,.02);
+        }
+
+        body.night .chat-input-field::placeholder {
+            color: var(--muted);
+        }
+
+        body.night .send-button {
+            background: #ff8f4d;
+            color: #fff;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                padding-left: 22px;
+                padding-right: 22px;
+            }
+
+            .topbar {
+                padding-left: 0;
+            }
+
+            .chat-card {
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .date-wrap {
+                margin-top: 0;
+            }
+
+            .chat-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .message-body-text {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open navigation">☰</button>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-top">
+                <div class="brand">
+                    <div class="brand-left">
+                        <div class="brand-mark">e</div>
+                        <div class="brand-name">emora <span>Wellbeing &amp; Work</span></div>
+                    </div>
+                    <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close navigation">✕</button>
+                </div>
+
+                <nav class="nav" aria-label="Sidebar navigation">
+                    <button class="tab-item" data-page="home" type="button">
+                        <span class="nav-icon">⌂</span>
+                        <span>Home</span>
+                    </button>
+                    <button class="tab-item" data-page="timetable" type="button">
+                        <span class="nav-icon">◫</span>
+                        <span>Timetable</span>
+                    </button>
+                    <button class="tab-item active" data-page="ai" type="button">
+                        <span class="nav-icon">✦</span>
+                        <span>AI Assistant</span>
+                    </button>
+                    <button class="tab-item" data-page="journal" type="button">
+                        <span class="nav-icon">▣</span>
+                        <span>Journal</span>
+                    </button>
+                    <button class="tab-item" data-page="insights" type="button">
+                        <span class="nav-icon">▤</span>
+                        <span>Insights</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="sidebar-bottom">
+                <div class="profile-card">
+                    <div class="profile-box">
+                        <div class="profile-avatar">CJ</div>
+                        <div class="profile-meta">
+                            <div class="profile-name">Clara Jensen</div>
+                            <div class="profile-email">clara@university.edu</div>
+                        </div>
+                    </div>
+                    <div class="privacy">
+                        <div>
+                            <strong>Focused mode</strong>
+                            On • Recovery-first schedule
+                        </div>
+                    </div>
+                </div>
+
+                <button class="theme-toggle" id="themeToggle" type="button">◐ Switch to night mode</button>
+            </div>
+        </aside>
+
+        <main>
+            <div class="topbar">
+                <div>
+                    <div class="eyebrow">AI Assistant</div>
+                    <h1 class="greeting">Wellbeing Planner AI</h1>
+                    <p class="intro">Personalized schedule optimizations based on your workload trends.</p>
+                    <div class="alert-pill">System telemetry live</div>
+                </div>
+
+                <div class="date-wrap">
+                    <div class="avatar">CJ</div>
+                    <div>
+                        <div class="date-label">Wednesday, 4 Sep</div>
+                        <div class="date-sub">Focus training enabled</div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="card chat-card" aria-label="AI consultation panel">
+                <div class="chat-header">
+                    <div class="chat-header-copy">
+                        <h2>Emora Companion</h2>
+                        <p>Schedule guidance, recovery advice, and calendar optimization.</p>
+                    </div>
+                    <div class="status-badge"><span class="dot"></span> Live</div>
+                </div>
+
+                <div class="chat-messages-container" id="chatContainer">
+                    <div class="message-block">
+                        <div class="message-header-row">
+                            <h2 class="sender-title">Emora Companion</h2>
+                            <span class="message-time-label">Just now</span>
+                        </div>
+                        <p class="message-body-text">Good morning Clara! Based on your schedule, Wednesday has a high probability of stress overload due to overlapping academic and paid work commitments. Would you like me to distribute your 2-hour writing session across Thursday and Friday instead?</p>
+                    </div>
+
+                    <div class="chat-divider-line"></div>
+
+                    <div class="message-block">
+                        <div class="message-header-row">
+                            <h2 class="sender-title">You</h2>
+                            <span class="message-time-label">1m ago</span>
+                        </div>
+                        <p class="message-body-text">Yes, let's keep Friday afternoon free for rest, but Thursday works well.</p>
+                    </div>
+                </div>
+
+                <div class="suggested-prompts-row">
+                    <button class="prompt-chip" type="button" data-prompt="Adjust my timetable for Wednesday peak">
+                        <span class="prompt-chip-icon">
+                            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        </span>
+                        <span class="prompt-chip-text">Adjust my timetable for Wednesday peak</span>
+                    </button>
+
+                    <button class="prompt-chip" type="button" data-prompt="Find a 30-min recovery break today">
+                        <span class="prompt-chip-icon">
+                            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        </span>
+                        <span class="prompt-chip-text">Find a 30-min recovery break today</span>
+                    </button>
+
+                    <button class="prompt-chip" type="button" data-prompt="How is my sleep and rest rhythm this week?">
+                        <span class="prompt-chip-icon">
+                            <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        </span>
+                        <span class="prompt-chip-text">How is my sleep rhythm this week?</span>
+                    </button>
+                </div>
+
+                <form class="chat-input-bar" id="chatForm">
+                    <input class="chat-input-field" id="chatInput" type="text" placeholder="Ask Emora about schedule balance, rest intervals, or rebalancing..." required />
+                    <button class="send-button" type="submit">
+                        <span>Send Query</span>
+                        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const NAV_PAGES = {
+            home: 'index.html',
+            timetable: 'timetable.html',
+            ai: 'ai.html',
+            journal: 'journal.html',
+            insights: 'insights.html'
+        };
+
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+        const themeToggle = document.getElementById('themeToggle');
+
+        function toggleSidebar(forceOpen) {
+            const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !document.body.classList.contains('sidebar-open');
+            document.body.classList.toggle('sidebar-open', shouldOpen);
+        }
+
+        if (hamburgerBtn) {
+            hamburgerBtn.addEventListener('click', () => toggleSidebar(true));
+        }
+
+        if (sidebarCloseBtn) {
+            sidebarCloseBtn.addEventListener('click', () => toggleSidebar(false));
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => toggleSidebar(false));
+        }
+
+        function updateThemeButtonLabel() {
+            if (!themeToggle) return;
+            const isNight = document.body.classList.contains('night');
+            themeToggle.innerHTML = isNight ? '☀ &nbsp; Switch to day mode' : '◐ &nbsp; Switch to night mode';
+        }
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('night');
+                updateThemeButtonLabel();
+            });
+        }
+
+        document.querySelectorAll('[data-page]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const target = NAV_PAGES[btn.dataset.page];
+                if (target) {
+                    window.location.href = target;
+                }
+            });
+        });
+
+        const chatInput = document.getElementById('chatInput');
+        const chatForm = document.getElementById('chatForm');
+        const chatContainer = document.getElementById('chatContainer');
+
+        document.querySelectorAll('.prompt-chip').forEach((chip) => {
+            chip.addEventListener('click', () => {
+                const prompt = chip.dataset.prompt;
+                if (chatInput && prompt) {
+                    chatInput.value = prompt;
+                    chatInput.focus();
+                }
+            });
+        });
+
+        if (chatForm && chatInput && chatContainer) {
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const msg = chatInput.value.trim();
+                if (!msg) return;
+
+                const div = document.createElement('div');
+                div.className = 'chat-divider-line';
+                chatContainer.appendChild(div);
+
+                const userBlock = document.createElement('div');
+                userBlock.className = 'message-block';
+                userBlock.innerHTML = `
+                    <div class="message-header-row">
+                        <h2 class="sender-title">You</h2>
+                        <span class="message-time-label">Just now</span>
+                    </div>
+                    <p class="message-body-text">${msg}</p>
+                `;
+                chatContainer.appendChild(userBlock);
+
+                chatInput.value = '';
+
+                setTimeout(() => {
+                    const botDiv = document.createElement('div');
+                    botDiv.className = 'chat-divider-line';
+                    chatContainer.appendChild(botDiv);
+
+                    const botBlock = document.createElement('div');
+                    botBlock.className = 'message-block';
+                    botBlock.innerHTML = `
+                        <div class="message-header-row">
+                            <h2 class="sender-title">Emora Companion</h2>
+                            <span class="message-time-label">Just now</span>
+                        </div>
+                        <p class="message-body-text">Noted! I have updated your schedule preferences. I’ll maintain clear protected time after 5 PM on Friday for your rest and recovery.</p>
+                    `;
+                    chatContainer.appendChild(botBlock);
+                }, 600);
+            });
+        }
+    </script>
+</body>
+</html>
