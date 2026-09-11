@@ -2572,10 +2572,14 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 		<!-- AI Refinement Prompt Bar inside Preview -->
 		<div class="preview-refine-box">
 			<form class="preview-refine-form" id="previewRefineForm">
-				<input class="preview-prompt-field" id="previewPromptInput" type="text" placeholder="Ask Emora AI for adjustments (e.g. 'Move Thursday tutorial to 2 PM', 'Make Tuesday lecture 1 hr', 'Keep Friday afternoon free')..." />
-				<button class="preview-refine-btn" type="submit">
-					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-					<span>Ask for Changes</span>
+				<div class="preview-input-container" style="position:relative; flex:1; display:flex; align-items:center;">
+					<svg style="position:absolute; left:14px; width:16px; height:16px; color:#7A7269; pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+					<input class="preview-prompt-field" id="previewPromptInput" type="text" style="padding-left:38px; padding-right:85px; width:100%;" placeholder="Prompt Emora AI for schedule adjustments (e.g. 'Move Friday lecture to 10 AM', 'Make Tuesday tutorial 1 hr')..." />
+					<span style="position:absolute; right:12px; font-size:11px; color:#8C8377; background:#EFEAE2; border:1px solid #D8D2C6; padding:2px 7px; border-radius:4px; pointer-events:none; font-family:'Inter',sans-serif; font-weight:500;">Enter ↵</span>
+				</div>
+				<button class="preview-refine-btn" id="previewSendBtn" type="submit" title="Send prompt to Emora AI">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+					<span style="font-weight:600; font-size:13px;">Send</span>
 				</button>
 			</form>
 			<div class="preview-chips-row">
@@ -3317,39 +3321,116 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 			const pLower = prompt.toLowerCase();
 			showGapToast(`AI refining proposal: "${prompt}"...`);
 
-			if (pLower.includes('reset') || pLower.includes('initial') || pLower.includes('c mt1134') || pLower.includes('extraction')) {
+			// 1. Reset / Initial extraction
+			if (pLower.includes('reset') || pLower.includes('initial') || pLower.includes('original') || pLower.includes('c mt1134') || pLower.includes('extraction')) {
 				initDefaultProposal();
-				showGapToast("Reset proposal to authentic C MT1134 extraction.");
-			} else if (pLower.includes('thu') && (pLower.includes('2 pm') || pLower.includes('14:00') || pLower.includes('afternoon'))) {
-				const target = proposedActivities.find(a => a.day === 'Thu');
-				if (target) {
-					target.startHour = 14;
-					showGapToast(`Shifted Thursday Tutorial to 2:00 PM afternoon slot.`);
+				showGapToast("Reset proposal to authentic C MT1134 timetable.");
+				const pillText = document.getElementById('previewPillText');
+				if (pillText) pillText.textContent = `${proposedActivities.length} Proposed Additions`;
+				renderScheduleGrid('previewScheduleRows', activities, proposedActivities);
+				return;
+			}
+
+			// 2. Day Mapping
+			const dayKeywords = [
+				{ name: 'Mon', words: ['monday', 'mon'] },
+				{ name: 'Tue', words: ['tuesday', 'tue'] },
+				{ name: 'Wed', words: ['wednesday', 'wed'] },
+				{ name: 'Thu', words: ['thursday', 'thu'] },
+				{ name: 'Fri', words: ['friday', 'fri'] },
+				{ name: 'Sat', words: ['saturday', 'sat'] },
+				{ name: 'Sun', words: ['sunday', 'sun'] }
+			];
+			const matchedDayObj = dayKeywords.find(d => d.words.some(w => pLower.includes(w)));
+			const dayName = matchedDayObj ? matchedDayObj.name : null;
+
+			// 3. Activity Type
+			const isLecture = pLower.includes('lecture') || pLower.includes('lec');
+			const isTutorial = pLower.includes('tutorial') || pLower.includes('tut') || pLower.includes('lab');
+
+			let targetAct = null;
+			if (dayName) {
+				const dayActs = proposedActivities.filter(a => a.day === dayName);
+				if (isLecture) targetAct = dayActs.find(a => a.title.toLowerCase().includes('lecture')) || dayActs[0];
+				else if (isTutorial) targetAct = dayActs.find(a => a.title.toLowerCase().includes('tutorial')) || dayActs[0];
+				else targetAct = dayActs[0];
+			}
+			if (!targetAct && proposedActivities.length > 0) {
+				if (isLecture) targetAct = proposedActivities.find(a => a.title.toLowerCase().includes('lecture'));
+				else if (isTutorial) targetAct = proposedActivities.find(a => a.title.toLowerCase().includes('tutorial'));
+				else targetAct = proposedActivities[0];
+			}
+
+			// 4. Delete / Remove action
+			if (pLower.includes('remove') || pLower.includes('delete') || pLower.includes('cancel') || pLower.includes('drop')) {
+				if (targetAct) {
+					proposedActivities = proposedActivities.filter(a => a.id !== targetAct.id);
+					showGapToast(`Removed "${targetAct.title}" on ${targetAct.day}.`);
+				} else {
+					showGapToast("No matching course found to remove.");
 				}
-			} else if (pLower.includes('tue') && (pLower.includes('1 hour') || pLower.includes('1 hr') || pLower.includes('1h'))) {
-				const target = proposedActivities.find(a => a.day === 'Tue' && a.title.includes('Lecture'));
-				if (target) {
-					target.duration = 1;
-					showGapToast(`Adjusted Tuesday C MT1134 Lecture to 1 hour.`);
+				const pillText = document.getElementById('previewPillText');
+				if (pillText) pillText.textContent = `${proposedActivities.length} Proposed Addition${proposedActivities.length > 1 ? 's' : ''}`;
+				renderScheduleGrid('previewScheduleRows', activities, proposedActivities);
+				return;
+			}
+
+			// 5. Duration adjustment
+			let newDur = null;
+			if (pLower.includes('1 hour') || pLower.includes('1 hr') || pLower.includes('1h') || pLower.includes('one hour')) newDur = 1;
+			else if (pLower.includes('2 hours') || pLower.includes('2 hr') || pLower.includes('2h') || pLower.includes('two hours')) newDur = 2;
+			else if (pLower.includes('3 hours') || pLower.includes('3 hr') || pLower.includes('3h') || pLower.includes('three hours')) newDur = 3;
+
+			// 6. Hour adjustment
+			let newHour = null;
+			const hourMatch = pLower.match(/(\d{1,2})\s*(am|pm)/) || pLower.match(/(?:at|to)\s*(\d{1,2})/);
+			if (hourMatch) {
+				let hVal = parseInt(hourMatch[1] || hourMatch[2]);
+				const ampm = hourMatch[2] ? hourMatch[2].toLowerCase() : (pLower.includes('pm') ? 'pm' : 'am');
+				if (ampm === 'pm' && hVal < 12) hVal += 12;
+				if (ampm === 'am' && hVal === 12) hVal = 0;
+				if (hVal >= 9 && hVal <= 20) newHour = hVal;
+			} else if (pLower.includes('morning') || pLower.includes('early')) {
+				newHour = 9;
+			} else if (pLower.includes('afternoon') || pLower.includes('noon')) {
+				newHour = 14;
+			} else if (pLower.includes('evening')) {
+				newHour = 17;
+			}
+
+			// 7. Destination Day
+			const toDayMatch = pLower.match(/(?:to|on)\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)/);
+			let destDay = null;
+			if (toDayMatch) {
+				const dFound = dayKeywords.find(d => d.words.some(w => w === toDayMatch[1]));
+				if (dFound) destDay = dFound.name;
+			}
+
+			// Apply adjustments
+			if (targetAct) {
+				let updated = false;
+				if (destDay && destDay !== targetAct.day) {
+					targetAct.day = destDay;
+					updated = true;
 				}
-			} else if (pLower.includes('fri') && (pLower.includes('morning') || pLower.includes('10 am') || pLower.includes('9 am'))) {
-				const target = proposedActivities.find(a => a.day === 'Fri');
-				if (target) {
-					target.startHour = 9;
-					showGapToast(`Moved Friday C MT1134 Lecture to 9:00 AM morning slot.`);
+				if (newHour !== null) {
+					targetAct.startHour = newHour;
+					updated = true;
 				}
-			} else if (pLower.includes('1 hour') || pLower.includes('1 hr') || pLower.includes('1h')) {
-				if (proposedActivities.length > 0) {
-					proposedActivities[0].duration = 1;
-					showGapToast(`Adjusted "${proposedActivities[0].title}" to 1 hour.`);
+				if (newDur !== null) {
+					targetAct.duration = newDur;
+					updated = true;
 				}
-			} else if (pLower.includes('morning free') || pLower.includes('mornings free')) {
-				proposedActivities.forEach(a => {
-					if (a.startHour < 12) a.startHour = 13;
-				});
-				showGapToast("Shifted morning sessions to afternoon to protect morning rest.");
+				if (updated) {
+					showGapToast(`Updated "${targetAct.title}" to ${targetAct.day} at ${formatHour(targetAct.startHour)} (${targetAct.duration}h).`);
+				} else {
+					showGapToast(`Emora AI updated proposal layout to match: "${prompt}"`);
+				}
+			} else if (newDur !== null) {
+				proposedActivities.forEach(a => a.duration = newDur);
+				showGapToast(`Set duration of proposed commitments to ${newDur} hour${newDur > 1 ? 's' : ''}.`);
 			} else {
-				showGapToast(`Emora AI updated C MT1134 schedule to match: "${prompt}"`);
+				showGapToast(`Emora AI updated timetable layout to match: "${prompt}"`);
 			}
 
 			const pillText = document.getElementById('previewPillText');
@@ -3400,8 +3481,10 @@ Thu 2:00 PM – 4:00 PM · Neurobiology Lab (NEUR 301-L)</textarea>
 		// Prompt Refinement Form Submit
 		document.getElementById('previewRefineForm').addEventListener('submit', (e) => {
 			e.preventDefault();
-			const prompt = document.getElementById('previewPromptInput').value.trim();
+			const inputEl = document.getElementById('previewPromptInput');
+			const prompt = inputEl.value.trim();
 			if (!prompt) return;
+			inputEl.value = ''; // Clear input on send
 			refineProposalWithPrompt(prompt);
 		});
 
