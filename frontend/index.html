@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>emora | Wellbeing &amp; Work Dashboard</title>
+	<title>emora | Wellbeing & Work Dashboard</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
@@ -20,6 +20,8 @@
 			--sage: #d8f2e4;
 			--sage-ink: #567467;
 			--shadow: 0 12px 30px rgba(32, 36, 45, .07);
+			--radius: 16px;
+			--transition: all .25s cubic-bezier(.16,1,.3,1);
 		}
 
 		* { box-sizing: border-box; }
@@ -33,12 +35,12 @@
 			-webkit-font-smoothing: antialiased;
 		}
 
-		button { cursor: pointer; font: inherit; }
+		button { cursor: pointer; font: inherit; border: none; background: none; }
 		h1, h2, h3, p { margin: 0; }
 
 		.app-shell { display: flex; min-height: 100vh; }
 
-		/* ---------- Sidebar (collapsible drawer) ---------- */
+		/* ---------- Sidebar ---------- */
 		.sidebar {
 			position: fixed;
 			top: 0;
@@ -95,7 +97,7 @@
 			color: var(--muted);
 			font-size: 14px;
 			flex: 0 0 auto;
-			transition: all .2s cubic-bezier(.16,1,.3,1);
+			transition: var(--transition);
 		}
 		.sidebar-close-btn:hover { border-color: var(--accent); color: var(--accent); background: #fff0e6; transform: scale(1.08); }
 
@@ -106,7 +108,7 @@
 			padding: 0 12px 10px;
 		}
 		.nav { display: grid; gap: 5px; }
-		.nav a, .nav button {
+		.nav a {
 			border: 0; background: transparent;
 			color: #777b82;
 			border-radius: 10px;
@@ -115,6 +117,7 @@
 			text-align: left; text-decoration: none;
 			font-size: 13px; font-weight: 600;
 			width: 100%;
+			transition: var(--transition);
 		}
 		.nav .nav-icon { width: 20px; text-align: center; color: #8fa198; font-size: 14px; }
 		.nav a.active, .nav a:hover {
@@ -160,10 +163,11 @@
 			border-radius: 9px;
 			text-align: left;
 			font-size: 12px;
+			transition: var(--transition);
 		}
 		.theme-toggle:hover { border-color: var(--accent); color: var(--ink); }
 
-		/* ---------- Hamburger + overlay ---------- */
+		/* ---------- Hamburger + Overlay ---------- */
 		.hamburger-btn {
 			position: fixed; top: 26px; left: 26px; z-index: 40;
 			display: inline-flex; align-items: center; justify-content: center;
@@ -172,7 +176,7 @@
 			width: 40px; height: 40px; border-radius: 11px;
 			font-size: 18px;
 			box-shadow: 0 4px 16px rgba(32,36,45,.08);
-			transition: all .22s cubic-bezier(.16,1,.3,1);
+			transition: var(--transition);
 		}
 		.hamburger-btn:hover { border-color: var(--accent); color: var(--accent); transform: scale(1.05); box-shadow: 0 6px 20px rgba(243,123,50,.18); }
 		body.sidebar-open .hamburger-btn { opacity: 0; pointer-events: none; transform: scale(.8); }
@@ -187,7 +191,7 @@
 		}
 		body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: auto; }
 
-		/* ---------- Main ---------- */
+		/* ---------- Main Layout ---------- */
 		main {
 			width: min(1220px, 100%);
 			margin: 0 auto;
@@ -226,12 +230,13 @@
 		}
 		.alert-pill::before { content: ""; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
 
-		/* ---------- Cards / grid ---------- */
+		/* ---------- Cards & Grid ---------- */
 		.card {
 			background: rgba(255,255,255,.88);
 			border: 1px solid #e7e8eb;
-			border-radius: 16px;
+			border-radius: var(--radius);
 			box-shadow: var(--shadow);
+			transition: var(--transition);
 		}
 
 		.categories-grid {
@@ -241,6 +246,7 @@
 			margin-bottom: 34px;
 		}
 		.category-card { padding: 24px; min-height: 180px; display: flex; flex-direction: column; gap: 14px; }
+		.category-card:hover { transform: translateY(-2px); box-shadow: 0 16px 36px rgba(32, 36, 45, .1); }
 		.cat-header-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 		.cat-title { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 		.cat-badge {
@@ -264,7 +270,7 @@
 		.cat-trend-icon { font-size: 13px; color: var(--accent); }
 		.cat-trend-text { font-size: 12px; font-weight: 700; color: var(--accent); }
 
-		/* ---------- Bottom split ---------- */
+		/* ---------- Bottom Split Layout ---------- */
 		.bottom-split { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(300px,.8fr); gap: 20px; align-items: start; }
 
 		.timeline-card { padding: 27px; display: flex; flex-direction: column; gap: 20px; }
@@ -274,25 +280,38 @@
 		.timeline-range-label { color: var(--accent-strong); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; padding-top: 2px; }
 
 		.chart-bars-row {
-			display: flex; height: 154px; align-items: end; gap: 12px;
+			display: flex; height: 154px; align-items: flex-end; gap: 12px;
 			border-bottom: 1px solid var(--line);
 			background: repeating-linear-gradient(to bottom, transparent 0 33px, #edf1ed 34px);
 			padding: 8px 4px 0;
 		}
-		.day-bar-col { height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 12px; }
-		.bar-pillar { width: 22px; border-radius: 6px 6px 0 0; min-height: 13px; background: #f7c8a8; }
+		.day-bar-col { height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 12px; position: relative; }
+		.bar-pillar {
+			width: 22px; border-radius: 6px 6px 0 0; min-height: 13px; background: #f7c8a8;
+			transition: height .4s cubic-bezier(.16,1,.3,1), background-color .2s;
+			cursor: pointer;
+		}
+		.bar-pillar:hover { opacity: .85; filter: brightness(0.95); }
 		.bar-pillar.orange { background: var(--accent); }
 		.day-bar-label { font-size: 12px; font-weight: 600; color: var(--muted); }
+
+		/* Dynamic chart tooltip */
+		.chart-tooltip {
+			position: absolute; top: -30px; background: var(--ink); color: var(--surface);
+			padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;
+			opacity: 0; pointer-events: none; transition: opacity .2s;
+		}
+		.day-bar-col:hover .chart-tooltip { opacity: 1; }
 
 		.alert-banner-frame {
 			display: flex; align-items: center; gap: 12px;
 			padding: 14px 16px; border-radius: 12px;
 			background: var(--accent-soft);
 		}
-		.alert-banner-icon-wrap { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: #ffdfc3; color: var(--accent-strong); font-size: 14px; flex-shrink: 0; }
+		.alert-banner-icon-wrap { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 99px; background: #ffdfc3; color: var(--accent-strong); font-size: 14px; font-weight: 700; flex-shrink: 0; }
 		.alert-banner-message { color: var(--accent-strong); font-size: 13px; font-weight: 600; line-height: 1.4; }
 
-		/* ---------- Right stack ---------- */
+		/* ---------- Right Stack ---------- */
 		.right-stack-col { display: flex; flex-direction: column; gap: 20px; }
 
 		.deadlines-card, .today-card { padding: 22px 24px; }
@@ -302,7 +321,9 @@
 		.deadline-row {
 			display: flex; justify-content: space-between; align-items: center;
 			padding: 12px 14px; border-radius: 10px; gap: 12px;
+			transition: var(--transition);
 		}
+		.deadline-row:hover { transform: translateX(3px); }
 		.deadline-row.row-0 { background: var(--accent-soft); }
 		.deadline-row.row-1, .deadline-row.row-2 { background: var(--paper); }
 		.deadline-text-col { display: grid; gap: 4px; overflow: hidden; }
@@ -318,13 +339,14 @@
 		.today-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 		.today-date { color: var(--muted); font-size: 12px; font-weight: 600; }
 		.today-schedule-list { display: grid; gap: 14px; }
-		.schedule-slot { display: flex; align-items: center; gap: 12px; }
+		.schedule-slot { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 4px; border-radius: 8px; transition: var(--transition); }
+		.schedule-slot:hover { background: rgba(0,0,0,.02); }
 		.slot-time { width: 62px; flex-shrink: 0; color: var(--muted); font-size: 12px; font-weight: 600; }
 		.slot-bar { width: 3px; height: 24px; border-radius: 2px; flex-shrink: 0; background: #4c9a75; }
 		.slot-bar.orange { background: var(--accent); }
-		.slot-name { font-size: 13px; }
+		.slot-name { font-size: 13px; font-weight: 500; }
 
-		/* ---------- Night mode ---------- */
+		/* ---------- Night Mode ---------- */
 		body.night {
 			--paper: #15100c;
 			--surface: #211a13;
@@ -340,10 +362,10 @@
 				linear-gradient(165deg, #1a130d 0%, #14100c 55%, #100c09 100%) !important;
 			color: var(--ink);
 		}
-		body.night .accent-text, body.night .eyebrow, body.night .brand-name span, body.night .timeline-range-label { color: #ff9a5c; }
+		body.night .eyebrow, body.night .brand-name span, body.night .timeline-range-label { color: #ff9a5c; }
 		body.night .sidebar { background: linear-gradient(180deg, #1d160f 0%, #17110c 100%) !important; border-color: var(--line) !important; }
 		body.night .sidebar::after { border-color: rgba(255,143,77,.18); box-shadow: 0 0 0 22px rgba(255,143,77,.07), 0 0 0 44px rgba(255,143,77,.035); }
-		body.night .nav a, body.night .nav button { color: #a99a89; }
+		body.night .nav a { color: #a99a89; }
 		body.night .nav a.active, body.night .nav a:hover { background: var(--surface); color: var(--ink); box-shadow: 0 5px 16px rgba(0,0,0,.35); }
 		body.night .nav a.active .nav-icon { color: #ff8f4d; }
 		body.night .profile-box { background: var(--surface); }
@@ -372,6 +394,32 @@
 		body.night .deadline-tag-chip.academic-neutral, body.night .deadline-tag-chip.work-neutral { background: var(--surface); }
 		body.night .slot-bar { background: #9adbb9; }
 		body.night .slot-bar.orange { background: #ff8f4d; }
+		body.night .schedule-slot:hover { background: rgba(255,255,255,.03); }
+
+		.bottom-split { 
+  display: grid; 
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr); 
+  gap: 22px; 
+  align-items: stretch; /* Forces both columns to match height */
+}
+
+.timeline-card { 
+  padding: 28px; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: space-between; /* Spreads chart and alert banner evenly */
+  height: 100%;                   /* Takes full container height */
+}
+
+.chart-bars-row {
+  flex: 1;               /* Expands to take available vertical space */
+  min-height: 180px;     /* Set desired base minimum height */
+  display: flex; 
+  align-items: flex-end; 
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+  padding: 8px 6px 0;
+}
 
 		/* ---------- Responsive ---------- */
 		@media (max-width: 1100px) {
@@ -391,13 +439,11 @@
 	</style>
 </head>
 <body>
-	<!-- Floating hamburger button -->
 	<button class="hamburger-btn" id="hamburgerBtn" aria-label="Open navigation menu" title="Open navigation">
 		<span aria-hidden="true">☰</span>
 	</button>
 
 	<div class="app-shell">
-		<!-- sidebar -->
 		<aside class="sidebar" id="sidebarNav" aria-label="Sidebar navigation">
 			<div class="brand">
 				<div class="brand-left">
@@ -408,12 +454,12 @@
 			</div>
 
 			<div class="nav-label">Your space</div>
-			<nav class="nav" aria-label="Primary navigation">
-				<a href="index.html" class="active"><span class="nav-icon">▦</span>Home</a>
-				<a href="timetable.html"><span class="nav-icon">▤</span>Timetable</a>
-				<a href="ai.html"><span class="nav-icon">✦</span>AI Assistant</a>
-				<a href="journal.html"><span class="nav-icon">✎</span>Journal</a>
-				<a href="insights.html"><span class="nav-icon">↗</span>Insights</a>
+			<nav class="nav" id="mainNav" aria-label="Primary navigation">
+				<a href="index.html" class="active" data-page="home"><span class="nav-icon">▦</span>Home</a>
+				<a href="timetable.html" data-page="timetable"><span class="nav-icon">▤</span>Timetable</a>
+				<a href="ai.html" data-page="ai"><span class="nav-icon">✦</span>AI Assistant</a>
+				<a href="journal.html" data-page="journal"><span class="nav-icon">✎</span>Journal</a>
+				<a href="insights.html" data-page="insights"><span class="nav-icon">↗</span>Insights</a>
 			</nav>
 
 			<div class="sidebar-bottom">
@@ -430,7 +476,6 @@
 		</aside>
 		<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-		<!-- main content -->
 		<main>
 			<header class="topbar">
 				<div>
@@ -439,53 +484,13 @@
 					<p class="intro">Get a calm preview of your workload, deadlines, and stress balance today.</p>
 					<div class="alert-pill">Midweek Stress Alert</div>
 				</div>
-				<div class="date-wrap"><span>Oct 23</span><div class="avatar">C</div></div>
+				<div class="date-wrap"><span id="currentDate">Oct 23</span><div class="avatar">C</div></div>
 			</header>
 
-			<!-- categories -->
-			<section class="categories-grid" aria-label="Workload and Stress Overview">
-				<article class="card category-card">
-					<div class="cat-header-row">
-						<span class="cat-title">Academic Workload</span>
-						<div class="cat-badge orange"><span>High stress load</span></div>
-					</div>
-					<div class="cat-metric-row">
-						<span class="cat-metric-value">84%</span>
-						<span class="cat-metric-label">Stress Rating</span>
-					</div>
-					<p class="cat-description">Major essay and 2 lab reports due this week.</p>
-					<div class="cat-trend-row">
-						<span class="cat-trend-icon">↗</span>
-						<span class="cat-trend-text">Rising sharply due to deadlines</span>
-					</div>
-				</article>
-
-				<article class="card category-card">
-					<div class="cat-header-row">
-						<span class="cat-title">Personal Life</span>
-						<div class="cat-badge green"><span>Balanced</span></div>
-					</div>
-					<div class="cat-metric-row">
-						<span class="cat-metric-value">38%</span>
-						<span class="cat-metric-label">Stress Rating</span>
-					</div>
-					<p class="cat-description">Sleeping average 7.8 hours. Gym 3x logged.</p>
-				</article>
-
-				<article class="card category-card">
-					<div class="cat-header-row">
-						<span class="cat-title">Work / Shift Work</span>
-						<div class="cat-badge neutral"><span>Moderate load</span></div>
-					</div>
-					<div class="cat-metric-row">
-						<span class="cat-metric-value">55%</span>
-						<span class="cat-metric-label">Stress Rating</span>
-					</div>
-					<p class="cat-description">12 hours of library shift scheduled.</p>
-				</article>
+			<section class="categories-grid" id="categoriesGrid" aria-label="Workload and Stress Overview">
+				<!-- Dynamically rendered or updated via JS -->
 			</section>
 
-			<!-- timeline + deadlines/preview -->
 			<div class="bottom-split">
 				<section class="card timeline-card" aria-labelledby="timelineTitle">
 					<div class="timeline-header-row">
@@ -496,14 +501,8 @@
 						<span class="timeline-range-label">Monday &ndash; Sunday</span>
 					</div>
 
-					<div class="chart-bars-row" role="img" aria-label="Weekly stress bar chart from Monday to Sunday, peaking on Wednesday">
-						<div class="day-bar-col"><div class="bar-pillar" style="height: 48px;"></div><span class="day-bar-label">Mon</span></div>
-						<div class="day-bar-col"><div class="bar-pillar" style="height: 64px;"></div><span class="day-bar-label">Tue</span></div>
-						<div class="day-bar-col"><div class="bar-pillar orange" style="height: 96px;"></div><span class="day-bar-label">Wed</span></div>
-						<div class="day-bar-col"><div class="bar-pillar" style="height: 80px;"></div><span class="day-bar-label">Thu</span></div>
-						<div class="day-bar-col"><div class="bar-pillar" style="height: 72px;"></div><span class="day-bar-label">Fri</span></div>
-						<div class="day-bar-col"><div class="bar-pillar" style="height: 38px;"></div><span class="day-bar-label">Sat</span></div>
-						<div class="day-bar-col"><div class="bar-pillar" style="height: 32px;"></div><span class="day-bar-label">Sun</span></div>
+					<div class="chart-bars-row" id="chartContainer" role="img" aria-label="Weekly stress bar chart from Monday to Sunday, peaking on Wednesday">
+						<!-- Dynamically populated bars -->
 					</div>
 
 					<div class="alert-banner-frame" role="alert">
@@ -515,28 +514,8 @@
 				<div class="right-stack-col">
 					<article class="card deadlines-card">
 						<h2 class="deadlines-card-title">Critical Deadlines</h2>
-						<div class="deadlines-list">
-							<div class="deadline-row row-0">
-								<div class="deadline-text-col">
-									<div class="deadline-title">Comparative Literature Essay</div>
-									<div class="deadline-due">Wednesday, 11:59 PM</div>
-								</div>
-								<div class="deadline-tag-chip academic-highlight"><span class="deadline-tag-text">Academic</span></div>
-							</div>
-							<div class="deadline-row row-1">
-								<div class="deadline-text-col">
-									<div class="deadline-title">Chemistry Lab Report 4</div>
-									<div class="deadline-due">Friday, 4:00 PM</div>
-								</div>
-								<div class="deadline-tag-chip academic-neutral"><span class="deadline-tag-text">Academic</span></div>
-							</div>
-							<div class="deadline-row row-2">
-								<div class="deadline-text-col">
-									<div class="deadline-title">Library Assistant Night Shift</div>
-									<div class="deadline-due">Saturday, 8:00 PM</div>
-								</div>
-								<div class="deadline-tag-chip work-neutral"><span class="deadline-tag-text">Work</span></div>
-							</div>
+						<div class="deadlines-list" id="deadlinesList">
+							<!-- Dynamically populated deadlines -->
 						</div>
 					</article>
 
@@ -545,22 +524,8 @@
 							<h2 class="today-title">Today Preview</h2>
 							<span class="today-date">Oct 23</span>
 						</div>
-						<div class="today-schedule-list">
-							<div class="schedule-slot">
-								<span class="slot-time">10:00 AM</span>
-								<div class="slot-bar"></div>
-								<span class="slot-name">Comp. Literature Class</span>
-							</div>
-							<div class="schedule-slot">
-								<span class="slot-time">02:00 PM</span>
-								<div class="slot-bar orange"></div>
-								<span class="slot-name">Research Block (Essay)</span>
-							</div>
-							<div class="schedule-slot">
-								<span class="slot-time">05:00 PM</span>
-								<div class="slot-bar"></div>
-								<span class="slot-name">Gym &amp; Decompress</span>
-							</div>
+						<div class="today-schedule-list" id="scheduleList">
+							<!-- Dynamically populated schedule -->
 						</div>
 					</article>
 				</div>
@@ -569,23 +534,149 @@
 	</div>
 
 	<script>
-		const body = document.body;
-		const hamburgerBtn = document.getElementById('hamburgerBtn');
-		const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
-		const sidebarOverlay = document.getElementById('sidebarOverlay');
+		// Data Store
+		const state = {
+			categories: [
+				{
+					title: "Academic Workload",
+					badgeText: "High stress load",
+					badgeType: "orange",
+					metricValue: "84%",
+					description: "Major essay and 2 lab reports due this week.",
+					trendText: "Rising sharply due to deadlines"
+				},
+				{
+					title: "Personal Life",
+					badgeText: "Balanced",
+					badgeType: "green",
+					metricValue: "38%",
+					description: "Sleeping average 7.8 hours. Gym 3x logged."
+				},
+				{
+					title: "Work / Shift Work",
+					badgeText: "Moderate load",
+					badgeType: "neutral",
+					metricValue: "55%",
+					description: "12 hours of library shift scheduled."
+				}
+			],
+			weeklyTimeline: [
+				{ day: "Mon", score: 48, highlighted: false },
+				{ day: "Tue", score: 64, highlighted: false },
+				{ day: "Wed", score: 96, highlighted: true },
+				{ day: "Thu", score: 80, highlighted: false },
+				{ day: "Fri", score: 72, highlighted: false },
+				{ day: "Sat", score: 38, highlighted: false },
+				{ day: "Sun", score: 32, highlighted: false }
+			],
+			deadlines: [
+				{ title: "Comparative Literature Essay", due: "Wednesday, 11:59 PM", type: "Academic", highlight: true },
+				{ title: "Chemistry Lab Report 4", due: "Friday, 4:00 PM", type: "Academic", highlight: false },
+				{ title: "Library Assistant Night Shift", due: "Saturday, 8:00 PM", type: "Work", highlight: false }
+			],
+			schedule: [
+				{ time: "10:00 AM", name: "Comp. Literature Class", highlight: false },
+				{ time: "02:00 PM", name: "Research Block (Essay)", highlight: true },
+				{ time: "05:00 PM", name: "Gym & Decompress", highlight: false }
+			]
+		};
 
-		function openSidebar() { body.classList.add('sidebar-open'); }
-		function closeSidebar() { body.classList.remove('sidebar-open'); }
+		// Renderers
+		function renderCategories() {
+			const container = document.getElementById('categoriesGrid');
+			container.innerHTML = state.categories.map(cat => `
+				<article class="card category-card">
+					<div class="cat-header-row">
+						<span class="cat-title">${cat.title}</span>
+						<div class="cat-badge ${cat.badgeType}"><span>${cat.badgeText}</span></div>
+					</div>
+					<div class="cat-metric-row">
+						<span class="cat-metric-value">${cat.metricValue}</span>
+						<span class="cat-metric-label">Stress Rating</span>
+					</div>
+					<p class="cat-description">${cat.description}</p>
+					${cat.trendText ? `
+						<div class="cat-trend-row">
+							<span class="cat-trend-icon">↗</span>
+							<span class="cat-trend-text">${cat.trendText}</span>
+						</div>` : ''}
+				</article>
+			`).join('');
+		}
 
-		hamburgerBtn.addEventListener('click', openSidebar);
-		sidebarCloseBtn.addEventListener('click', closeSidebar);
-		sidebarOverlay.addEventListener('click', closeSidebar);
-		document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
-		document.querySelectorAll('.sidebar .nav a').forEach((link) => link.addEventListener('click', closeSidebar));
+		function renderChart() {
+			const container = document.getElementById('chartContainer');
+			container.innerHTML = state.weeklyTimeline.map(item => `
+				<div class="day-bar-col">
+					<div class="chart-tooltip">${item.score}%</div>
+					<div class="bar-pillar ${item.highlighted ? 'orange' : ''}" style="height: ${item.score}px;"></div>
+					<span class="day-bar-label">${item.day}</span>
+				</div>
+			`).join('');
+		}
 
-		document.getElementById('themeToggle').addEventListener('click', () => {
-			body.classList.toggle('night');
-			document.getElementById('themeToggle').textContent = body.classList.contains('night') ? '☀ Switch to day mode' : '◐ Switch to night mode';
+		function renderDeadlines() {
+			const container = document.getElementById('deadlinesList');
+			container.innerHTML = state.deadlines.map((item, index) => `
+				<div class="deadline-row row-${index}">
+					<div class="deadline-text-col">
+						<div class="deadline-title">${item.title}</div>
+						<div class="deadline-due">${item.due}</div>
+					</div>
+					<div class="deadline-tag-chip ${item.highlight ? 'academic-highlight' : 'academic-neutral'}">
+						<span class="deadline-tag-text">${item.type}</span>
+					</div>
+				</div>
+			`).join('');
+		}
+
+		function renderSchedule() {
+			const container = document.getElementById('scheduleList');
+			container.innerHTML = state.schedule.map(item => `
+				<div class="schedule-slot">
+					<span class="slot-time">${item.time}</span>
+					<div class="slot-bar ${item.highlight ? 'orange' : ''}"></div>
+					<span class="slot-name">${item.name}</span>
+				</div>
+			`).join('');
+		}
+
+		// Application Initializer & Controllers
+		document.addEventListener('DOMContentLoaded', () => {
+			renderCategories();
+			renderChart();
+			renderDeadlines();
+			renderSchedule();
+
+			// Mobile Drawer Logic
+			const body = document.body;
+			const hamburgerBtn = document.getElementById('hamburgerBtn');
+			const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+			const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+			const openSidebar = () => body.classList.add('sidebar-open');
+			const closeSidebar = () => body.classList.remove('sidebar-open');
+
+			hamburgerBtn.addEventListener('click', openSidebar);
+			sidebarCloseBtn.addEventListener('click', closeSidebar);
+			sidebarOverlay.addEventListener('click', closeSidebar);
+			document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
+
+			// Theme Controller with LocalStorage memory
+			const themeToggle = document.getElementById('themeToggle');
+			const savedTheme = localStorage.getItem('emora-theme');
+
+			if (savedTheme === 'night') {
+				body.classList.add('night');
+				themeToggle.textContent = '☀ Switch to day mode';
+			}
+
+			themeToggle.addEventListener('click', () => {
+				body.classList.toggle('night');
+				const isNight = body.classList.contains('night');
+				localStorage.setItem('emora-theme', isNight ? 'night' : 'day');
+				themeToggle.textContent = isNight ? '☀ Switch to day mode' : '◐ Switch to night mode';
+			});
 		});
 	</script>
 </body>
