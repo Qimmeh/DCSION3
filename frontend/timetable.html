@@ -32,12 +32,13 @@
 		}
 
 		body {
-			background: var(--bg-app);
+			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.16) 0 140px, var(--bg-app) 320px);
 			font-family: 'Inter', sans-serif;
 			color: var(--text-main);
 			min-height: 100vh;
 			margin: 0;
 			-webkit-font-smoothing: antialiased;
+			transition: background 0.4s ease, color 0.4s ease;
 		}
 
 		/* screen-timetable */
@@ -47,7 +48,7 @@
 			align-items: flex-start;
 			width: 100%;
 			min-height: 100vh;
-			background: var(--bg-app);
+			background: transparent;
 		}
 
 		/* sidebar - fixed to left edge */
@@ -64,12 +65,12 @@
 			top: 0;
 			left: 0;
 			bottom: 0;
-			background: var(--bg-surface);
-			border-right: 1px solid var(--border-subtle);
+			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.05) 0%, #fffbf8 100%);
+			border-right: 1px solid rgba(var(--wave-color-primary), 0.15);
 			z-index: 100;
 			overflow-y: auto;
 			transform: translateX(-100%);
-			transition: transform .32s cubic-bezier(.16,1,.3,1);
+			transition: transform .32s cubic-bezier(.16,1,.3,1), background 0.4s ease, border-color 0.4s ease;
 			box-shadow: 0 20px 60px rgba(0,0,0,.18);
 		}
 
@@ -687,8 +688,8 @@
 			width: 2px;
 			background: repeating-linear-gradient(
 				to bottom,
-				var(--primary-green) 0px,
-				var(--primary-green) 3px,
+				#2C2A29 0px,
+				#2C2A29 3px,
 				transparent 3px,
 				transparent 6px
 			);
@@ -702,8 +703,8 @@
 			height: 8px;
 			background: repeating-linear-gradient(
 				to bottom,
-				var(--primary-green) 0px,
-				var(--primary-green) 3px,
+				#2C2A29 0px,
+				#2C2A29 3px,
 				transparent 3px,
 				transparent 6px
 			);
@@ -722,38 +723,26 @@
 			width: auto;
 			max-width: 90%;
 			padding: 2px 7px;
-			background: repeating-linear-gradient(
-				135deg,
-				rgba(74, 107, 93, 0.04) 0px,
-				rgba(74, 107, 93, 0.04) 5px,
-				rgba(244, 239, 234, 0.9) 5px,
-				rgba(244, 239, 234, 0.9) 10px
-			);
-			border: 1px dashed #C8C2B4;
+			background: #FFFFFF !important;
+			border: 1px dashed #2C2A29 !important;
 			border-radius: 6px;
 			transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 			flex-shrink: 0;
 		}
 
 		.chain-gap-card:hover {
-			border-color: var(--primary-green);
-			background: repeating-linear-gradient(
-				135deg,
-				rgba(74, 107, 93, 0.08) 0px,
-				rgba(74, 107, 93, 0.08) 5px,
-				rgba(235, 240, 238, 0.95) 5px,
-				rgba(235, 240, 238, 0.95) 10px
-			);
+			border-color: #000000 !important;
+			background: #F4F4F4 !important;
 			transform: translateY(-1px);
-			box-shadow: 0 3px 8px rgba(74, 107, 93, 0.1);
+			box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
 		}
 
 		.chain-svg-icon {
 			width: 10px;
 			height: 10px;
 			flex-shrink: 0;
-			stroke: var(--primary-green);
+			stroke: #2C2A29 !important;
 			stroke-width: 2;
 			fill: none;
 		}
@@ -763,11 +752,11 @@
 			font-weight: 600;
 			font-size: 10px;
 			line-height: 1.2;
-			color: var(--primary-green);
+			color: #2C2A29 !important;
 			white-space: nowrap;
 		}
 
-		/* Anchor connectors on linked class cards */
+		/* Anchor connectors on linked class cards (crisp black dot with white ring) */
 		.schedule-card.has-chain-bottom::after,
 		.has-chain-bottom::after {
 			content: '';
@@ -778,8 +767,8 @@
 			width: 6px;
 			height: 6px;
 			border-radius: 50%;
-			background: var(--primary-green);
-			box-shadow: 0 0 0 2px #FFFFFF;
+			background: #2C2A29 !important;
+			box-shadow: 0 0 0 2px #FFFFFF !important;
 			z-index: 3;
 		}
 
@@ -793,8 +782,8 @@
 			width: 6px;
 			height: 6px;
 			border-radius: 50%;
-			background: var(--primary-green);
-			box-shadow: 0 0 0 2px #FFFFFF;
+			background: #2C2A29 !important;
+			box-shadow: 0 0 0 2px #FFFFFF !important;
 			z-index: 3;
 		}
 
@@ -1228,6 +1217,34 @@
 		body.night .screen-timetable,
 		body.night .content-area {
 			background: transparent;
+		}
+
+		/* Time gap stays strictly black & white in night mode */
+		body.night .chain-gap-card {
+			background: #1A1A1A !important;
+			border-color: #666666 !important;
+		}
+		body.night .chain-gap-title {
+			color: #FFFFFF !important;
+		}
+		body.night .chain-svg-icon {
+			stroke: #FFFFFF !important;
+		}
+		body.night .chain-connector-full,
+		body.night .chain-connector-top,
+		body.night .chain-connector-bottom {
+			background: repeating-linear-gradient(
+				to bottom,
+				#CCCCCC 0px,
+				#CCCCCC 3px,
+				transparent 3px,
+				transparent 6px
+			) !important;
+		}
+		body.night .has-chain-bottom::after,
+		body.night .has-chain-top::before {
+			background: #FFFFFF !important;
+			box-shadow: 0 0 0 2px #1A1A1A !important;
 		}
 
 		body.night .sidebar {

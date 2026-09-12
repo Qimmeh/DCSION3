@@ -40,10 +40,11 @@
 		body {
 			margin: 0;
 			color: var(--ink);
-			background: linear-gradient(180deg, #fbe4d2 0 132px, #f5f6fa 300px);
+			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.16) 0 140px, var(--paper, #f5f6fa) 320px);
 			font-family: "Manrope", sans-serif;
 			letter-spacing: 0;
 			min-height: 100vh;
+			transition: background 0.4s ease, color 0.4s ease;
 		}
 		button, input, select { font: inherit; }
 		button { cursor: pointer; }
@@ -226,18 +227,19 @@
 			--accent-soft: #2e1c15;
 			--shadow: 0 24px 60px rgba(0,0,0,.55);
 			background:
-				radial-gradient(circle at 80% -8%, rgba(255, 143, 77, .16), transparent 30rem),
+				radial-gradient(circle at 80% -8%, rgba(var(--wave-color-primary), .22), transparent 30rem),
 				linear-gradient(165deg, #1a130d 0%, #14100c 55%, #100c09 100%) !important;
 			color: var(--ink);
+			transition: background 0.4s ease, color 0.4s ease;
 		}
 		body.night .sidebar { background: linear-gradient(180deg, #1d160f 0%, #17110c 100%) !important; border-color: var(--line) !important; }
-		body.night .sidebar::after { border-color: rgba(255, 143, 77, .18); box-shadow: 0 0 0 22px rgba(255, 143, 77, .07), 0 0 0 44px rgba(255, 143, 77, .035); }
-		body.night .brand-name span, body.night .eyebrow { color: #ff9a5c; }
+		body.night .sidebar::after { border-color: rgba(var(--wave-color-primary), .18); box-shadow: 0 0 0 22px rgba(var(--wave-color-primary), .07), 0 0 0 44px rgba(var(--wave-color-primary), .035); }
+		body.night .brand-name span, body.night .eyebrow { color: var(--accent); }
 		body.night .nav a, body.night .nav button { color: #a99a89; }
 		body.night .nav a.active, body.night .nav button.active, body.night .nav a:hover, body.night .nav button:hover { background: var(--surface); color: var(--ink); box-shadow: 0 5px 16px rgba(0, 0, 0, .35); }
 		body.night .nav a::before, body.night .nav button::before { color: #b9a891; }
-		body.night .nav a.active::before, body.night .nav button.active::before { color: #ff8f4d; }
-		body.night .avatar, body.night .avatar-lg { background: #ff8f4d; color: #2b1608; }
+		body.night .nav a.active::before, body.night .nav button.active::before { color: var(--accent); }
+		body.night .avatar, body.night .avatar-lg { background: var(--accent); color: #FFFFFF; }
 		body.night .privacy strong { color: var(--ink); }
 		body.night .theme-toggle { background: var(--surface); border-color: var(--line); color: var(--muted); }
 		body.night .theme-toggle:hover { border-color: #ff8f4d; color: var(--ink); }

@@ -641,10 +641,6 @@
 .alert-pill,
 .metric-dot,
 .heatmap-bar,
-.chain-svg-icon,
-.chain-gap-title,
-.chain-connector-top,
-.chain-connector-bottom,
 .nav a.active,
 .nav a.active .nav-icon,
 .popover-confirm-btn,
@@ -653,4 +649,15 @@
 .emotion-tag-badge {
 	transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease, stroke 0.35s ease, fill 0.35s ease, box-shadow 0.35s ease !important;
 }
+
+/* Timetable Time Gap: Strictly Black & White */
+.chain-gap-card,
+.chain-gap-title,
+.chain-svg-icon,
+.chain-connector-full,
+.chain-connector-top,
+.chain-connector-bottom {
+	transition: none !important;
+}
+
 
