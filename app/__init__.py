@@ -28,9 +28,11 @@ def create_app(config_class=Config):
 
     from app.auth import bp as auth_bp
     from app.journal import bp as journal_bp
+    from app.ai import bp as ai_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(journal_bp)
+    app.register_blueprint(ai_bp)
 
     @app.route("/")
     def serve_index():
