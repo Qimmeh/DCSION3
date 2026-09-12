@@ -62,7 +62,8 @@
 			top: 0;
 			left: 0;
 			bottom: 0;
-			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.05) 0%, #ffffff 100%);
+			background: #ffffff !important;
+			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.08) 0%, #ffffff 180px, #ffffff 100%) !important;
 			border-right: 1px solid rgba(var(--wave-color-primary), 0.15);
 			z-index: 100;
 			overflow-y: auto;
@@ -1027,7 +1028,8 @@
 		}
 
 		.sidebar {
-			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.05) 0%, #ffffff 100%);
+			background: #ffffff !important;
+			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.08) 0%, #ffffff 180px, #ffffff 100%) !important;
 			border-right: 1px solid rgba(var(--wave-color-primary), 0.15);
 			box-shadow: 0 20px 60px rgba(0,0,0,.18);
 			width: 268px;
@@ -1215,9 +1217,9 @@
     height: 170px;
     left: -105px;
     bottom: 110px;
-    border: 1px solid rgba(243,123,50,.2);
+    border: 1px solid rgba(var(--wave-color-primary), .18);
     border-radius: 50%;
-    box-shadow: 0 0 0 22px rgba(243,123,50,.06), 0 0 0 44px rgba(243,123,50,.04);
+    box-shadow: 0 0 0 22px rgba(var(--wave-color-primary), .06), 0 0 0 44px rgba(var(--wave-color-primary), .035);
     pointer-events: none;
 }
 
@@ -1271,9 +1273,9 @@
 .nav-label {
     display: block;
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .08em;
-    color: var(--muted, #7d8188);
+    font-weight: 800;
+    letter-spacing: .09em;
+    color: #4A4643;
     text-transform: uppercase;
     margin: 0 12px 10px;
 }
@@ -1289,44 +1291,52 @@
 .nav .tab-item {
     border: 0;
     background: transparent;
-    color: #5b5f65;
+    color: #2C2A29;
     border-radius: 10px;
     padding: 11px 12px;
     display: flex;
     align-items: center;
     gap: 12px;
     text-align: left;
-    font-size: 14px;
+    font-size: 14.5px;
     font-weight: 600;
     width: 100%;
     transition: all .2s ease;
+    cursor: pointer;
 }
 
 .nav .nav-icon {
     width: 18px;
     text-align: center;
-    color: #7e8583;
+    color: #4A4643;
     font-size: 16px;
     line-height: 1;
     flex-shrink: 0;
 }
 
-.nav .tab-item.active,
 .nav .tab-item:hover {
+    background: rgba(var(--wave-color-primary), 0.09);
+    color: var(--ink, #17191d);
+}
+
+.nav .tab-item.active {
     background: #fff;
     color: var(--ink, #17191d);
-    box-shadow: 0 5px 14px rgba(208,111,49,.1);
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+    border: 1px solid rgba(var(--wave-color-primary), 0.22);
 }
 
 .nav .tab-item.active .nav-icon {
-    color: var(--accent);
+    color: var(--primary-green);
+    font-weight: 700;
 }
 
 .privacy {
     display: flex;
     gap: 8px;
-    color: var(--text-muted, #7d8188);
-    font-size: 11px;
+    color: #4A4643;
+    font-size: 11.5px;
     line-height: 1.45;
     padding: 0 12px 18px;
 }
@@ -1334,29 +1344,52 @@
 .privacy strong {
     display: block;
     color: var(--text-main, #17191d);
-    font-size: 12px;
+    font-size: 12.5px;
+    font-weight: 700;
     margin-bottom: 2px;
 }
 
 /* Night Mode Sidebar Styles */
 body.night .sidebar {
-    background: linear-gradient(180deg, #1d160f 0%, #17110c 100%) !important;
+    background: #191411 !important;
     border-color: var(--border-subtle, #3c2f21) !important;
 }
 
-body.night .nav .tab-item {
-    color: #a99a89;
+body.night .nav-label {
+    color: #d5c8ba !important;
 }
 
-body.night .nav .tab-item.active,
+body.night .nav .tab-item {
+    color: #ede3d7 !important;
+    font-weight: 600;
+}
+
+body.night .nav .nav-icon {
+    color: #d5c8ba !important;
+}
+
 body.night .nav .tab-item:hover {
-    background: #211a13;
-    color: #f7ede0;
-    box-shadow: 0 5px 16px rgba(0,0,0,.35);
+    background: #251e18 !important;
+    color: #ffffff !important;
+}
+
+body.night .nav .tab-item.active {
+    background: #251e18 !important;
+    color: #ffffff !important;
+    box-shadow: 0 5px 16px rgba(0,0,0,.45) !important;
+    border: 1px solid rgba(var(--wave-color-primary), 0.35) !important;
 }
 
 body.night .nav .tab-item.active .nav-icon {
-    color: #ff8f4d;
+    color: var(--primary-green) !important;
+}
+
+body.night .privacy {
+    color: #b9a891 !important;
+}
+
+body.night .privacy strong {
+    color: #f7ede0 !important;
 }
 	</style>
 </head>

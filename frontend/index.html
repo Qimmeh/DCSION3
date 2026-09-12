@@ -53,8 +53,9 @@
 			width: 268px;
 			max-width: 85vw;
 			height: 100vh;
-			z-index: 50;
-			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.05) 0%, #ffffff 100%);
+			z-index: 100;
+			background: #ffffff !important;
+			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.08) 0%, #ffffff 180px, #ffffff 100%) !important;
 			border-right: 1px solid rgba(var(--wave-color-primary), 0.15);
 			display: flex;
 			flex-direction: column;
@@ -107,30 +108,37 @@
 		.sidebar-close-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(var(--wave-color-primary), .12); transform: scale(1.08); }
 
 		.nav-label {
-			color: var(--muted);
-			font-size: 10px; font-weight: 700;
-			letter-spacing: .12em; text-transform: uppercase;
+			color: #4A4643;
+			font-size: 11px; font-weight: 800;
+			letter-spacing: .09em; text-transform: uppercase;
 			padding: 0 12px 10px;
 		}
-		.nav { display: grid; gap: 5px; }
+		.nav { display: grid; gap: 6px; }
 		.nav a {
 			border: 0; background: transparent;
-			color: #777b82;
+			color: #2C2A29;
 			border-radius: 10px;
 			padding: 11px 12px;
 			display: flex; align-items: center; gap: 10px;
 			text-align: left; text-decoration: none;
-			font-size: 13px; font-weight: 600;
+			font-size: 14.5px; font-weight: 600;
 			width: 100%;
 			transition: var(--transition);
+			cursor: pointer;
 		}
-		.nav .nav-icon { width: 20px; text-align: center; color: #8fa198; font-size: 14px; }
-		.nav a.active, .nav a:hover {
-			background: var(--surface);
+		.nav .nav-icon { width: 20px; text-align: center; color: #4A4643; font-size: 15px; }
+		.nav a:hover {
+			background: rgba(var(--wave-color-primary), 0.09);
 			color: var(--ink);
-			box-shadow: 0 5px 14px rgba(208,111,49,.1);
 		}
-		.nav a.active .nav-icon { color: var(--accent); }
+		.nav a.active {
+			background: #ffffff;
+			color: var(--ink);
+			font-weight: 700;
+			box-shadow: 0 4px 14px rgba(0,0,0,.08);
+			border: 1px solid rgba(var(--wave-color-primary), 0.22);
+		}
+		.nav a.active .nav-icon { color: var(--accent); font-weight: 700; }
 
 		.sidebar-bottom { margin-top: auto; border-top: 1px solid #f0e1d5; padding-top: 18px; }
 
@@ -391,13 +399,17 @@
 			transition: background 0.4s ease, color 0.4s ease;
 		}
 		body.night .eyebrow, body.night .brand-name span, body.night .timeline-range-label { color: var(--accent); }
-		body.night .sidebar { background: linear-gradient(180deg, #1d160f 0%, #17110c 100%) !important; border-color: var(--line) !important; }
+		body.night .sidebar { background: #191411 !important; border-color: var(--line) !important; }
 		body.night .sidebar::after { border-color: rgba(var(--wave-color-primary), .18); box-shadow: 0 0 0 22px rgba(var(--wave-color-primary), .07), 0 0 0 44px rgba(var(--wave-color-primary), .035); }
-		body.night .nav a { color: #a99a89; }
-		body.night .nav a.active, body.night .nav a:hover { background: var(--surface); color: var(--ink); box-shadow: 0 5px 16px rgba(0,0,0,.35); }
-		body.night .nav a.active .nav-icon { color: var(--accent); }
+		body.night .nav-label { color: #d5c8ba !important; }
+		body.night .nav a { color: #ede3d7 !important; font-weight: 600; }
+		body.night .nav .nav-icon { color: #d5c8ba !important; }
+		body.night .nav a:hover { background: #251e18 !important; color: #ffffff !important; }
+		body.night .nav a.active { background: #251e18 !important; color: #ffffff !important; box-shadow: 0 5px 16px rgba(0,0,0,.45) !important; border: 1px solid rgba(var(--wave-color-primary), 0.35) !important; }
+		body.night .nav a.active .nav-icon { color: var(--accent) !important; }
 		body.night .profile-box { background: var(--surface); }
-		body.night .privacy strong { color: var(--ink); }
+		body.night .privacy { color: #b9a891 !important; }
+		body.night .privacy strong { color: #ffffff !important; }
 		body.night .theme-toggle { background: var(--surface); border-color: var(--line); color: var(--muted); }
 		body.night .theme-toggle:hover { border-color: var(--accent); color: var(--ink); }
 		body.night .hamburger-btn { background: var(--surface); border-color: var(--line); color: var(--ink); }
