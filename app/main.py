@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
 
-from app.utils import (
-    capacity_summary, prioritise, active_tasks_for_week, overload_suggestions,
-    core_tasks_today_message, record_weekly_snapshot, trend_data, get_nudge,
-)
+# from app.utils import (
+#     capacity_summary, prioritise, active_tasks_for_week, overload_suggestions,
+#     core_tasks_today_message, record_weekly_snapshot, trend_data, get_nudge,
+# )
 
 bp = Blueprint("main", __name__)
 

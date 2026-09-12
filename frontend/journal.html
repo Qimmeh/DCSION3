@@ -24,9 +24,11 @@
 
 			/* Emotion spectrum colors */
 			--joy-color: #F5C038;
+			--love-color: #EC4899;
 			--sadness-color: #2563EB;
 			--anger-color: #DC2626;
 			--fear-color: #7E22CE;
+			--surprise-color: #06B6D4;
 			--disgust-color: #16A34A;
 		}
 
@@ -785,9 +787,11 @@
 		}
 
 		.emotion-tag-badge.joy { background: var(--joy-color); color: #2C2A29; }
+		.emotion-tag-badge.love { background: var(--love-color); }
 		.emotion-tag-badge.sadness { background: var(--sadness-color); }
 		.emotion-tag-badge.anger { background: var(--anger-color); }
 		.emotion-tag-badge.fear { background: var(--fear-color); }
+		.emotion-tag-badge.surprise { background: var(--surprise-color); }
 		.emotion-tag-badge.disgust { background: var(--disgust-color); }
 
 		.journal-card-title {
@@ -1368,9 +1372,11 @@ body.night .nav .tab-item.active .nav-icon {
 					<div class="filter-pills-list" id="filterPillsList">
 						<button class="filter-chip active" data-filter="all">All</button>
 						<button class="filter-chip" data-filter="joy">Joy</button>
+						<button class="filter-chip" data-filter="love">Love</button>
 						<button class="filter-chip" data-filter="sadness">Sadness</button>
 						<button class="filter-chip" data-filter="anger">Anger</button>
 						<button class="filter-chip" data-filter="fear">Fear</button>
+						<button class="filter-chip" data-filter="surprise">Surprise</button>
 						<button class="filter-chip" data-filter="disgust">Disgust</button>
 					</div>
 				</div>
@@ -1433,32 +1439,12 @@ body.night .nav .tab-item.active .nav-icon {
 		<div class="fluid-wave-wrapper">
 			<svg viewBox="0 0 500 100" preserveAspectRatio="none" class="fluid-wave-svg">
 				<defs>
-					<linearGradient id="joyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-						<stop offset="0%" stop-color="#FFE066" />
-						<stop offset="100%" stop-color="#F5C038" />
-					</linearGradient>
-					<linearGradient id="sadnessGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-						<stop offset="0%" stop-color="#4D96FF" />
-						<stop offset="100%" stop-color="#2563EB" />
-					</linearGradient>
-					<linearGradient id="angerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-						<stop offset="0%" stop-color="#FF6B6B" />
-						<stop offset="100%" stop-color="#DC2626" />
-					</linearGradient>
-					<linearGradient id="fearGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-						<stop offset="0%" stop-color="#A855F7" />
-						<stop offset="100%" stop-color="#7E22CE" />
-					</linearGradient>
-					<linearGradient id="disgustGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-						<stop offset="0%" stop-color="#51CF66" />
-						<stop offset="100%" stop-color="#16A34A" />
+					<linearGradient id="activeWaveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+						<stop id="waveStop1" offset="0%" stop-color="#FFE066" />
+						<stop id="waveStop2" offset="100%" stop-color="#F5C038" />
 					</linearGradient>
 
-					<!-- Reveal mask: a rectangle centred on x=250 (the horizontal
-					     middle of this 0-500 viewBox). Animating its x/width lets
-					     the wave "open up" outward from the middle, independently
-					     of the wave's own vertical shape. See waveRevealRect usage
-					     in the script below. -->
+					<!-- Reveal mask: a rectangle centred on x=250 -->
 					<clipPath id="waveRevealClip">
 						<rect id="waveRevealRect" x="250" y="0" width="0" height="100" />
 					</clipPath>
@@ -1467,9 +1453,9 @@ body.night .nav .tab-item.active .nav-icon {
 				<!-- Harmonious Dual Wave Overlay -->
 				<g id="waveGroup">
 					<!-- Background Wave Layer (Offset phase & 0.35 opacity) -->
-					<path id="emotionPathBg" fill="url(#joyGrad)" opacity="0.35" d="M0,92 C125,92 125,92 250,92 C375,92 375,92 500,92 L500,100 L0,100 Z" />
+					<path id="emotionPathBg" fill="url(#activeWaveGrad)" opacity="0.35" d="M0,92 C125,92 125,92 250,92 C375,92 375,92 500,92 L500,100 L0,100 Z" />
 					<!-- Foreground Wave Layer (High fluid depth) -->
-					<path id="emotionPath" fill="url(#joyGrad)" opacity="0.9" d="M0,92 C125,92 125,92 250,92 C375,92 375,92 500,92 L500,100 L0,100 Z" />
+					<path id="emotionPath" fill="url(#activeWaveGrad)" opacity="0.9" d="M0,92 C125,92 125,92 250,92 C375,92 375,92 500,92 L500,100 L0,100 Z" />
 				</g>
 			</svg>
 		</div>
@@ -1560,6 +1546,10 @@ body.night .nav .tab-item.active .nav-icon {
 				"M0,50 C125,15 125,85 250,50 C375,15 375,85 500,50 L500,100 L0,100 Z",
 				"M0,50 C125,85 125,15 250,50 C375,85 375,15 500,50 L500,100 L0,100 Z"
 			],
+			love: [
+				"M0,52 C125,18 125,82 250,52 C375,18 375,82 500,52 L500,100 L0,100 Z",
+				"M0,52 C125,82 125,18 250,52 C375,82 375,18 500,52 L500,100 L0,100 Z"
+			],
 			sadness: [
 				"M0,60 C125,30 125,90 250,60 C375,30 375,90 500,60 L500,100 L0,100 Z",
 				"M0,60 C125,90 125,30 250,60 C375,90 375,30 500,60 L500,100 L0,100 Z"
@@ -1572,6 +1562,10 @@ body.night .nav .tab-item.active .nav-icon {
 				"M0,45 C125,10 125,80 250,45 C375,10 375,80 500,45 L500,100 L0,100 Z",
 				"M0,45 C125,80 125,10 250,45 C375,80 375,10 500,45 L500,100 L0,100 Z"
 			],
+			surprise: [
+				"M0,38 C125,2 125,72 250,38 C375,2 375,72 500,38 L500,100 L0,100 Z",
+				"M0,38 C125,72 125,2 250,38 C375,72 375,2 500,38 L500,100 L0,100 Z"
+			],
 			disgust: [
 				"M0,55 C125,20 125,85 250,55 C375,20 375,85 500,55 L500,100 L0,100 Z",
 				"M0,55 C125,85 125,20 250,55 C375,85 375,20 500,55 L500,100 L0,100 Z"
@@ -1581,12 +1575,14 @@ body.night .nav .tab-item.active .nav-icon {
 		// Resting flat path when idle
 		const restPath = "M0,92 C125,92 125,92 250,92 C375,92 375,92 500,92 L500,100 L0,100 Z";
 
-		const emotionGradients = {
-			joy: "url(#joyGrad)",
-			sadness: "url(#sadnessGrad)",
-			anger: "url(#angerGrad)",
-			fear: "url(#fearGrad)",
-			disgust: "url(#disgustGrad)"
+		const emotionColorMap = {
+			joy:      { top: "#FFE066", bottom: "#F5C038" },
+			love:     { top: "#F472B6", bottom: "#EC4899" },
+			sadness:  { top: "#4D96FF", bottom: "#2563EB" },
+			anger:    { top: "#FF6B6B", bottom: "#DC2626" },
+			fear:     { top: "#A855F7", bottom: "#7E22CE" },
+			surprise: { top: "#22D3EE", bottom: "#06B6D4" },
+			disgust:  { top: "#51CF66", bottom: "#16A34A" }
 		};
 
 		// Reference to the main wave group element
@@ -1599,19 +1595,21 @@ body.night .nav .tab-item.active .nav-icon {
 		let isWaveActive = false;
 
 		function setEmotionWave(emotion) {
-			if (!emotionGradients[emotion]) emotion = "joy";
+			if (!emotionColorMap[emotion]) emotion = "joy";
 			currentEmotion = emotion;
 
-			// Update fill gradient color smoothly without forcing a timeline re-trigger
-			gsap.to("#emotionPath", {
-				attr: { fill: emotionGradients[emotion] },
-				duration: 1.0,
-				ease: "power2.inOut"
+			const targetColors = emotionColorMap[emotion];
+
+			// Silky 1.8-second continuous color morphing between SVG stops
+			gsap.to("#waveStop1", {
+				stopColor: targetColors.top,
+				duration: 1.8,
+				ease: "sine.inOut"
 			});
-			gsap.to("#emotionPathBg", {
-				attr: { fill: emotionGradients[emotion] },
-				duration: 1.2,
-				ease: "power2.inOut"
+			gsap.to("#waveStop2", {
+				stopColor: targetColors.bottom,
+				duration: 1.8,
+				ease: "sine.inOut"
 			});
 		}
 
@@ -1704,13 +1702,15 @@ body.night .nav .tab-item.active .nav-icon {
 		   Model: bhadresh-savani/distilbert-base-uncased-emotion
 		---------------------------------------- */
 		const HF_DISTILBERT_MODEL = "bhadresh-savani/distilbert-base-uncased-emotion";
-		const PAUSE_BUFFER_MS = 600;
+		const PAUSE_BUFFER_MS = 1200; // Increased typing pause gap to 1.2s
 
 		const distilBertLexicon = {
-			joy: ['happy', 'joy', 'glad', 'excited', 'great', 'awesome', 'delighted', 'good', 'love', 'blessed', 'relaxed', 'peaceful', 'smile', 'laugh', 'proud', 'accomplished'],
+			joy: ['happy', 'joy', 'glad', 'excited', 'great', 'awesome', 'delighted', 'good', 'blessed', 'relaxed', 'peaceful', 'smile', 'laugh', 'proud', 'accomplished'],
+			love: ['love', 'adore', 'cherish', 'caring', 'sweetheart', 'affection', 'beloved'],
 			sadness: ['sad', 'depressed', 'gloomy', 'unhappy', 'lonely', 'heartbroken', 'hopeless', 'disappointed', 'cry', 'crying', 'miserable', 'tired', 'exhausted', 'drained'],
 			anger: ['angry', 'mad', 'furious', 'annoyed', 'irritated', 'outraged', 'hate', 'hateful', 'enraged', 'frustrated'],
 			fear: ['scared', 'afraid', 'fear', 'fearful', 'anxious', 'terrified', 'panic', 'panicked', 'nervous', 'worried', 'dread', 'stressed', 'overwhelmed'],
+			surprise: ['surprised', 'shocked', 'amazed', 'astonished', 'unexpected', 'whoa', 'unbelievable'],
 			disgust: ['disgusted', 'revolted', 'sick', 'gross', 'nauseous', 'repulsed', 'nasty']
 		};
 
@@ -1719,12 +1719,12 @@ body.night .nav .tab-item.active .nav-icon {
 
 			try {
 				const controller = new AbortController();
-				const timeoutId = setTimeout(() => controller.abort(), 1800);
+				const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-				const res = await fetch(`https://api-inference.huggingface.co/models/${HF_DISTILBERT_MODEL}`, {
+				const res = await fetch("/journal/emotion", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ inputs: text }),
+					body: JSON.stringify({ text: text }),
 					signal: controller.signal
 				});
 
@@ -1732,12 +1732,9 @@ body.night .nav .tab-item.active .nav-icon {
 
 				if (res.ok) {
 					const data = await res.json();
-					if (Array.isArray(data) && Array.isArray(data[0])) {
-						let emotionLabel = data[0][0].label.toLowerCase();
-						if (emotionLabel === 'love') emotionLabel = 'joy';
-						if (emotionLabel === 'surprise') emotionLabel = 'fear';
+					if (data.ok && data.top_emotion) {
+						let emotionLabel = data.top_emotion.toLowerCase();
 						if (!wavePaths[emotionLabel]) emotionLabel = 'joy';
-
 						setEmotionWave(emotionLabel);
 						return;
 					}
@@ -1745,7 +1742,7 @@ body.night .nav .tab-item.active .nav-icon {
 			} catch (err) {}
 
 			// Lexicon Fallback
-			let scores = { joy: 0, sadness: 0, anger: 0, fear: 0, disgust: 0 };
+			let scores = { joy: 0, love: 0, sadness: 0, anger: 0, fear: 0, surprise: 0, disgust: 0 };
 			const words = text.toLowerCase().split(/\W+/);
 			
 			words.forEach(w => {
@@ -1791,31 +1788,48 @@ body.night .nav .tab-item.active .nav-icon {
 			}
 		}
 
-		function handleInputActivity() {
+		function handleInputActivity(e) {
 			updateHeadingVisibility();
 
 			const text = journalInput.value.trim();
 			if (text.length > 0) {
-				// startWaveAnimation() already handles all three cases on
-				// its own: no session yet, a paused session to resume, or
-				// an already-playing session to leave alone.
 				startWaveAnimation();
+			} else {
+				pauseOrFlattenWave();
+				return;
 			}
 
+			// Reset wave flattening idle timer (1400ms)
 			if (idleTimer) clearTimeout(idleTimer);
 			idleTimer = setTimeout(pauseOrFlattenWave, 1400);
 
+			// Immediate trigger on sentence punctuation boundaries (. ! ? Enter)
+			if (e && e.key && ['.', '!', '?', 'Enter'].includes(e.key)) {
+				if (pauseBufferTimer) clearTimeout(pauseBufferTimer);
+				if (text.length >= 3) {
+					classifyEmotionWithDistilBert(text);
+				}
+				return;
+			}
+
+			// Pause Threshold Debounce: Triggers 600ms after user pauses typing
 			if (pauseBufferTimer) clearTimeout(pauseBufferTimer);
 			pauseBufferTimer = setTimeout(() => {
 				const currentText = journalInput.value.trim();
-				classifyEmotionWithDistilBert(currentText);
+				if (currentText.length >= 3) {
+					classifyEmotionWithDistilBert(currentText);
+				}
 			}, PAUSE_BUFFER_MS);
 		}
 
 		/* --- Input Activity Listeners --- */
 		const journalInput = document.getElementById('journalInput');
 		journalInput.addEventListener('input', handleInputActivity);
-		journalInput.addEventListener('keydown', handleInputActivity);
+		journalInput.addEventListener('keydown', (e) => {
+			if (['.', '!', '?', 'Enter'].includes(e.key)) {
+				handleInputActivity(e);
+			}
+		});
 
 		/* --- Web Speech API Dictation --- */
 		const micBtn = document.getElementById('micBtn');
@@ -1879,19 +1893,18 @@ body.night .nav .tab-item.active .nav-icon {
 			}
 		});
 
-		/* --- Save Entry / Submit Reflection --- */
+		/* --- Save Entry / Submit Reflection & Load History --- */
 		const btnSendJournal = document.getElementById('btnSendJournal');
 		const reflectionsStream = document.getElementById('reflectionsStream');
 		const journalGrid = document.getElementById('journalGrid');
 
 		btnSendJournal.addEventListener('click', saveJournalEntry);
 
-		function saveJournalEntry() {
+		async function saveJournalEntry() {
 			const text = journalInput.value.trim();
 			if (!text) return;
 
-			const now = new Date();
-			const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+			const emotionToSave = currentEmotion || 'joy';
 
 			// Append User Reflection Card to Stream
 			const reflectionCard = document.createElement('div');
@@ -1899,17 +1912,45 @@ body.night .nav .tab-item.active .nav-icon {
 			reflectionCard.textContent = text;
 			reflectionsStream.appendChild(reflectionCard);
 
-			// Add Card to Journal History Grid
+			// Render Card in History Grid
+			renderJournalCard({ content: text, top_emotion: emotionToSave, created_at: new Date().toISOString() }, true);
+
+			// Reset input & stop wave
+			journalInput.value = '';
+			updateHeadingVisibility();
+			if (isListening) stopListening();
+			pauseOrFlattenWave();
+			reflectionsStream.scrollTop = reflectionsStream.scrollHeight;
+
+			// Save to local database via backend API
+			try {
+				await fetch('/journal/entries', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ text: text, emotion: emotionToSave })
+				});
+			} catch (err) {
+				console.warn('Failed to persist journal entry to database:', err);
+			}
+		}
+
+		function renderJournalCard(entry, prepend = false) {
+			if (!journalGrid) return;
 			const card = document.createElement('article');
 			card.className = 'journal-card';
-			card.dataset.emotion = currentEmotion;
+			const emo = (entry.top_emotion || 'joy').toLowerCase();
+			card.dataset.emotion = emo;
+
+			const entryDate = entry.created_at ? new Date(entry.created_at) : new Date();
+			const dateStr = entryDate.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
 			card.innerHTML = `
 				<div class="journal-card-top">
-					<span class="journal-date">Today, ${timeStr}</span>
-					<span class="emotion-tag-badge ${currentEmotion}">${currentEmotion.toUpperCase()}</span>
+					<span class="journal-date">${dateStr}</span>
+					<span class="emotion-tag-badge ${emo}">${emo.toUpperCase()}</span>
 				</div>
-				<h3 class="journal-card-title">${text.slice(0, 32)}${text.length > 32 ? '...' : ''}</h3>
-				<p class="journal-card-snippet">${text}</p>
+				<h3 class="journal-card-title">${entry.content.slice(0, 32)}${entry.content.length > 32 ? '...' : ''}</h3>
+				<p class="journal-card-snippet">${entry.content}</p>
 				<div class="journal-card-footer">
 					<span class="open-entry-link">
 						View Entry
@@ -1918,15 +1959,30 @@ body.night .nav .tab-item.active .nav-icon {
 				</div>
 			`;
 			card.addEventListener('click', () => switchView('chat'));
-			journalGrid.prepend(card);
 
-			// Reset input & stop wave
-			journalInput.value = '';
-			updateHeadingVisibility();
-			if (isListening) stopListening();
-			pauseOrFlattenWave();
-			reflectionsStream.scrollTop = reflectionsStream.scrollHeight;
+			if (prepend) {
+				journalGrid.prepend(card);
+			} else {
+				journalGrid.appendChild(card);
+			}
 		}
+
+		async function loadSavedJournalEntries() {
+			try {
+				const res = await fetch('/journal/entries');
+				if (res.ok) {
+					const data = await res.json();
+					if (data.ok && Array.isArray(data.entries) && data.entries.length > 0) {
+						journalGrid.innerHTML = '';
+						data.entries.forEach(entry => renderJournalCard(entry, false));
+					}
+				}
+			} catch (err) {
+				console.warn('Could not load saved journal entries:', err);
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', loadSavedJournalEntries);
 
 		/* --- Filter Chips in Journal History View --- */
 		document.querySelectorAll('#filterPillsList .filter-chip').forEach(chip => {
