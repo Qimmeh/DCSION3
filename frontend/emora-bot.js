@@ -72,12 +72,12 @@
 		},
 		// 7. Calm / Serene / Relaxed / Content (Default Baseline)
 		calm: {
-			name: "Serene Sage Green",
+			name: "Warm Emora Orange",
 			status: "Tranquil & Balanced",
-			primary: [74, 107, 93],       // #4A6B5D (Signature Sage Green)
-			secondary: [45, 69, 57],      // #2D4539 (Forest Shade)
-			accent: [189, 209, 199],      // #BDD1C7 (Gentle Seafoam)
-			glow: "rgba(74, 107, 93, 0.3)"
+			primary: [243, 123, 50],       // #F37B32 (Signature Emora Orange)
+			secondary: [217, 101, 30],     // #D9651E (Warm Amber Shade)
+			accent: [255, 234, 219],      // #FFEADB (Soft Peach Foam)
+			glow: "rgba(243, 123, 50, 0.35)"
 		},
 		// 8. Lonely / Isolated / Empty
 		lonely: {
@@ -482,7 +482,7 @@
 					<div class="emora-bot-title-group">
 						<div class="emora-bot-title" id="emoraBotTitle">
 							<span>Emora AI</span>
-							<span class="emora-tide-badge" id="emoraTideBadge">🌊 Serene Sage Green</span>
+							<span class="emora-tide-badge" id="emoraTideBadge">🌊 Warm Emora Orange</span>
 						</div>
 						<div class="emora-bot-status-tag">Emotion-Responsive Tide Companion</div>
 					</div>

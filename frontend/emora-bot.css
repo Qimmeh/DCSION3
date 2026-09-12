@@ -7,25 +7,25 @@
    ========================================================================== */
 
 :root {
-	--ebot-primary: #4A6B5D;
-	--ebot-primary-dark: #375246;
-	--ebot-primary-light: #EBF0EE;
-	--ebot-primary-glow: rgba(74, 107, 93, 0.35);
+	--ebot-primary: #F37B32;
+	--ebot-primary-dark: #D9651E;
+	--ebot-primary-light: #FFEADB;
+	--ebot-primary-glow: rgba(243, 123, 50, 0.35);
 	--ebot-surface: #FFFFFF;
 	--ebot-bg: #FAF9F6;
 	--ebot-text: #2C2A29;
 	--ebot-muted: #7A7774;
 	--ebot-subtle: #9C9893;
 	--ebot-border: #E8E5DD;
-	--ebot-accent: #D97A53;
-	--ebot-shadow-btn: 0 8px 24px rgba(74, 107, 93, 0.32), 0 2px 6px rgba(0, 0, 0, 0.08);
-	--ebot-shadow-card: 0 16px 44px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(74, 107, 93, 0.08);
+	--ebot-accent: #F37B32;
+	--ebot-shadow-btn: 0 8px 24px rgba(243, 123, 50, 0.32), 0 2px 6px rgba(0, 0, 0, 0.08);
+	--ebot-shadow-card: 0 16px 44px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(243, 123, 50, 0.08);
 
-	/* Dynamic Wave Emotion Colors (Default Calm Sage Green) */
-	--wave-color-primary: 74, 107, 93;
-	--wave-color-secondary: 54, 80, 68;
-	--wave-color-accent: 209, 222, 216;
-	--wave-glow-color: rgba(74, 107, 93, 0.35);
+	/* Dynamic Wave Emotion Colors (Default Warm Emora Orange to match web) */
+	--wave-color-primary: 243, 123, 50;
+	--wave-color-secondary: 217, 101, 30;
+	--wave-color-accent: 255, 234, 219;
+	--wave-glow-color: rgba(243, 123, 50, 0.35);
 }
 
 /* ==========================================================================
