@@ -20,3 +20,11 @@ instance/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Node dependencies & caches
+node_modules/
+package-lock.json
+
+# IDE & testing
+.idea/
+.pytest_cache/

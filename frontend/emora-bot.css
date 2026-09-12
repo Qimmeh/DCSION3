@@ -1,0 +1,626 @@
+/* ==========================================================================
+   Emora Floating AI Bot & Living Page Water Waves
+   - Continuous, animated living water waves applied directly on the PAGES (top-left & bottom-right)
+   - High Tide surge transitions swelling across the screen
+   - Emotion-reactive color morphing across the entire page
+   - Clean, elegant, non-cluttered companion bot UI
+   ========================================================================== */
+
+:root {
+	--ebot-primary: #4A6B5D;
+	--ebot-primary-dark: #375246;
+	--ebot-primary-light: #EBF0EE;
+	--ebot-primary-glow: rgba(74, 107, 93, 0.35);
+	--ebot-surface: #FFFFFF;
+	--ebot-bg: #FAF9F6;
+	--ebot-text: #2C2A29;
+	--ebot-muted: #7A7774;
+	--ebot-subtle: #9C9893;
+	--ebot-border: #E8E5DD;
+	--ebot-accent: #D97A53;
+	--ebot-shadow-btn: 0 8px 24px rgba(74, 107, 93, 0.32), 0 2px 6px rgba(0, 0, 0, 0.08);
+	--ebot-shadow-card: 0 16px 44px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(74, 107, 93, 0.08);
+
+	/* Dynamic Wave Emotion Colors (Default Calm Sage Green) */
+	--wave-color-primary: 74, 107, 93;
+	--wave-color-secondary: 54, 80, 68;
+	--wave-color-accent: 209, 222, 216;
+	--wave-glow-color: rgba(74, 107, 93, 0.35);
+}
+
+/* ==========================================================================
+   MAIN PAGE LIVING WATER WAVES (Top-Left & Bottom-Right of the Screen)
+   ========================================================================== */
+.emora-page-wave-canvas {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	pointer-events: none;
+	z-index: 95; /* Floats over page content, cleanly below sidebar navigation (z-index 100) */
+	transition: opacity 0.4s ease;
+	opacity: 0.95;
+}
+
+/* Atmospheric Page Tide Surge Ambient Aura */
+.emora-page-tide-surge {
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 89;
+	background: radial-gradient(circle at 100% 100%, rgba(var(--wave-color-primary), 0.12) 0%, transparent 60%),
+	            radial-gradient(circle at 0% 0%, rgba(var(--wave-color-secondary), 0.09) 0%, transparent 50%);
+	opacity: 0.7;
+	transition: opacity 0.8s ease, background 0.8s ease;
+}
+
+.emora-page-tide-surge.active {
+	opacity: 1;
+	animation: pageSurgeGlow 2.5s infinite alternate ease-in-out;
+}
+
+@keyframes pageSurgeGlow {
+	0% {
+		opacity: 0.8;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+/* ==========================================================================
+   FLOATING LAUNCHER BUTTON (Bottom-Right, z-index: 99999)
+   ========================================================================== */
+.emora-bot-launcher {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.emora-bot-circle-btn {
+	width: 58px;
+	height: 58px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, rgb(var(--wave-color-primary)) 0%, rgb(var(--wave-color-secondary)) 100%);
+	border: none;
+	outline: none;
+	cursor: pointer;
+	box-shadow: 0 8px 26px var(--wave-glow-color), 0 2px 6px rgba(0, 0, 0, 0.08);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #FFFFFF;
+	position: relative;
+	transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, background 0.5s ease;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+	overflow: hidden;
+}
+
+.emora-bot-circle-btn:hover {
+	transform: translateY(-3px) scale(1.06);
+	box-shadow: 0 12px 30px var(--wave-glow-color), 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.emora-bot-circle-btn:active {
+	transform: translateY(0) scale(0.96);
+}
+
+/* Water Ripple Accent on Launcher */
+.emora-bot-circle-btn::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	background: radial-gradient(circle at 75% 75%, rgba(var(--wave-color-accent), 0.35), transparent 70%);
+	pointer-events: none;
+	transition: background 0.6s ease;
+}
+
+/* Status Indicator Dot on Launcher */
+.emora-bot-status-dot {
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	width: 13px;
+	height: 13px;
+	background: #10B981;
+	border: 2px solid #FFFFFF;
+	border-radius: 50%;
+	box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+	animation: emoraBotPulse 2.4s infinite;
+	z-index: 2;
+}
+
+@keyframes emoraBotPulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+	}
+	70% {
+		box-shadow: 0 0 0 7px rgba(16, 185, 129, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+	}
+}
+
+/* Icons inside launcher */
+.emora-bot-icon-chat,
+.emora-bot-icon-close {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: opacity 0.2s ease, transform 0.2s ease;
+	z-index: 2;
+}
+
+.emora-bot-icon-chat svg,
+.emora-bot-icon-close svg {
+	width: 26px;
+	height: 26px;
+	stroke: #FFFFFF;
+	stroke-width: 2;
+	fill: none;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.emora-bot-icon-close {
+	opacity: 0;
+	transform: rotate(-90deg) scale(0.7);
+	pointer-events: none;
+}
+
+.emora-bot-launcher.open .emora-bot-icon-chat {
+	opacity: 0;
+	transform: rotate(90deg) scale(0.7);
+	pointer-events: none;
+}
+
+.emora-bot-launcher.open .emora-bot-icon-close {
+	opacity: 1;
+	transform: rotate(0deg) scale(1);
+	pointer-events: auto;
+}
+
+/* Launcher Tooltip */
+.emora-bot-tooltip {
+	position: absolute;
+	right: 70px;
+	background: #2C2A29;
+	color: #FFFFFF;
+	font-family: 'Inter', -apple-system, sans-serif;
+	font-size: 12px;
+	font-weight: 500;
+	padding: 6px 12px;
+	border-radius: 8px;
+	white-space: nowrap;
+	opacity: 0;
+	pointer-events: none;
+	transform: translateX(8px);
+	transition: opacity 0.18s ease, transform 0.18s ease;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.emora-bot-tooltip::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	right: -4px;
+	transform: translateY(-50%);
+	border-width: 4px 0 4px 4px;
+	border-style: solid;
+	border-color: transparent transparent transparent #2C2A29;
+}
+
+.emora-bot-launcher:not(.open):hover .emora-bot-tooltip {
+	opacity: 1;
+	transform: translateX(0);
+}
+
+/* ==========================================================================
+   CLEAN, FOCUSED BOT CHAT POPUP (z-index: 99999)
+   ========================================================================== */
+.emora-bot-popup {
+	position: fixed;
+	bottom: 92px;
+	right: 24px;
+	width: 388px;
+	height: 535px;
+	max-height: calc(100vh - 114px);
+	max-width: calc(100vw - 40px);
+	background: rgba(255, 255, 255, 0.94);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	border-radius: 22px;
+	border: 1px solid rgba(232, 229, 221, 0.9);
+	box-shadow: 0 18px 48px rgba(0, 0, 0, 0.14), 0 4px 18px var(--wave-glow-color);
+	z-index: 99999;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	opacity: 0;
+	pointer-events: none;
+	transform: translateY(16px) scale(0.96);
+	transform-origin: bottom right;
+	transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+	font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.emora-bot-popup.open {
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateY(0) scale(1);
+}
+
+/* Header */
+.emora-bot-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 13px 16px;
+	background: rgba(250, 249, 246, 0.92);
+	border-bottom: 1px solid rgba(232, 229, 221, 0.8);
+	user-select: none;
+}
+
+.emora-bot-header-left {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.emora-bot-avatar {
+	width: 36px;
+	height: 36px;
+	border-radius: 10px;
+	background: rgb(var(--wave-color-primary));
+	color: #FFFFFF;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: 'Fraunces', serif;
+	font-weight: 700;
+	font-size: 17px;
+	line-height: 1;
+	flex-shrink: 0;
+	box-shadow: 0 2px 8px var(--wave-glow-color);
+	transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+.emora-bot-title-group {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.emora-bot-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--ebot-text);
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	line-height: 1.2;
+}
+
+/* Tide & Emotion Badge in Header */
+.emora-tide-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 7px;
+	border-radius: 10px;
+	font-size: 10px;
+	font-weight: 600;
+	background: rgba(var(--wave-color-primary), 0.12);
+	color: rgb(var(--wave-color-primary));
+	border: 1px solid rgba(var(--wave-color-primary), 0.25);
+	transition: all 0.4s ease;
+}
+
+.emora-bot-status-tag {
+	font-size: 11px;
+	color: var(--ebot-muted);
+	font-weight: 500;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.emora-bot-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.emora-bot-action-btn {
+	background: transparent;
+	border: none;
+	color: var(--ebot-muted);
+	width: 28px;
+	height: 28px;
+	border-radius: 6px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.15s ease, color 0.15s ease;
+	text-decoration: none;
+}
+
+.emora-bot-action-btn:hover {
+	background: rgba(0, 0, 0, 0.05);
+	color: var(--ebot-text);
+}
+
+.emora-bot-action-btn svg {
+	width: 16px;
+	height: 16px;
+	stroke: currentColor;
+	stroke-width: 2;
+	fill: none;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* Quick Suggestion Chips */
+.emora-bot-chips-bar {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 14px;
+	background: rgba(250, 249, 246, 0.85);
+	border-bottom: 1px solid rgba(232, 229, 221, 0.7);
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.emora-bot-chips-bar::-webkit-scrollbar {
+	display: none;
+}
+
+.emora-bot-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 5px 10px;
+	border-radius: 14px;
+	background: #FFFFFF;
+	border: 1px solid var(--ebot-border);
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--ebot-text);
+	cursor: pointer;
+	white-space: nowrap;
+	transition: all 0.2s ease;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.emora-bot-chip:hover {
+	background: rgba(var(--wave-color-primary), 0.12);
+	border-color: rgb(var(--wave-color-primary));
+	color: rgb(var(--wave-color-primary));
+	transform: translateY(-1px);
+}
+
+/* Chat Messages Container */
+.emora-bot-messages {
+	flex: 1;
+	padding: 14px;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	background: #FFFFFF;
+}
+
+.emora-bot-msg {
+	display: flex;
+	flex-direction: column;
+	max-width: 86%;
+	animation: emoraMsgFadeIn 0.2s ease forwards;
+}
+
+@keyframes emoraMsgFadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.emora-bot-msg.bot {
+	align-self: flex-start;
+}
+
+.emora-bot-msg.user {
+	align-self: flex-end;
+}
+
+.emora-bot-msg-meta {
+	font-size: 10px;
+	font-weight: 500;
+	color: var(--ebot-subtle);
+	margin-bottom: 3px;
+	padding: 0 4px;
+}
+
+.emora-bot-msg.user .emora-bot-msg-meta {
+	text-align: right;
+}
+
+.emora-bot-msg-bubble {
+	padding: 10px 14px;
+	border-radius: 16px;
+	font-size: 13px;
+	line-height: 1.45;
+	word-break: break-word;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.emora-bot-msg.bot .emora-bot-msg-bubble {
+	background: #F6F5F2;
+	color: var(--ebot-text);
+	border: 1px solid rgba(232, 229, 221, 0.85);
+	border-bottom-left-radius: 4px;
+}
+
+.emora-bot-msg.user .emora-bot-msg-bubble {
+	background: linear-gradient(135deg, rgb(var(--wave-color-primary)) 0%, rgb(var(--wave-color-secondary)) 100%);
+	color: #FFFFFF;
+	border-bottom-right-radius: 4px;
+	box-shadow: 0 3px 10px var(--wave-glow-color);
+	transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+.emora-bot-msg-bubble p {
+	margin: 0 0 6px 0;
+}
+
+.emora-bot-msg-bubble p:last-child {
+	margin-bottom: 0;
+}
+
+.emora-bot-msg-bubble strong {
+	font-weight: 600;
+}
+
+/* Typing indicator */
+.emora-bot-typing {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 10px 14px;
+	background: #F6F5F2;
+	border: 1px solid rgba(232, 229, 221, 0.85);
+	border-radius: 14px;
+	border-bottom-left-radius: 4px;
+	align-self: flex-start;
+	width: fit-content;
+}
+
+.emora-bot-dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--ebot-muted);
+	animation: emoraDotPulse 1.2s infinite ease-in-out;
+}
+
+.emora-bot-dot:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+.emora-bot-dot:nth-child(3) {
+	animation-delay: 0.4s;
+}
+
+@keyframes emoraDotPulse {
+	0%, 60%, 100% {
+		transform: translateY(0);
+		opacity: 0.4;
+	}
+	30% {
+		transform: translateY(-4px);
+		opacity: 1;
+	}
+}
+
+/* Input Form */
+.emora-bot-footer {
+	padding: 10px 12px;
+	background: rgba(250, 249, 246, 0.95);
+	border-top: 1px solid rgba(232, 229, 221, 0.8);
+}
+
+.emora-bot-input-form {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: #FFFFFF;
+	border: 1px solid var(--ebot-border);
+	border-radius: 22px;
+	padding: 4px 6px 4px 14px;
+	transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.emora-bot-input-form:focus-within {
+	border-color: rgb(var(--wave-color-primary));
+	box-shadow: 0 0 0 3px rgba(var(--wave-color-primary), 0.15);
+}
+
+.emora-bot-input {
+	flex: 1;
+	border: none;
+	outline: none;
+	background: transparent;
+	font-family: 'Inter', -apple-system, sans-serif;
+	font-size: 13px;
+	color: var(--ebot-text);
+}
+
+.emora-bot-input::placeholder {
+	color: var(--ebot-subtle);
+}
+
+.emora-bot-send-btn {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, rgb(var(--wave-color-primary)) 0%, rgb(var(--wave-color-secondary)) 100%);
+	border: none;
+	outline: none;
+	cursor: pointer;
+	color: #FFFFFF;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transition: background 0.3s ease, transform 0.15s ease, box-shadow 0.3s ease;
+	box-shadow: 0 2px 6px var(--wave-glow-color);
+}
+
+.emora-bot-send-btn:hover {
+	transform: scale(1.05);
+	box-shadow: 0 4px 10px var(--wave-glow-color);
+}
+
+.emora-bot-send-btn:active {
+	transform: scale(0.92);
+}
+
+.emora-bot-send-btn svg {
+	width: 14px;
+	height: 14px;
+	stroke: #FFFFFF;
+	stroke-width: 2.2;
+	fill: none;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	transform: translateX(1px);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+	.emora-bot-popup {
+		right: 12px;
+		left: 12px;
+		width: auto;
+		bottom: 86px;
+		height: calc(100vh - 100px);
+	}
+	.emora-bot-launcher {
+		right: 16px;
+		bottom: 16px;
+	}
+}
