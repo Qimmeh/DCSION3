@@ -624,3 +624,33 @@
 		bottom: 16px;
 	}
 }
+
+/* ==========================================================================
+   SITE-WIDE EMOTION HARMONY (Smoothly transition site theme with the wave)
+   ========================================================================== */
+.brand-icon,
+.brand-avatar,
+.brand-name span,
+.tab-item,
+.tab-item.active,
+.tab-item svg,
+.tab-badge,
+.action-btn,
+.schedule-card.slot-flex,
+.cat-badge,
+.alert-pill,
+.metric-dot,
+.heatmap-bar,
+.chain-svg-icon,
+.chain-gap-title,
+.chain-connector-top,
+.chain-connector-bottom,
+.nav a.active,
+.nav a.active .nav-icon,
+.popover-confirm-btn,
+.popover-opt-icon.green,
+.filter-chip.active,
+.emotion-tag-badge {
+	transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease, stroke 0.35s ease, fill 0.35s ease, box-shadow 0.35s ease !important;
+}
+

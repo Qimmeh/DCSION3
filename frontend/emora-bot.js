@@ -191,6 +191,7 @@
 
 			this.resize();
 			window.addEventListener('resize', () => this.resize());
+			this.syncSiteTheme(true);
 			this.startAnimationLoop();
 		}
 
@@ -204,11 +205,6 @@
 		setEmotion(emotionKey, isDirectChat = true) {
 			const target = EMOTION_PALETTES[emotionKey] || EMOTION_PALETTES.calm;
 			this.targetPalette = target;
-
-			document.documentElement.style.setProperty('--wave-color-primary', target.primary.join(', '));
-			document.documentElement.style.setProperty('--wave-color-secondary', target.secondary.join(', '));
-			document.documentElement.style.setProperty('--wave-color-accent', target.accent.join(', '));
-			document.documentElement.style.setProperty('--wave-glow-color', target.glow);
 
 			if (isDirectChat) {
 				this.triggerHighTide(target);
@@ -258,6 +254,49 @@
 			this.currentPalette.primary = this.lerpColor(this.currentPalette.primary, this.targetPalette.primary, this.colorLerpRate);
 			this.currentPalette.secondary = this.lerpColor(this.currentPalette.secondary, this.targetPalette.secondary, this.colorLerpRate);
 			this.currentPalette.accent = this.lerpColor(this.currentPalette.accent, this.targetPalette.accent, this.colorLerpRate);
+
+			this.syncSiteTheme();
+		}
+
+		syncSiteTheme(force = false) {
+			const cp = this.currentPalette.primary;
+			const cs = this.currentPalette.secondary;
+			const ca = this.currentPalette.accent;
+
+			const key = `${cp[0]},${cp[1]},${cp[2]}`;
+			if (!force && this._lastThemeKey === key) return;
+			this._lastThemeKey = key;
+
+			const rootStyle = document.documentElement.style;
+
+			// 1. Wave and bot tokens
+			rootStyle.setProperty('--wave-color-primary', `${cp[0]}, ${cp[1]}, ${cp[2]}`);
+			rootStyle.setProperty('--wave-color-secondary', `${cs[0]}, ${cs[1]}, ${cs[2]}`);
+			rootStyle.setProperty('--wave-color-accent', `${ca[0]}, ${ca[1]}, ${ca[2]}`);
+			rootStyle.setProperty('--wave-glow-color', `rgba(${cp[0]}, ${cp[1]}, ${cp[2]}, 0.35)`);
+
+			// 2. Site Primary & Accent Colors (Timetable, Insights, Journal, Dashboard, Profile)
+			const primaryRgb = `rgb(${cp[0]}, ${cp[1]}, ${cp[2]})`;
+			const primaryDark = `rgb(${cs[0]}, ${cs[1]}, ${cs[2]})`;
+			const primaryLight = `rgba(${cp[0]}, ${cp[1]}, ${cp[2]}, 0.12)`;
+			const primarySoft = `rgba(${cp[0]}, ${cp[1]}, ${cp[2]}, 0.15)`;
+
+			// Timetable & Insights & Journal variables
+			rootStyle.setProperty('--primary-green', primaryRgb);
+			rootStyle.setProperty('--primary-green-light', primaryLight);
+
+			// Index / Dashboard variables
+			rootStyle.setProperty('--accent', primaryRgb);
+			rootStyle.setProperty('--accent-strong', primaryDark);
+			rootStyle.setProperty('--accent-soft', primarySoft);
+			rootStyle.setProperty('--primary', primaryRgb);
+
+			// Companion bot variables
+			rootStyle.setProperty('--ebot-primary', primaryRgb);
+			rootStyle.setProperty('--ebot-primary-dark', primaryDark);
+			rootStyle.setProperty('--ebot-primary-light', primaryLight);
+			rootStyle.setProperty('--ebot-primary-glow', `rgba(${cp[0]}, ${cp[1]}, ${cp[2]}, 0.35)`);
+			rootStyle.setProperty('--ebot-accent', primaryRgb);
 		}
 
 		drawWaves() {

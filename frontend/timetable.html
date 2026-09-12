@@ -13,8 +13,8 @@
 		:root {
 			--bg-app: #FAF9F6;
 			--bg-surface: #FFFFFF;
-			--primary-green: #4A6B5D;
-			--primary-green-light: #EBF0EE;
+			--primary-green: #F37B32;
+			--primary-green-light: #FFEADB;
 			--alert-orange: #D97A53;
 			--alert-bg: #FBF3EE;
 			--fixed-schedule: #F4EFEA;
@@ -687,8 +687,8 @@
 			width: 2px;
 			background: repeating-linear-gradient(
 				to bottom,
-				#4A6B5D 0px,
-				#4A6B5D 3px,
+				var(--primary-green) 0px,
+				var(--primary-green) 3px,
 				transparent 3px,
 				transparent 6px
 			);
@@ -702,8 +702,8 @@
 			height: 8px;
 			background: repeating-linear-gradient(
 				to bottom,
-				#4A6B5D 0px,
-				#4A6B5D 3px,
+				var(--primary-green) 0px,
+				var(--primary-green) 3px,
 				transparent 3px,
 				transparent 6px
 			);
@@ -753,7 +753,7 @@
 			width: 10px;
 			height: 10px;
 			flex-shrink: 0;
-			stroke: #4A6B5D;
+			stroke: var(--primary-green);
 			stroke-width: 2;
 			fill: none;
 		}
@@ -763,7 +763,7 @@
 			font-weight: 600;
 			font-size: 10px;
 			line-height: 1.2;
-			color: #4A6B5D;
+			color: var(--primary-green);
 			white-space: nowrap;
 		}
 
@@ -778,7 +778,7 @@
 			width: 6px;
 			height: 6px;
 			border-radius: 50%;
-			background: #4A6B5D;
+			background: var(--primary-green);
 			box-shadow: 0 0 0 2px #FFFFFF;
 			z-index: 3;
 		}
@@ -793,7 +793,7 @@
 			width: 6px;
 			height: 6px;
 			border-radius: 50%;
-			background: #4A6B5D;
+			background: var(--primary-green);
 			box-shadow: 0 0 0 2px #FFFFFF;
 			z-index: 3;
 		}
@@ -1098,7 +1098,7 @@
 			flex-shrink: 0;
 		}
 
-		.popover-opt-icon.green { background: #4A6B5D; }
+		.popover-opt-icon.green { background: var(--primary-green); }
 		.popover-opt-icon.orange { background: #D97A53; }
 
 		.popover-opt-icon svg {
@@ -1195,7 +1195,7 @@
 
 		.popover-confirm-btn {
 			padding: 9px 16px;
-			background: #4A6B5D;
+			background: var(--primary-green);
 			border-radius: 12px;
 			border: none;
 			cursor: pointer;
