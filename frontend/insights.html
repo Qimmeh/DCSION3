@@ -62,7 +62,7 @@
 			top: 0;
 			left: 0;
 			bottom: 0;
-			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.05) 0%, #fffbf8 100%);
+			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.05) 0%, #ffffff 100%);
 			border-right: 1px solid rgba(var(--wave-color-primary), 0.15);
 			z-index: 100;
 			overflow-y: auto;
@@ -1020,18 +1020,20 @@
 
 		/* Shared dashboard shell refinements */
 		body {
-			background: linear-gradient(180deg, #fbe4d2 0 132px, #f5f6fa 300px);
+			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.18) 0%, rgba(var(--wave-color-primary), 0.08) 280px, rgba(var(--wave-color-primary), 0.03) 100%), #FAF9F6;
 			font-family: "Manrope", sans-serif;
 			overflow-x: hidden;
+			transition: background 0.4s ease, color 0.4s ease;
 		}
 
 		.sidebar {
-			background: #fff7f0;
-			border-right: 1px solid #f0e1d5;
+			background: linear-gradient(180deg, rgba(var(--wave-color-primary), 0.05) 0%, #ffffff 100%);
+			border-right: 1px solid rgba(var(--wave-color-primary), 0.15);
 			box-shadow: 0 20px 60px rgba(0,0,0,.18);
 			width: 268px;
 			min-width: 268px;
 			padding: 26px 20px;
+			transition: background 0.4s ease, border-color 0.4s ease;
 		}
 
 		.brand {
