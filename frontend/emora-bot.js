@@ -285,7 +285,9 @@
 			rootStyle.setProperty('--primary-green', primaryRgb);
 			rootStyle.setProperty('--primary-green-light', primaryLight);
 			rootStyle.setProperty('--fixed-schedule', `rgba(${cp[0]}, ${cp[1]}, ${cp[2]}, 0.08)`);
-			rootStyle.setProperty('--sidebar-bg', `linear-gradient(180deg, rgba(${cp[0]}, ${cp[1]}, ${cp[2]}, 0.05) 0%, #fffbf8 100%)`);
+			rootStyle.setProperty('--alert-orange', primaryDark);
+			rootStyle.setProperty('--alert-bg', `rgba(${cp[0]}, ${cp[1]}, ${cp[2]}, 0.12)`);
+			rootStyle.setProperty('--sidebar-bg', `linear-gradient(180deg, rgba(${cp[0]}, ${cp[1]}, ${cp[2]}, 0.05) 0%, #ffffff 100%)`);
 			rootStyle.setProperty('--sidebar-line', `rgba(${cp[0]}, ${cp[1]}, ${cp[2]}, 0.15)`);
 
 			// Index / Dashboard variables
