@@ -40,7 +40,9 @@
 		button { cursor: pointer; font: inherit; border: none; background: none; }
 		h1, h2, h3, p { margin: 0; }
 
-		.app-shell { display: flex; min-height: 100vh; }
+		.app-shell {
+			display: flex; min-height: 100vh;
+		}
 
 		/* ---------- Sidebar ---------- */
 		.sidebar {
@@ -199,6 +201,15 @@
 			width: min(1220px, 100%);
 			margin: 0 auto;
 			padding: 42px 46px 60px;
+			opacity: 0;
+			transform: translateY(14px);
+			transition: opacity .45s cubic-bezier(.16,1,.3,1), transform .45s cubic-bezier(.16,1,.3,1);
+		}
+		body.page-loaded main { opacity: 1; transform: translateY(0); }
+		body.page-leaving main {
+			opacity: 0;
+			transform: translateY(-10px);
+			transition: opacity .22s ease, transform .22s ease;
 		}
 
 		.topbar {
@@ -224,7 +235,10 @@
 			display: grid; place-items: center;
 			width: 37px; height: 37px; border-radius: 50%;
 			background: var(--accent); color: #fff; font-weight: 700; font-family: "Sora", sans-serif;
+			text-decoration: none; cursor: pointer;
+			transition: var(--transition);
 		}
+		.avatar:hover { transform: scale(1.08); box-shadow: 0 6px 16px rgba(243,123,50,.35); }
 		.alert-pill {
 			display: inline-flex; align-items: center; gap: 8px;
 			background: var(--accent-soft); color: var(--accent-strong);
@@ -251,6 +265,9 @@
 		}
 		.category-card { padding: 24px; min-height: 180px; display: flex; flex-direction: column; gap: 14px; }
 		.category-card:hover { transform: translateY(-2px); box-shadow: 0 16px 36px rgba(32, 36, 45, .1); }
+		.category-card.cat-blue { background: #dcebfa; border-color: rgba(59,130,196,.25); }
+		.category-card.cat-yellow { background: #f6e6ab; border-color: rgba(196,155,40,.3); }
+		.category-card.cat-red { background: #f5d6cb; border-color: rgba(214,100,74,.28); }
 		.cat-header-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 		.cat-title { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 		.cat-badge {
@@ -495,7 +512,7 @@
 					<p class="intro">Get a calm preview of your workload, deadlines, and stress balance today.</p>
 					<div class="alert-pill">Midweek Stress Alert</div>
 				</div>
-				<div class="date-wrap"><span id="currentDate">Oct 23</span><div class="avatar">C</div></div>
+				<div class="date-wrap"><span id="currentDate">Oct 23</span><a href="profile.html" class="avatar" aria-label="Go to profile" title="Profile">C</a></div>
 			</header>
 
 			<section class="categories-grid" id="categoriesGrid" aria-label="Workload and Stress Overview">
@@ -593,10 +610,17 @@
 		};
 
 		// Renderers
+		function categoryColorClass(title) {
+			if (title === "Academic Workload") return "cat-blue";
+			if (title === "Personal Life") return "cat-yellow";
+			if (title === "Work / Shift Work") return "cat-red";
+			return "";
+		}
+
 		function renderCategories() {
 			const container = document.getElementById('categoriesGrid');
 			container.innerHTML = state.categories.map(cat => `
-				<article class="card category-card">
+				<article class="card category-card ${categoryColorClass(cat.title)}">
 					<div class="cat-header-row">
 						<span class="cat-title">${cat.title}</span>
 						<div class="cat-badge ${cat.badgeType}"><span>${cat.badgeText}</span></div>
@@ -652,12 +676,37 @@
 			`).join('');
 		}
 
+		// Re-trigger the enter animation when a page is restored from bfcache (browser back/forward)
+		window.addEventListener('pageshow', (e) => {
+			if (e.persisted) {
+				document.body.classList.remove('page-leaving');
+				requestAnimationFrame(() => document.body.classList.add('page-loaded'));
+			}
+		});
+
 		// Application Initializer & Controllers
 		document.addEventListener('DOMContentLoaded', () => {
 			renderCategories();
 			renderChart();
 			renderDeadlines();
 			renderSchedule();
+
+			// Page enter animation
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => document.body.classList.add('page-loaded'));
+			});
+
+			// Page exit animation before navigating to another internal page
+			document.querySelectorAll('a[href$=".html"]').forEach(link => {
+				link.addEventListener('click', (e) => {
+					const href = link.getAttribute('href');
+					if (!href || link.target === '_blank' || e.metaKey || e.ctrlKey) return;
+					e.preventDefault();
+					document.body.classList.remove('page-loaded');
+					document.body.classList.add('page-leaving');
+					setTimeout(() => { window.location.href = href; }, 220);
+				});
+			});
 
 			// Mobile Drawer Logic
 			const body = document.body;

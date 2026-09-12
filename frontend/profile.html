@@ -158,7 +158,18 @@
 		}
 		body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: auto; }
 
-		main { width: min(1220px, 100%); margin: 0 auto; padding: 42px 46px 60px; }
+		main {
+			width: min(1220px, 100%); margin: 0 auto; padding: 42px 46px 60px;
+			opacity: 0;
+			transform: translateY(14px);
+			transition: opacity .45s cubic-bezier(.16,1,.3,1), transform .45s cubic-bezier(.16,1,.3,1);
+		}
+		body.page-loaded main { opacity: 1; transform: translateY(0); }
+		body.page-leaving main {
+			opacity: 0;
+			transform: translateY(-10px);
+			transition: opacity .22s ease, transform .22s ease;
+		}
 		.topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 34px; position: relative; }
 		.topbar::after { content: ""; position: absolute; right: 76px; top: -12px; width: 58px; height: 58px; border: 1px solid rgba(243, 123, 50, .24); border-radius: 50%; box-shadow: 0 0 0 10px rgba(243, 123, 50, .07); pointer-events: none; }
 		.eyebrow { color: #ed7130; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; }
@@ -543,6 +554,31 @@
 	</nav>
 
 	<script>
+		// Page enter animation
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => document.body.classList.add('page-loaded'));
+		});
+
+		// Re-trigger the enter animation when restored from bfcache (browser back/forward)
+		window.addEventListener('pageshow', (e) => {
+			if (e.persisted) {
+				document.body.classList.remove('page-leaving');
+				requestAnimationFrame(() => document.body.classList.add('page-loaded'));
+			}
+		});
+
+		// Page exit animation before navigating to another internal page
+		document.querySelectorAll('a[href$=".html"]').forEach(link => {
+			link.addEventListener('click', (e) => {
+				const href = link.getAttribute('href');
+				if (!href || link.target === '_blank' || e.metaKey || e.ctrlKey) return;
+				e.preventDefault();
+				document.body.classList.remove('page-loaded');
+				document.body.classList.add('page-leaving');
+				setTimeout(() => { window.location.href = href; }, 220);
+			});
+		});
+
 		function copyToClipboard(element) {
 			const text = element.previousElementSibling.querySelector('.info-value').textContent;
 			navigator.clipboard.writeText(text).then(() => {

@@ -1140,6 +1140,15 @@
 			width: calc(100% - 268px);
 			max-width: none;
 			padding: 42px 46px 60px;
+			opacity: 0;
+			transform: translateY(14px);
+			transition: opacity .45s cubic-bezier(.16,1,.3,1), transform .45s cubic-bezier(.16,1,.3,1);
+		}
+		body.page-loaded .content-area { opacity: 1; transform: translateY(0); }
+		body.page-leaving .content-area {
+			opacity: 0;
+			transform: translateY(-10px);
+			transition: opacity .22s ease, transform .22s ease;
 		}
 
 		.page-heading,
@@ -1694,6 +1703,27 @@ body.night .nav .tab-item.active .nav-icon {
 
 	<script>
 		const body = document.body;
+
+		// Page enter animation
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => body.classList.add('page-loaded'));
+		});
+
+		// Re-trigger the enter animation when restored from bfcache (browser back/forward)
+		window.addEventListener('pageshow', (e) => {
+			if (e.persisted) {
+				body.classList.remove('page-leaving');
+				requestAnimationFrame(() => body.classList.add('page-loaded'));
+			}
+		});
+
+		// Navigate with a fade/slide exit animation first
+		function goToPage(url) {
+			body.classList.remove('page-loaded');
+			body.classList.add('page-leaving');
+			setTimeout(() => { window.location.href = url; }, 220);
+		}
+
 		const hamburgerBtn = document.getElementById('hamburgerBtn');
 		const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
 		const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -1740,7 +1770,7 @@ body.night .nav .tab-item.active .nav-icon {
 				const target = NAV_PAGES[btn.dataset.page];
 				if (target && !btn.classList.contains('active')) {
 					closeSidebar();
-					window.location.href = target;
+					goToPage(target);
 				}
 			});
 		});
