@@ -1219,9 +1219,10 @@
 			--border-subtle: #3c2f21;
 			--border-input: #4e473e;
 			background:
-				radial-gradient(circle at 80% -8%, rgba(255,143,77,.16), transparent 30rem),
+				radial-gradient(circle at 80% -8%, rgba(var(--wave-color-primary), .22), transparent 30rem),
 				linear-gradient(165deg, #1a130d 0%, #14100c 55%, #100c09 100%) !important;
 			color: var(--text-main);
+			transition: background 0.4s ease, color 0.4s ease;
 		}
 
 		body.night .screen-timetable,
