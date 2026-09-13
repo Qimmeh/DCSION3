@@ -3206,7 +3206,7 @@ body.night .privacy strong {
 	<script>
 
 		/* ===== Week date headers ===== */
-		(function() {
+		function populateWeekDateHeaders() {
 			const today = new Date();
 			const todayDow = today.getDay(); // 0=Sun…6=Sat
 			// Get Monday of the current week
@@ -3216,8 +3216,6 @@ body.night .privacy strong {
 
 			const dowIds = ['dateMon','dateTue','dateWed','dateThu','dateFri','dateSat','dateSun'];
 			const previewDowIds = ['previewDateMon','previewDateTue','previewDateWed','previewDateThu','previewDateFri','previewDateSat','previewDateSun'];
-			// DOW for header order: Mon=1,Tue=2,Wed=3,Thu=4,Fri=5,Sat=6,Sun=0
-			const dowOrder = [1,2,3,4,5,6,0];
 
 			const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 			let weekStartMonth = null, weekEndMonth = null;
@@ -3253,7 +3251,9 @@ body.night .privacy strong {
 				const weekStr = weekStartMonth + ' ' + monday.getDate() + ' – ' + (weekStartMonth !== weekEndMonth ? weekEndMonth + ' ' : '') + sunDate.getDate() + ', ' + today.getFullYear();
 				label.textContent = 'Week of ' + weekStr;
 			}
-		})();
+		}
+		window.populateWeekDateHeaders = populateWeekDateHeaders;
+		populateWeekDateHeaders();
 
 		/* ===== Monthly Calendar Engine ===== */
 		const MONTH_EVENTS = [
@@ -3631,6 +3631,9 @@ body.night .privacy strong {
 		}
 
 		function openPrototypePreviewModal(events) {
+			if (typeof populateWeekDateHeaders === 'function') {
+				populateWeekDateHeaders();
+			}
 			pendingProposedEvents = normalizeProposedEvents(events);
 
 			const pillText = document.getElementById('previewPillText');
