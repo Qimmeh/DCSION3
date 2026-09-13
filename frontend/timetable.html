@@ -2841,9 +2841,9 @@ body.night .privacy strong {
 						<!-- Row 1: 9:00 AM -->
 						<div class="schedule-time-row">
 							<div class="time-col-label"><span>9:00 AM</span></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-fixed has-chain-bottom"><span class="grid-slot-text">LIT 302 Class</span></div></div>
 							<div class="grid-slot-cell"></div>
-							<div class="grid-slot-cell"><div class="schedule-card slot-fixed has-chain-bottom"><span class="grid-slot-text">LIT 302 Class</span></div></div>
+							<div class="grid-slot-cell"></div>
+							<div class="grid-slot-cell"></div>
 							<div class="grid-slot-cell"></div>
 							<div class="grid-slot-cell"></div>
 							<div class="grid-slot-cell"></div>
@@ -2853,23 +2853,9 @@ body.night .privacy strong {
 						<!-- Row 2: 10:00 AM -->
 						<div class="schedule-time-row">
 							<div class="time-col-label"><span>10:00 AM</span></div>
-							<!-- Mon: 1h Free Gap between LIT 302 and Cognitive Science -->
-							<div class="grid-slot-cell chain-gap-slot" title="1h Free">
-								<div class="chain-connector-full"></div>
-								<div class="chain-gap-card">
-									<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-									<span class="chain-gap-title">1h Free</span>
-								</div>
-							</div>
 							<div class="grid-slot-cell"></div>
-							<!-- Wed: 1h Free Gap between LIT 302 and Design Studio -->
-							<div class="grid-slot-cell chain-gap-slot" title="1h Free">
-								<div class="chain-connector-full"></div>
-								<div class="chain-gap-card">
-									<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-									<span class="chain-gap-title">1h Free</span>
-								</div>
-							</div>
+							<div class="grid-slot-cell"></div>
+							<div class="grid-slot-cell"></div>
 							<div class="grid-slot-cell"></div>
 							<div class="grid-slot-cell"></div>
 							<div class="grid-slot-cell"></div>
@@ -3286,11 +3272,9 @@ body.night .privacy strong {
 		const MONTH_EVENTS = [
 			// dow: 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
 			// recurring weekly events
-			{ dow: 1, label: 'LIT 302 Class', type: 'fixed' },
 			{ dow: 1, label: 'Cognitive Science', type: 'fixed' },
 			{ dow: 1, label: 'Research Session', type: 'flex' },
 			{ dow: 2, label: 'Lab Session', type: 'fixed' },
-			{ dow: 3, label: 'LIT 302 Class', type: 'fixed' },
 			{ dow: 3, label: 'Design Studio', type: 'fixed' },
 			{ dow: 3, label: 'Lib. Assistant Shift', type: 'fixed' },
 			{ dow: 3, label: 'Essay Writing', type: 'flex' },
@@ -3722,11 +3706,9 @@ body.night .privacy strong {
 
 		function getCurrentTimetableEvents() {
 			let baseEvents = [
-				{ id: "curr-1", title: "LIT 302 Class", day: "Mon", startHour: 9, duration: 1 },
 				{ id: "curr-2", title: "Cognitive Science", day: "Mon", startHour: 11, duration: 1 },
 				{ id: "curr-3", title: "Research Session", day: "Mon", startHour: 17, duration: 1 },
 				{ id: "curr-4", title: "Chemistry Study Lab", day: "Tue", startHour: 13, duration: 1 },
-				{ id: "curr-5", title: "LIT 302 Class", day: "Wed", startHour: 9, duration: 1 },
 				{ id: "curr-6", title: "Design Studio", day: "Wed", startHour: 11, duration: 1 },
 				{ id: "curr-7", title: "Library Assistant Shift", day: "Wed", startHour: 15, duration: 1 },
 				{ id: "curr-8", title: "Essay Writing", day: "Wed", startHour: 19, duration: 1 },
