@@ -3615,7 +3615,24 @@ body.night .privacy strong {
 				const bType = ev.badgeType || 'extracted';
 				const bText = ev.badgeText || (bType === 'moved' ? '⇄ Moved' : (bType === 'ai_suggested' ? '★ AI Suggested' : '✦ Extracted'));
 
-				const title = ev.title || `Class Session ${idx + 1}`;
+				let title = ev.title || `Class Session ${idx + 1}`;
+				let loc = ev.location || 'Campus Building';
+
+				const roomMatch = title.match(/(J\.C\.J\.L\.S\.(?:B\.)?\s*\d*|Room\s*\d+|Rm\s*\d+|Hall\s*[A-Z0-9]+|Lab\s*\d+[A-Z]?|\b[A-Z]{1,4}\s*\d{2,4}\b)/i);
+				if (roomMatch) {
+					if (!loc || loc === 'Room: Campus Building' || loc === 'Main Campus' || loc === 'Campus Building') {
+						loc = roomMatch[1];
+					}
+					title = title.replace(roomMatch[0], '').trim();
+				}
+
+				title = title.replace(/\b(SynC|Sync|Synchronous|Asynchronous|Online|Class)\b/gi, '').trim();
+				title = title.replace(/^[\s·•\-\|]+|[\s·•\-\|]+$/g, '').trim();
+
+				if (!title || title.length < 2) {
+					const sessionTypes = ['Lecture', 'Lab', 'Discussion', 'Seminar', 'Tutorial'];
+					title = `Course Session ${idx + 1} (${sessionTypes[idx % sessionTypes.length]})`;
+				}
 
 				const originD = ev.originDay || (bType === 'moved' ? 'Wed' : undefined);
 				const originH = (typeof ev.originStartHour === 'number' && !isNaN(ev.originStartHour)) ? ev.originStartHour : (bType === 'moved' ? 19 : undefined);
@@ -3631,7 +3648,7 @@ body.night .privacy strong {
 					code: ev.code || 'COURSE',
 					badgeType: bType,
 					badgeText: bText,
-					location: ev.location || 'Room: Campus Building',
+					location: loc,
 					desc: ev.desc || `${title} extracted by Emora AI.`,
 					tags: ev.tags || [bText, title],
 					originDay: originD,

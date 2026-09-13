@@ -166,9 +166,33 @@ DAY_MAP = {
 }
 
 
-def parse_schedule_with_ai(text_content, user_id):
+def sanitize_timetable_entry(raw_title, raw_loc, idx=0):
+    raw_title = (raw_title or "").strip()
+    raw_loc = (raw_loc or "").strip()
+
+    b_match = re.search(r'(J\.C\.J\.L\.S\.(?:B\.)?\s*\d*|Room\s*\d+|Rm\s*\d+|Hall\s*[A-Z0-9]+|Lab\s*\d+[A-Z]?)', raw_title, re.IGNORECASE)
+    if b_match:
+        extracted_building = b_match.group(1).strip()
+        if not raw_loc or raw_loc.lower() in ["main campus", "campus building", "room: campus building", "tba"]:
+            raw_loc = extracted_building
+        raw_title = raw_title.replace(b_match.group(0), '').strip()
+
+    clean_title = re.sub(r'\b(SynC|Sync|Synchronous|Asynchronous|Online|Class)\b', '', raw_title, flags=re.IGNORECASE).strip()
+    clean_title = re.sub(r'^[·•\-\|\s]+|[·•\-\|\s]+$', '', clean_title).strip()
+
+    if not clean_title or len(clean_title) < 2:
+        session_types = ['Lecture', 'Lab', 'Discussion', 'Seminar', 'Tutorial']
+        clean_title = f"Course Session {idx + 1} ({session_types[idx % len(session_types)]})"
+
+    if not raw_loc or raw_loc.lower() in ["main campus", "campus building", "tba"]:
+        raw_loc = "Campus Building"
+
+    return clean_title, raw_loc
+
+
+def parse_schedule_with_ai(text_content, user_id, image_data_url=None):
     """
-    Sends uploaded timetable content or schedule description to OpenRouter Gemini AI model
+    Sends uploaded timetable content, text, or image data URL to OpenRouter Gemini AI model
     to extract structured timetable commitments.
     """
     from app.extensions import db
@@ -182,11 +206,23 @@ def parse_schedule_with_ai(text_content, user_id):
         try:
             sys_msg = (
                 "You are Emora AI Timetable Parsing Engine. "
-                "Extract weekly class commitments from the uploaded timetable or text. "
-                "Return ONLY a valid JSON array of objects. Do not include markdown or explanations. "
-                "Each object must have: 'title' (string), 'day' ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'), "
-                "'start' ('9:00 AM', '2:00 PM'), 'end' ('11:00 AM', '4:00 PM'), 'location' (string), 'type' ('fixed')."
+                "Extract weekly class commitments from the uploaded timetable image or text. "
+                "IMPORTANT RULES:\n"
+                "1) Do NOT extract generic room names, building names (e.g. 'J.C.J.L.S. 98', 'J.C.J.L.S.B. 98'), or mode tags ('SynC', 'Sync', 'Online') as the title. "
+                "Place building/room codes in 'location' and extract actual course names (e.g. 'Cognitive Science', 'Design Studio', 'Chemistry Lab') into 'title'.\n"
+                "2) Do NOT output repetitive duplicate entries across Mon-Fri unless they are distinct actual classes with unique session types (Lecture, Lab, Discussion, etc.).\n"
+                "3) Return ONLY a valid JSON array of objects with fields: 'title', 'day' ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'), "
+                "'start' ('9:00 AM', '2:00 PM'), 'end' ('11:00 AM', '4:00 PM'), 'location', 'type' ('fixed')."
             )
+
+            if image_data_url:
+                user_msg = [
+                    {"type": "text", "text": "Extract all weekly class commitments and schedules from this timetable image."},
+                    {"type": "image_url", "image_url": {"url": image_data_url}}
+                ]
+            else:
+                user_msg = text_content or "Mon 9-11 AM LIT 302 class\nTue 2-4 PM Chemistry lab"
+
             response = requests.post(
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers={
@@ -197,11 +233,11 @@ def parse_schedule_with_ai(text_content, user_id):
                     "model": model,
                     "messages": [
                         {"role": "system", "content": sys_msg},
-                        {"role": "user", "content": text_content or "Mon 9-11 AM LIT 302 class\nTue 2-4 PM Chemistry lab"},
+                        {"role": "user", "content": user_msg},
                     ],
                     "temperature": 0.1,
                 },
-                timeout=12,
+                timeout=15,
             )
             if response.status_code == 200:
                 raw_json = response.json()["choices"][0]["message"]["content"]
@@ -211,15 +247,33 @@ def parse_schedule_with_ai(text_content, user_id):
                 mon = today - timedelta(days=today.weekday())
                 day_offsets = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6}
 
+                session_types = ['Lecture', 'Lab', 'Discussion', 'Seminar', 'Tutorial']
+                seen_titles = {}
+
                 for i, item in enumerate(parsed_list):
                     norm_day = item.get("day", "Monday").capitalize()
+                    if norm_day not in day_offsets:
+                        norm_day = "Monday"
                     event_date = mon + timedelta(days=day_offsets.get(norm_day, 0))
-                    title = item.get("title") or f"Class {i+1}"
+                    
+                    raw_title = (item.get("title") or f"Class {i+1}").strip()
+                    raw_loc = (item.get("location") or "").strip()
+
+                    title, loc = sanitize_timetable_entry(raw_title, raw_loc, i)
+
+                    seen_count = seen_titles.get(title.lower(), 0)
+                    seen_titles[title.lower()] = seen_count + 1
+
+                    if seen_count > 0 and not re.search(r'\((lecture|lab|discussion|seminar|tutorial)\)', title, re.IGNORECASE):
+                        s_type = session_types[seen_count % len(session_types)]
+                        final_title = f"{title} ({s_type})"
+                    else:
+                        final_title = title
 
                     try:
                         act = Activity(
                             user_id=user_id,
-                            title=title,
+                            title=final_title,
                             category="Academic",
                             start_time=datetime.combine(event_date, time(9, 0)),
                             duration_minutes=60,
@@ -231,12 +285,12 @@ def parse_schedule_with_ai(text_content, user_id):
 
                     events.append({
                         "id": f"ai_evt_{i}_{int(datetime.now().timestamp())}",
-                        "title": title,
+                        "title": final_title,
                         "day": norm_day,
                         "date": event_date.isoformat(),
                         "start": item.get("start", "09:00 AM"),
                         "end": item.get("end", "10:00 AM"),
-                        "location": item.get("location", "Main Campus"),
+                        "location": loc,
                         "type": item.get("type", "fixed")
                     })
 
@@ -374,11 +428,48 @@ def upload_timetable_file():
 
     filename = secure_filename(file.filename)
     content_bytes = file.read()
-    text_content = ""
-    try:
-        text_content = content_bytes.decode("utf-8", errors="ignore")
-    except Exception:
-        text_content = str(content_bytes)
+    
+    extracted_text = ""
+    image_data_url = None
+    
+    ext = filename.lower().split('.')[-1] if '.' in filename else ''
+    
+    if ext == 'pdf':
+        try:
+            import fitz
+            pdf_doc = fitz.open(stream=content_bytes, filetype="pdf")
+            pdf_pages = []
+            for page in pdf_doc:
+                t = page.get_text()
+                if t.strip():
+                    pdf_pages.append(t)
+            if pdf_pages:
+                extracted_text = "\n".join(pdf_pages)
+            else:
+                page = pdf_doc[0]
+                pix = page.get_pixmap(dpi=150)
+                img_bytes = pix.tobytes("png")
+                image_data_url = f"data:image/png;base64,{base64.b64encode(img_bytes).decode('utf-8')}"
+        except Exception as err:
+            print("[timetable_upload] fitz PDF extract error:", err)
+    elif ext in ['png', 'jpg', 'jpeg', 'webp']:
+        mime = f"image/{'jpeg' if ext in ['jpg', 'jpeg'] else ext}"
+        image_data_url = f"data:{mime};base64,{base64.b64encode(content_bytes).decode('utf-8')}"
+        try:
+            import pytesseract
+            from PIL import Image
+            import io
+            img = Image.open(io.BytesIO(content_bytes))
+            ocr_text = pytesseract.image_to_string(img)
+            if ocr_text.strip():
+                extracted_text = ocr_text
+        except Exception as ocr_err:
+            print("[timetable_upload] Tesseract OCR note:", ocr_err)
+    else:
+        try:
+            extracted_text = content_bytes.decode("utf-8", errors="ignore")
+        except Exception:
+            extracted_text = str(content_bytes)
 
     try:
         doc = UploadedDocument(
@@ -395,7 +486,7 @@ def upload_timetable_file():
     except Exception:
         db.session.rollback()
 
-    events = parse_schedule_with_ai(text_content, user.id)
+    events = parse_schedule_with_ai(text_content=extracted_text, user_id=user.id, image_data_url=image_data_url)
     today = date.today()
     mon = today - timedelta(days=today.weekday())
     if not events:
