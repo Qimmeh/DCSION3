@@ -191,99 +191,144 @@ def sanitize_timetable_entry(raw_title, raw_loc, idx=0):
     return clean_title, raw_loc
 
 
-def parse_schedule_with_ai(text_content, user_id, image_data_url=None):
+def call_openrouter_ai(messages, temperature=0.1, timeout=15):
     """
-    Sends uploaded timetable content, text, or image data URL to OpenRouter Gemini AI model
-    to extract structured timetable commitments.
+    Calls OpenRouter API using Ling 3.0 Flash VL FREE model as primary default with fallback logic.
+    Primary FREE Model: inclusionai/ling-3.0-flash-vl:free
+    Secondary FREE Model: inclusionai/ling-3.0-flash:free
+    Last Resort Fallback: google/gemini-2.5-flash (only used if all free models fail/rate-limit)
     """
-    from app.extensions import db
-    api_key = os.environ.get("OPENROUTER_API_KEY", "")
-    model = os.environ.get("OPENROUTER_MODEL", "google/gemini-2.5-flash")
-    if "gemma-4" in model or "free" in model:
-        model = "google/gemini-2.5-flash"
+    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if not api_key:
+        return None, "no_api_key"
 
-    events = []
-    if api_key:
+    env_model = os.environ.get("OPENROUTER_MODEL", "").strip()
+
+    candidate_models = []
+    if env_model:
+        norm_env = env_model
+        if norm_env in ["ling-3.0-flash-vl:free", "ling-3.0-flash-vl", "ling-3.0-flash:free"]:
+            norm_env = "inclusionai/ling-3.0-flash-vl:free" if "vl" in norm_env else "inclusionai/ling-3.0-flash:free"
+        candidate_models.append(norm_env)
+
+    # Standard priority sequence (FREE models first, paid Gemini 2.5 Flash as LAST RESORT)
+    default_sequence = [
+        "inclusionai/ling-3.0-flash-vl:free",
+        "inclusionai/ling-3.0-flash:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "google/gemini-2.5-flash"  # Last resort fallback if free models keep failing
+    ]
+
+    for model_name in default_sequence:
+        if model_name not in candidate_models:
+            candidate_models.append(model_name)
+
+    for model_name in candidate_models:
         try:
-            sys_msg = (
-                "You are Emora AI Timetable Parsing Engine. "
-                "Extract weekly class commitments from the uploaded timetable image or text. "
-                "IMPORTANT RULES:\n"
-                "1) Do NOT extract generic room names, building names (e.g. 'J.C.J.L.S. 98', 'J.C.J.L.S.B. 98'), or mode tags ('SynC', 'Sync', 'Online') as the title. "
-                "Place building/room codes in 'location' and extract actual course names (e.g. 'Cognitive Science', 'Design Studio', 'Chemistry Lab') into 'title'.\n"
-                "2) Do NOT output repetitive duplicate entries across Mon-Fri unless they are distinct actual classes with unique session types (Lecture, Lab, Discussion, etc.).\n"
-                "3) Return ONLY a valid JSON array of objects with fields: 'title', 'day' ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'), "
-                "'start' ('9:00 AM', '2:00 PM'), 'end' ('11:00 AM', '4:00 PM'), 'location', 'type' ('fixed')."
-            )
-
-            if image_data_url:
-                user_msg = [
-                    {"type": "text", "text": "Extract all weekly class commitments and schedules from this timetable image."},
-                    {"type": "image_url", "image_url": {"url": image_data_url}}
-                ]
-            else:
-                user_msg = text_content or "Mon 9-11 AM LIT 302 class\nTue 2-4 PM Chemistry lab"
-
-            response = requests.post(
+            print(f"[OpenRouter AI] Querying model: {model_name}")
+            resp = requests.post(
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": model,
-                    "messages": [
-                        {"role": "system", "content": sys_msg},
-                        {"role": "user", "content": user_msg},
-                    ],
-                    "temperature": 0.1,
+                    "model": model_name,
+                    "messages": messages,
+                    "temperature": temperature,
                 },
-                timeout=15,
+                timeout=timeout,
             )
-            if response.status_code == 200:
-                raw_json = response.json()["choices"][0]["message"]["content"]
-                cleaned = re.sub(r'```json\s*|\s*```', '', raw_json).strip()
-                parsed_list = json.loads(cleaned)
-                today = date.today()
-                mon = today - timedelta(days=today.weekday())
-                day_offsets = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6}
+            if resp.status_code == 200:
+                data = resp.json()
+                content = data["choices"][0]["message"]["content"]
+                print(f"[OpenRouter AI] Success using model: {model_name}")
+                return content, model_name
+            else:
+                print(f"[OpenRouter AI] Model {model_name} failed ({resp.status_code}): {resp.text[:120]}")
+        except Exception as err:
+            print(f"[OpenRouter AI] Model {model_name} error: {err}")
 
-                session_types = ['Lecture', 'Lab', 'Discussion', 'Seminar', 'Tutorial']
-                seen_titles = {}
+    return None, None
 
-                for i, item in enumerate(parsed_list):
-                    norm_day = item.get("day", "Monday").capitalize()
-                    if norm_day not in day_offsets:
-                        norm_day = "Monday"
-                    event_date = mon + timedelta(days=day_offsets.get(norm_day, 0))
-                    
-                    raw_title = (item.get("title") or f"Class {i+1}").strip()
-                    raw_loc = (item.get("location") or "").strip()
 
-                    title, loc = sanitize_timetable_entry(raw_title, raw_loc, i)
+def parse_schedule_with_ai(text_content, user_id, image_data_url=None):
+    """
+    Sends uploaded timetable content, text, or image data URL to OpenRouter FREE AI model
+    to extract structured timetable commitments. Uses Gemini 2.5 Flash only as last resort fallback.
+    """
+    from app.extensions import db
 
-                    seen_count = seen_titles.get(title.lower(), 0)
-                    seen_titles[title.lower()] = seen_count + 1
+    events = []
+    sys_msg = (
+        "You are Emora AI Timetable Parsing Engine. "
+        "Extract weekly class commitments from the uploaded timetable image or text. "
+        "IMPORTANT RULES:\n"
+        "1) Do NOT extract generic room names, building names (e.g. 'J.C.J.L.S. 98', 'J.C.J.L.S.B. 98'), or mode tags ('SynC', 'Sync', 'Online') as the title. "
+        "Place building/room codes in 'location' and extract actual course names (e.g. 'Cognitive Science', 'Design Studio', 'Chemistry Lab') into 'title'.\n"
+        "2) Do NOT output repetitive duplicate entries across Mon-Fri unless they are distinct actual classes with unique session types (Lecture, Lab, Discussion, etc.).\n"
+        "3) Return ONLY a valid JSON array of objects with fields: 'title', 'day' ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'), "
+        "'start' ('9:00 AM', '2:00 PM'), 'end' ('11:00 AM', '4:00 PM'), 'location', 'type' ('fixed')."
+    )
 
-                    if seen_count > 0 and not re.search(r'\((lecture|lab|discussion|seminar|tutorial)\)', title, re.IGNORECASE):
-                        s_type = session_types[seen_count % len(session_types)]
-                        final_title = f"{title} ({s_type})"
-                    else:
-                        final_title = title
+    if image_data_url:
+        user_msg = [
+            {"type": "text", "text": "Extract all weekly class commitments and schedules from this timetable image."},
+            {"type": "image_url", "image_url": {"url": image_data_url}}
+        ]
+    else:
+        user_msg = text_content or "Mon 9-11 AM LIT 302 class\nTue 2-4 PM Chemistry lab"
 
-                    events.append({
-                        "id": f"ai_evt_{i}_{int(datetime.now().timestamp())}",
-                        "title": final_title,
-                        "day": norm_day,
-                        "date": event_date.isoformat(),
-                        "start": item.get("start", "09:00 AM"),
-                        "end": item.get("end", "10:00 AM"),
-                        "location": loc,
-                        "type": item.get("type", "fixed")
-                    })
+    messages = [
+        {"role": "system", "content": sys_msg},
+        {"role": "user", "content": user_msg},
+    ]
 
-                if events:
-                    return events
+    raw_json, used_model = call_openrouter_ai(messages, temperature=0.1, timeout=15)
+    if raw_json:
+        try:
+            cleaned = re.sub(r'```json\s*|\s*```', '', raw_json).strip()
+            parsed_list = json.loads(cleaned)
+            today = date.today()
+            mon = today - timedelta(days=today.weekday())
+            day_offsets = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6}
+
+            session_types = ['Lecture', 'Lab', 'Discussion', 'Seminar', 'Tutorial']
+            seen_titles = {}
+
+            for i, item in enumerate(parsed_list):
+                norm_day = item.get("day", "Monday").capitalize()
+                if norm_day not in day_offsets:
+                    norm_day = "Monday"
+                event_date = mon + timedelta(days=day_offsets.get(norm_day, 0))
+                
+                raw_title = (item.get("title") or f"Class {i+1}").strip()
+                raw_loc = (item.get("location") or "").strip()
+
+                title, loc = sanitize_timetable_entry(raw_title, raw_loc, i)
+
+                seen_count = seen_titles.get(title.lower(), 0)
+                seen_titles[title.lower()] = seen_count + 1
+
+                if seen_count > 0 and not re.search(r'\((lecture|lab|discussion|seminar|tutorial)\)', title, re.IGNORECASE):
+                    s_type = session_types[seen_count % len(session_types)]
+                    final_title = f"{title} ({s_type})"
+                else:
+                    final_title = title
+
+                events.append({
+                    "id": f"ai_evt_{i}_{int(datetime.now().timestamp())}",
+                    "title": final_title,
+                    "day": norm_day,
+                    "date": event_date.isoformat(),
+                    "start": item.get("start", "09:00 AM"),
+                    "end": item.get("end", "10:00 AM"),
+                    "location": loc,
+                    "type": item.get("type", "fixed")
+                })
+
+            if events:
+                return events
         except Exception as e:
             print("OpenRouter AI Timetable Parsing error:", e)
 
@@ -487,7 +532,7 @@ def upload_timetable_file():
     return jsonify({
         "status": "success",
         "ai_processed": True,
-        "model": "google/gemini-2.5-flash",
+        "model": "inclusionai/ling-3.0-flash-vl:free",
         "message": f"Emora AI processed {len(events)} timetable slots from {filename}",
         "count": len(events),
         "filename": filename,
@@ -515,7 +560,7 @@ def parse_timetable_text_endpoint():
     return jsonify({
         "status": "success",
         "ai_processed": True,
-        "model": "google/gemini-2.5-flash",
+        "model": "inclusionai/ling-3.0-flash-vl:free",
         "message": f"Emora AI parsed {len(events)} schedule items",
         "count": len(events),
         "timetable": events
@@ -535,9 +580,6 @@ def ai_chat_endpoint():
 
     # Detect if user is asking for a plan, timetable, schedule, or optimization
     is_plan_request = any(kw in msg_lower for kw in ["plan", "timetable", "schedule", "create", "generate", "optimize", "adjust", "preview", "study", "lecture", "tutorial", "week"])
-
-    api_key = os.getenv("OPENROUTER_API_KEY")
-    model = os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash")
 
     reply_text = ""
     has_plan = False
@@ -559,24 +601,15 @@ def ai_chat_endpoint():
             ]
             reply_text = "I've structured a balanced weekly academic plan with focus blocks and recovery gaps. Click **Preview Plan** below to inspect the proposed timetable grid live!"
     else:
-        if api_key:
-            try:
-                sys_msg = "You are Emora AI, an empathetic academic companion. Respond thoughtfully and concisely to the user."
-                messages = [{"role": "system", "content": sys_msg}]
-                for h in history[-4:]:
-                    messages.append({"role": "user" if h.get("role") == "user" else "assistant", "content": h.get("content", "")})
-                messages.append({"role": "user", "content": message})
+        sys_msg = "You are Emora AI, an empathetic academic companion. Respond thoughtfully and concisely to the user."
+        messages = [{"role": "system", "content": sys_msg}]
+        for h in history[-4:]:
+            messages.append({"role": "user" if h.get("role") == "user" else "assistant", "content": h.get("content", "")})
+        messages.append({"role": "user", "content": message})
 
-                resp = requests.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                    json={"model": model, "messages": messages, "temperature": 0.7},
-                    timeout=10
-                )
-                if resp.status_code == 200:
-                    reply_text = resp.json()["choices"][0]["message"]["content"]
-            except Exception as e:
-                print("OpenRouter AI Chat error:", e)
+        content, used_model = call_openrouter_ai(messages, temperature=0.7, timeout=10)
+        if content:
+            reply_text = content
 
         if not reply_text:
             reply_text = f"I hear you! I'm tracking your workload and schedule rhythms to make sure you stay balanced."
