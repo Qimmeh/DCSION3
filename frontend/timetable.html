@@ -3722,6 +3722,20 @@ body.night .privacy strong {
 		}
 
 		function getCurrentTimetableEvents() {
+			const isCleared = localStorage.getItem('emora_timetable_cleared') === 'true';
+			if (isCleared) {
+				try {
+					const storedAccepted = localStorage.getItem('emora_accepted_timetable');
+					if (storedAccepted) {
+						const parsed = JSON.parse(storedAccepted);
+						if (Array.isArray(parsed)) {
+							return normalizeProposedEvents(parsed);
+						}
+					}
+				} catch(e) {}
+				return [];
+			}
+
 			let baseEvents = [
 				{ id: "curr-2", title: "Cognitive Science", day: "Mon", startHour: 11, duration: 1 },
 				{ id: "curr-3", title: "Research Session", day: "Mon", startHour: 17, duration: 1 },
@@ -4078,6 +4092,7 @@ body.night .privacy strong {
 				const existing = JSON.parse(localStorage.getItem('emora_accepted_timetable') || '[]');
 				const merged = [...existing, ...events];
 				localStorage.setItem('emora_accepted_timetable', JSON.stringify(merged));
+				localStorage.setItem('emora_timetable_cleared', 'true');
 			} catch (e) { console.warn('Failed saving accepted events:', e); }
 
 			let movedDesc = '';
@@ -4106,7 +4121,7 @@ body.night .privacy strong {
 			toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; background: rgba(46,125,90,0.95); color: #fff; padding: 14px 22px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 8px 28px rgba(0,0,0,0.3); z-index: 10000; backdrop-filter: blur(8px); border: 1.5px solid rgba(255,255,255,0.25); display: flex; align-items: center; gap: 8px;';
 			toast.innerHTML = `<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>${movedDesc ? 'Accepted! ' + movedDesc + ' (-28% Wed workload peak).' : 'Accepted! Added ' + count + ' new commitment' + (count > 1 ? 's' : '') + ' to your timetable.'}</span>`;
 			document.body.appendChild(toast);
-			setTimeout(() => { toast.remove(); }, 4000);
+			setTimeout(() => { toast.remove(); window.location.reload(); }, 1000);
 		}
 
 		document.getElementById('acceptProposalBtn')?.addEventListener('click', () => {
@@ -4166,7 +4181,8 @@ body.night .privacy strong {
 		if (btnConfirmReset) {
 			btnConfirmReset.addEventListener('click', () => {
 				try {
-					localStorage.removeItem('emora_accepted_timetable');
+					localStorage.setItem('emora_timetable_cleared', 'true');
+					localStorage.setItem('emora_accepted_timetable', '[]');
 					localStorage.removeItem('emora_pending_preview_plan');
 					localStorage.removeItem('emora_applied_schedule');
 				} catch(e) {}
@@ -4179,7 +4195,7 @@ body.night .privacy strong {
 				const toast = document.createElement('div');
 				toast.className = 'gap-toast-notification visible';
 				toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; background: #111827; color: #F9FAFB; padding: 14px 22px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 8px 28px rgba(0,0,0,0.35); z-index: 10000; border: 1.5px solid #374151; display: flex; align-items: center; gap: 8px;';
-				toast.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#10B981;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Timetable workspace reset to defaults.</span>';
+				toast.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#10B981;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Timetable reset to 0 cards (empty schedule).</span>';
 				document.body.appendChild(toast);
 				setTimeout(() => { toast.remove(); window.location.reload(); }, 1000);
 			});
