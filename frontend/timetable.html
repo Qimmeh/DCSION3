@@ -2755,6 +2755,12 @@ body.night .privacy strong {
 						</div>
 						<span class="import-btn-text">Import timetable</span>
 					</button>
+
+					<!-- reset-button -->
+					<button class="reset-timetable-btn" id="btnOpenResetModal" type="button" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.25); border-radius: 12px; color: #DC2626; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.18s ease;" title="Reset timetable workspace to default state">
+						<svg viewBox="0 0 24 24" style="width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+						<span>Reset timetable</span>
+					</button>
 				</div>
 			</header>
 
@@ -3200,6 +3206,27 @@ body.night .privacy strong {
 					<span>Accept &amp; Apply Timetable</span>
 				</button>
 			</div>
+		</div>
+	</div>
+
+	<!-- Reset Timetable Confirmation Modal -->
+	<div class="preview-modal-overlay" id="resetModalOverlay" style="z-index: 910;"></div>
+	<div class="reset-confirm-modal" id="resetConfirmModal" role="dialog" aria-labelledby="resetModalTitle" aria-modal="true" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); width: 90vw; max-width: 440px; background: var(--bg-surface, #FFFFFF); border-radius: 18px; border: 1px solid rgba(216, 210, 197, 0.8); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28); z-index: 920; display: none; flex-direction: column; padding: 24px; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
+		<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+			<div style="width: 42px; height: 42px; border-radius: 12px; background: #FEF2F2; border: 1px solid #FCA5A5; display: flex; align-items: center; justify-content: center; color: #DC2626; flex-shrink: 0;">
+				<svg viewBox="0 0 24 24" style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+			</div>
+			<div>
+				<h3 id="resetModalTitle" style="font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0 0 2px 0;">Reset Timetable?</h3>
+				<span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Clear all AI &amp; custom imported schedule additions</span>
+			</div>
+		</div>
+		<p style="font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.5; color: var(--text-muted); margin: 0 0 20px 0;">
+			Are you sure you want to reset your timetable? This will remove all accepted AI rebalance additions, uploaded course outlines, and custom schedule changes, restoring your workspace to defaults.
+		</p>
+		<div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+			<button id="btnCancelReset" type="button" style="padding: 10px 18px; background: #FFFFFF; border: 1px solid #D1D5DB; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #374151; cursor: pointer; transition: all 0.15s ease;">Cancel</button>
+			<button id="btnConfirmReset" type="button" style="padding: 10px 20px; background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%); border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; cursor: pointer; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35); transition: all 0.15s ease;">Yes, Reset Timetable</button>
 		</div>
 	</div>
 
@@ -4111,6 +4138,53 @@ body.night .privacy strong {
 				}
 			});
 		});
+
+		/* ===== Reset Timetable Handler with Confirmation Modal ===== */
+		const btnOpenResetModal = document.getElementById('btnOpenResetModal');
+		const resetConfirmModal = document.getElementById('resetConfirmModal');
+		const resetModalOverlay = document.getElementById('resetModalOverlay');
+		const btnCancelReset = document.getElementById('btnCancelReset');
+		const btnConfirmReset = document.getElementById('btnConfirmReset');
+
+		function openResetModal() {
+			if (resetConfirmModal && resetModalOverlay) {
+				resetConfirmModal.style.display = 'flex';
+				resetModalOverlay.classList.add('open');
+			}
+		}
+
+		function closeResetModal() {
+			if (resetConfirmModal && resetModalOverlay) {
+				resetConfirmModal.style.display = 'none';
+				resetModalOverlay.classList.remove('open');
+			}
+		}
+
+		if (btnOpenResetModal) btnOpenResetModal.addEventListener('click', openResetModal);
+		if (btnCancelReset) btnCancelReset.addEventListener('click', closeResetModal);
+		if (resetModalOverlay) resetModalOverlay.addEventListener('click', closeResetModal);
+
+		if (btnConfirmReset) {
+			btnConfirmReset.addEventListener('click', () => {
+				try {
+					localStorage.removeItem('emora_accepted_timetable');
+					localStorage.removeItem('emora_pending_preview_plan');
+					localStorage.removeItem('emora_applied_schedule');
+				} catch(e) {}
+
+				const aiWritingBlock = document.getElementById('aiWritingBlock');
+				if (aiWritingBlock) aiWritingBlock.style.display = 'none';
+
+				closeResetModal();
+
+				const toast = document.createElement('div');
+				toast.className = 'gap-toast-notification visible';
+				toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; background: #111827; color: #F9FAFB; padding: 14px 22px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 8px 28px rgba(0,0,0,0.35); z-index: 10000; border: 1.5px solid #374151; display: flex; align-items: center; gap: 8px;';
+				toast.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#10B981;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Timetable workspace reset to defaults.</span>';
+				document.body.appendChild(toast);
+				setTimeout(() => { toast.remove(); window.location.reload(); }, 1000);
+			});
+		}
 
 		/* ===== Emora AI Proposed Timetable Plan Preview Auto-Open (Explicit Action/Modal Request Only) ===== */
 		(function() {
