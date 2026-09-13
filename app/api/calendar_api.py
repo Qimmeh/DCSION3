@@ -271,19 +271,6 @@ def parse_schedule_with_ai(text_content, user_id, image_data_url=None):
                     else:
                         final_title = title
 
-                    try:
-                        act = Activity(
-                            user_id=user_id,
-                            title=final_title,
-                            category="Academic",
-                            start_time=datetime.combine(event_date, time(9, 0)),
-                            duration_minutes=60,
-                            status="planned"
-                        )
-                        db.session.add(act)
-                    except Exception:
-                        pass
-
                     events.append({
                         "id": f"ai_evt_{i}_{int(datetime.now().timestamp())}",
                         "title": final_title,
@@ -294,11 +281,6 @@ def parse_schedule_with_ai(text_content, user_id, image_data_url=None):
                         "location": loc,
                         "type": item.get("type", "fixed")
                     })
-
-                try:
-                    db.session.commit()
-                except Exception:
-                    db.session.rollback()
 
                 if events:
                     return events

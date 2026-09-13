@@ -3722,20 +3722,6 @@ body.night .privacy strong {
 		}
 
 		function getCurrentTimetableEvents() {
-			const isCleared = localStorage.getItem('emora_timetable_cleared') === 'true';
-			if (isCleared) {
-				try {
-					const storedAccepted = localStorage.getItem('emora_accepted_timetable');
-					if (storedAccepted) {
-						const parsed = JSON.parse(storedAccepted);
-						if (Array.isArray(parsed)) {
-							return normalizeProposedEvents(parsed);
-						}
-					}
-				} catch(e) {}
-				return [];
-			}
-
 			let baseEvents = [
 				{ id: "curr-2", title: "Cognitive Science", day: "Mon", startHour: 11, duration: 1 },
 				{ id: "curr-3", title: "Research Session", day: "Mon", startHour: 17, duration: 1 },
@@ -3750,11 +3736,11 @@ body.night .privacy strong {
 			];
 
 			try {
-				const storedAccepted = localStorage.getItem('emora_accepted_timetable');
-				if (storedAccepted) {
-					const parsed = JSON.parse(storedAccepted);
+				const sessionAccepted = sessionStorage.getItem('emora_session_accepted_timetable');
+				if (sessionAccepted) {
+					const parsed = JSON.parse(sessionAccepted);
 					if (Array.isArray(parsed) && parsed.length > 0) {
-						baseEvents = [...baseEvents, ...normalizeProposedEvents(parsed)];
+						return normalizeProposedEvents(parsed);
 					}
 				}
 			} catch(e) {}
@@ -4087,15 +4073,8 @@ body.night .privacy strong {
 		});
 
 		function renderMainWeeklyGrid() {
-			const isCleared = localStorage.getItem('emora_timetable_cleared') === 'true';
-			const storedAccepted = localStorage.getItem('emora_accepted_timetable');
-
 			const weekViewContainer = document.querySelector('#view-week .schedule-rows-frame') || document.querySelector('.schedule-rows-frame');
 			if (!weekViewContainer) return;
-
-			if (!isCleared && !storedAccepted) {
-				return;
-			}
 
 			const currentEvents = getCurrentTimetableEvents();
 			const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -4188,30 +4167,16 @@ body.night .privacy strong {
 		function applyEventsToWeeklyGrid(events) {
 			if (!events || !events.length) return;
 			try {
-				const existing = JSON.parse(localStorage.getItem('emora_accepted_timetable') || '[]');
+				const existing = JSON.parse(sessionStorage.getItem('emora_session_accepted_timetable') || '[]');
 				const merged = [...existing, ...events];
-				localStorage.setItem('emora_accepted_timetable', JSON.stringify(merged));
-				localStorage.setItem('emora_timetable_cleared', 'true');
-			} catch (e) { console.warn('Failed saving accepted events:', e); }
+				sessionStorage.setItem('emora_session_accepted_timetable', JSON.stringify(merged));
+			} catch (e) { console.warn('Failed saving session events:', e); }
 
 			renderMainWeeklyGrid();
 
 			let movedDesc = '';
 			events.forEach(ev => {
 				if (ev.badgeType === 'moved' || ev.originDay) {
-					// 1. Reveal Thursday 3:00 PM AI Writing Block on main timetable grid
-					const aiWritingBlock = document.getElementById('aiWritingBlock');
-					if (aiWritingBlock) {
-						aiWritingBlock.style.display = 'block';
-					}
-					// 2. Hide Wednesday 7:00 PM slot on main timetable grid
-					const wed7pmRow = document.querySelector('.schedule-time-row[data-hour="19"]');
-					if (wed7pmRow) {
-						const cells = wed7pmRow.querySelectorAll('.grid-slot-cell');
-						if (cells.length >= 3 && cells[2]) {
-							cells[2].innerHTML = '';
-						}
-					}
 					movedDesc = 'Moved Essay Writing from Wednesday 7:00 PM → Thursday 3:00 PM';
 				}
 			});
@@ -4220,7 +4185,7 @@ body.night .privacy strong {
 			const toast = document.createElement('div');
 			toast.className = 'gap-toast-notification visible';
 			toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; background: rgba(46,125,90,0.95); color: #fff; padding: 14px 22px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 8px 28px rgba(0,0,0,0.3); z-index: 10000; backdrop-filter: blur(8px); border: 1.5px solid rgba(255,255,255,0.25); display: flex; align-items: center; gap: 8px;';
-			toast.innerHTML = `<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>${movedDesc ? 'Accepted! ' + movedDesc + ' (-28% Wed workload peak).' : 'Accepted! Added ' + count + ' new commitment' + (count > 1 ? 's' : '') + ' to your timetable.'}</span>`;
+			toast.innerHTML = `<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>${movedDesc ? 'Accepted! ' + movedDesc + ' (-28% Wed workload peak).' : 'Accepted! Applied ' + count + ' new commitment' + (count > 1 ? 's' : '') + ' to your timetable.'}</span>`;
 			document.body.appendChild(toast);
 			setTimeout(() => { toast.remove(); }, 3000);
 		}
@@ -4282,8 +4247,9 @@ body.night .privacy strong {
 		if (btnConfirmReset) {
 			btnConfirmReset.addEventListener('click', () => {
 				try {
-					localStorage.setItem('emora_timetable_cleared', 'true');
-					localStorage.setItem('emora_accepted_timetable', '[]');
+					sessionStorage.removeItem('emora_session_accepted_timetable');
+					localStorage.removeItem('emora_accepted_timetable');
+					localStorage.removeItem('emora_timetable_cleared');
 					localStorage.removeItem('emora_pending_preview_plan');
 					localStorage.removeItem('emora_applied_schedule');
 				} catch(e) {}
@@ -4298,7 +4264,7 @@ body.night .privacy strong {
 				const toast = document.createElement('div');
 				toast.className = 'gap-toast-notification visible';
 				toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; background: #111827; color: #F9FAFB; padding: 14px 22px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 8px 28px rgba(0,0,0,0.35); z-index: 10000; border: 1.5px solid #374151; display: flex; align-items: center; gap: 8px;';
-				toast.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#10B981;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Timetable reset to 0 cards (empty schedule).</span>';
+				toast.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#10B981;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Timetable reset to default initial state.</span>';
 				document.body.appendChild(toast);
 				setTimeout(() => { toast.remove(); }, 2500);
 			});
