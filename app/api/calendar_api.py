@@ -1,5 +1,6 @@
 """Google Calendar OAuth and in-memory timetable endpoints."""
 
+import base64
 from datetime import date, datetime, timedelta, timezone
 import os
 
@@ -426,13 +427,18 @@ def upload_timetable_file():
     if not file or file.filename == "":
         return jsonify({"error": "No file selected"}), 400
 
-    filename = secure_filename(file.filename)
+    original_name = file.filename or "timetable_upload.pdf"
+    filename = secure_filename(original_name)
+    if not filename or filename.startswith('.'):
+        ext_fallback = original_name.lower().split('.')[-1] if '.' in original_name else 'png'
+        filename = f"timetable_upload_{int(datetime.now().timestamp())}.{ext_fallback}"
+
     content_bytes = file.read()
     
     extracted_text = ""
     image_data_url = None
     
-    ext = filename.lower().split('.')[-1] if '.' in filename else ''
+    ext = original_name.lower().split('.')[-1] if '.' in original_name else ''
     
     if ext == 'pdf':
         try:
