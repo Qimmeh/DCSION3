@@ -4099,6 +4099,12 @@ body.night .privacy strong {
 
 			const currentEvents = getCurrentTimetableEvents();
 			const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+			const dayGaps = {};
+			days.forEach(d => {
+				dayGaps[d] = getPreviewGapsForDay(d, currentEvents);
+			});
+
 			const hours = [
 				{ label: "9:00 AM", start: 9 },
 				{ label: "10:00 AM", start: 10 },
@@ -4135,29 +4141,37 @@ body.night .privacy strong {
 						}
 
 						const cardHeight = `height: calc(56px * ${duration} - 6px);`;
-						const bType = matchedEvent.badgeType || 'extracted';
-						const bText = matchedEvent.badgeText || (bType === 'moved' ? '⇄ Moved' : (bType === 'ai_suggested' ? '★ AI Suggested' : '✦ Extracted'));
-
-						let badgeBg = '#10B981';
-						if (bType === 'moved') badgeBg = '#4F46E5';
-						if (bType === 'ai_suggested') badgeBg = '#D97706';
-
 						const rawLoc = matchedEvent.location || '';
 						const cleanLoc = rawLoc.replace(/^Room:\s*/i, '').replace(/\s*\([^)]*\)/g, '').trim() || rawLoc;
 
 						html += `
 							<div class="grid-slot-cell" style="position: relative;">
-								<div class="schedule-card slot-fixed badge-${bType}" 
+								<div class="schedule-card slot-fixed" 
 									 data-id="${matchedEvent.id}"
-									 style="${cardHeight} z-index: 10; position: absolute; left: 3px; right: 3px; top: 3px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 6px; border-radius: 10px; background: rgba(16, 185, 129, 0.12); border: 1.5px solid #10B981;"
+									 style="${cardHeight} z-index: 10; position: absolute; left: 3px; right: 3px; top: 3px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 6px; border-radius: 10px; background: rgba(var(--wave-color-primary, 249, 115, 22), 0.08); border: 1.5px solid rgba(var(--wave-color-primary, 249, 115, 22), 0.22);"
 									 title="${matchedEvent.title}">
-									<span class="grid-slot-text" style="font-weight: 700; font-size: 11.5px; line-height: 1.2; color: #064E3B;">${matchedEvent.title}</span>
-									${cleanLoc ? `<span class="preview-location-text" style="font-size: 9.5px; opacity: 0.85; margin-top: 1px; color: #047857;">${cleanLoc}</span>` : ''}
+									<span class="grid-slot-text" style="font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11.5px; line-height: 1.2; color: var(--text-main, #1F2937);">${matchedEvent.title}</span>
+									${cleanLoc ? `<span class="preview-location-text" style="font-size: 9.5px; opacity: 0.85; margin-top: 1.5px; color: var(--text-muted, #6B7280);">${cleanLoc}</span>` : ''}
 								</div>
 							</div>
 						`;
 					} else {
-						html += `<div class="grid-slot-cell"></div>`;
+						const gapInfo = dayGaps[day]?.[h.start];
+						if (gapInfo && gapInfo.type === 'gap') {
+							html += `
+								<div class="grid-slot-cell chain-gap-slot" title="${gapInfo.label}">
+									<div class="chain-connector-full"></div>
+									<div class="chain-gap-card">
+										<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+										<span class="chain-gap-title">${gapInfo.label}</span>
+									</div>
+								</div>
+							`;
+						} else if (gapInfo && gapInfo.type === 'stem') {
+							html += `<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>`;
+						} else {
+							html += `<div class="grid-slot-cell"></div>`;
+						}
 					}
 				});
 
