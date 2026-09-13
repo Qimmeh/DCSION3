@@ -2166,7 +2166,8 @@
 				}));
 			} catch (e) {}
 
-			fetch('/api/v1/timeline/generate', {
+			const apiBase = (window.DCSION3_CONFIG && window.DCSION3_CONFIG.API_BASE_URL) || '';
+			fetch(apiBase + '/api/v1/timeline/generate', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ horizon_days: 7 })

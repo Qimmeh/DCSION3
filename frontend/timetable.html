@@ -3504,9 +3504,10 @@ body.night .privacy strong {
 					const formData = new FormData();
 					formData.append('file', file);
 
+					const apiBase = (window.DCSION3_CONFIG && window.DCSION3_CONFIG.API_BASE_URL) || '';
 					if (confirmImportBtn) confirmImportBtn.innerHTML = '<span>Uploading...</span>';
 					try {
-						const response = await fetch('/api/v1/timetable/upload', {
+						const response = await fetch(apiBase + '/api/v1/timetable/upload', {
 							method: 'POST',
 							body: formData
 						});
@@ -3534,9 +3535,10 @@ body.night .privacy strong {
 						importPopover.classList.remove('open');
 						return;
 					}
+					const apiBase = (window.DCSION3_CONFIG && window.DCSION3_CONFIG.API_BASE_URL) || '';
 					confirmImportBtn.innerHTML = '<span>Parsing...</span>';
 					try {
-						const response = await fetch('/api/v1/timetable/parse-text', {
+						const response = await fetch(apiBase + '/api/v1/timetable/parse-text', {
 							method: 'POST',
 							headers: { 'Content-Type': 'application/json' },
 							body: JSON.stringify({ text: text })
