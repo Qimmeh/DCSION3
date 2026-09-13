@@ -442,9 +442,11 @@ def parse_schedule_text(text_content, user_id):
     return events
 
 
-@api_bp.route("/timetable/upload", methods=["POST"])
+@api_bp.route("/timetable/upload", methods=["POST", "OPTIONS"])
 @require_user
 def upload_timetable_file():
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
     from app.extensions import db
     user = g.current_api_user
     if "file" not in request.files:
@@ -540,9 +542,11 @@ def upload_timetable_file():
     })
 
 
-@api_bp.route("/timetable/parse-text", methods=["POST"])
+@api_bp.route("/timetable/parse-text", methods=["POST", "OPTIONS"])
 @require_user
 def parse_timetable_text_endpoint():
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
     user = g.current_api_user
     data = request.get_json() or {}
     text_content = data.get("text", "")
@@ -567,9 +571,11 @@ def parse_timetable_text_endpoint():
     })
 
 
-@api_bp.route("/ai/chat", methods=["POST"])
+@api_bp.route("/ai/chat", methods=["POST", "OPTIONS"])
 @require_user
 def ai_chat_endpoint():
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
     import requests
     user = g.current_api_user
     data = request.get_json() or {}
