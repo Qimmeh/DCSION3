@@ -29,10 +29,14 @@ def create_app(config_class=Config):
     from app.auth import bp as auth_bp
     from app.journal import bp as journal_bp
     from app.ai import bp as ai_bp
+    from app.api import api_bp
+
+    csrf.exempt(api_bp)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(journal_bp)
     app.register_blueprint(ai_bp)
+    app.register_blueprint(api_bp)
 
     @app.route("/")
     def serve_index():
@@ -51,5 +55,10 @@ def create_app(config_class=Config):
 
     with app.app_context():
         db.create_all()
+        try:
+            from app.schema_sync import sync_db_columns
+            sync_db_columns(db)
+        except Exception as e:
+            print("schema_sync warning:", e)
 
     return app

@@ -4,9 +4,22 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>DCSION3 | My Profile</title>
+	<script>
+		(function() {
+			try {
+				var t = localStorage.getItem('theme') || localStorage.getItem('emora-theme');
+				if (t === 'night') {
+					document.documentElement.classList.add('night');
+					document.documentElement.style.backgroundColor = '#14100c';
+					document.documentElement.style.colorScheme = 'dark';
+				}
+			} catch (e) {}
+		})();
+	</script>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="sidebar.css">
 	<link rel="stylesheet" href="emora-bot.css">
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script>
@@ -316,43 +329,10 @@
 		}
 	</style>
 </head>
-<body class="antialiased">
-	<!-- Left-side floating hamburger button -->
-	<button class="hamburger-btn" id="hamburgerBtn" aria-label="Open navigation menu" title="Open navigation">
-		<span aria-hidden="true">☰</span>
-	</button>
-
+<body class="antialiased" data-page="profile">
+	<script>if (document.documentElement.classList.contains('night')) document.body.classList.add('night');</script>
 	<div class="app-shell flex min-h-screen">
-		<!-- Sidebar Navigation Drawer -->
-		<aside class="sidebar flex shrink-0 flex-col" id="sidebar">
-			<div class="brand">
-				<div class="flex items-center gap-2.5">
-					<div class="brand-mark-nav">+</div>
-					<div class="brand-name">DCSION3<span>student wellbeing</span></div>
-				</div>
-				<button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close navigation" title="Close navigation">✕</button>
-			</div>
-
-			<div class="nav-label">Your space</div>
-			<nav class="nav" aria-label="Primary navigation">
-				<a href="index.html" data-icon="grid">Home</a>
-				<a href="timetable.html" data-icon="tasks">Timetable</a>
-				<a href="ai.html" data-icon="heart">AI Assistant</a>
-				<a href="journal.html" data-icon="chart">Journal</a>
-				<a href="insights.html" data-icon="chart">Insights</a>
-			</nav>
-
-			<div class="sidebar-bottom">
-				<div class="nav-label" style="text-transform: capitalize; text-align: left; opacity: 1; font-size: 12px; font-weight: 600; padding: 8px 12px 10px;">Account</div>
-				<nav class="nav" aria-label="Account navigation">
-					<a href="profile.html" class="active" data-icon="chart">Profile</a>
-				</nav>
-				<div class="privacy"><span>◎</span><div><strong>Your space is private</strong>Your data stays on this device.</div></div>
-				<button class="theme-toggle" id="themeToggle">◐ &nbsp; Switch to night mode</button>
-			</div>
-		</aside>
-
-		<div class="sidebar-overlay" id="sidebarOverlay"></div>
+		<div id="sidebar-container"></div>
 
 		<!-- Main Content -->
 		<main>
@@ -601,30 +581,8 @@
 		document.querySelectorAll('.avatar, .avatar-lg').forEach(el => {
 			el.textContent = 'JD'; // John Doe
 		});
-
-		// Hamburger menu drawer functionality
-		const hamburgerBtn = document.getElementById('hamburgerBtn');
-		const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
-		const sidebarOverlay = document.getElementById('sidebarOverlay');
-		const body = document.body;
-
-		function openSidebar() { body.classList.add('sidebar-open'); }
-		function closeSidebar() { body.classList.remove('sidebar-open'); }
-
-		if (hamburgerBtn) hamburgerBtn.addEventListener('click', openSidebar);
-		if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeSidebar);
-		if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
-		document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSidebar(); });
-		document.querySelectorAll('.sidebar .nav a, .sidebar .nav button').forEach((link) => {
-			link.addEventListener('click', closeSidebar);
-		});
-
-		// Theme toggle
-		document.getElementById('themeToggle').addEventListener('click', () => {
-			body.classList.toggle('night');
-			document.getElementById('themeToggle').textContent = body.classList.contains('night') ? '☀ Switch to day mode' : '◐ Switch to night mode';
-		});
 	</script>
+	<script src="sidebar.js"></script>
 	<script src="config.js"></script>
 	<script src="emora-bot.js"></script>
 </body>

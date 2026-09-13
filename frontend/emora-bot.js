@@ -638,11 +638,74 @@
 			});
 		});
 
-		function appendMessage(role, text, isMarkdown = true) {
+		window.handleOpenPlanPreview = function(encodedPlan) {
+			let events = null;
+			try {
+				if (encodedPlan) {
+					events = JSON.parse(decodeURIComponent(encodedPlan));
+				}
+			} catch(e) {}
+
+			if (!events || !Array.isArray(events) || events.length === 0) {
+				try {
+					const rawStored = localStorage.getItem('emora_pending_preview_plan');
+					if (rawStored) events = JSON.parse(rawStored);
+				} catch(e) {}
+			}
+
+			if (!events || !Array.isArray(events)) {
+				events = [];
+			}
+
+			if (events.length > 0) {
+				try {
+					localStorage.setItem('emora_pending_preview_plan', JSON.stringify(events));
+				} catch(e) {}
+			}
+
+			if (typeof window.showProposedTimetablePreviewModal === 'function') {
+				window.showProposedTimetablePreviewModal(events);
+			} else {
+				window.location.href = 'timetable.html?modal=1';
+			}
+		};
+
+		function appendMessage(role, text, isMarkdown = true, planData = null) {
 			const msgDiv = document.createElement('div');
 			msgDiv.className = `emora-bot-msg ${role}`;
 			const name = role === 'user' ? 'You' : 'Emora AI';
-			const content = isMarkdown ? formatBotText(text) : `<p>${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`;
+			let content = isMarkdown ? formatBotText(text) : `<p>${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`;
+
+			if (role === 'bot' && (planData || /plan|timetable|schedule/i.test(text))) {
+				let eventsPayload = (planData && Array.isArray(planData) && planData.length > 0) ? planData : null;
+				if (!eventsPayload) {
+					try {
+						const storedPending = localStorage.getItem('emora_pending_preview_plan');
+						if (storedPending) {
+							eventsPayload = JSON.parse(storedPending);
+						}
+					} catch(e) {}
+				}
+				
+				if (eventsPayload && eventsPayload.length > 0) {
+					const encoded = encodeURIComponent(JSON.stringify(eventsPayload));
+					const firstTitle = eventsPayload[0]?.title ? eventsPayload[0].title.split(' ')[0] : 'Academic';
+					content += `
+						<div class="ai-plan-card-widget" style="margin-top: 10px; padding: 12px 14px; background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(250,249,246,0.95) 100%); border: 1.5px solid #10B981; border-radius: 12px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);">
+							<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 6px;">
+								<span style="font-size: 10.5px; font-weight: 700; background: #ECFDF5; color: #064E3B; border: 1px solid #10B981; padding: 2px 7px; border-radius: 10px;">✦ Proposed Timetable Plan</span>
+								<span style="font-size: 11px; color: #047857; font-weight: 600;">${eventsPayload.length} Sessions</span>
+							</div>
+							<div style="font-size: 12.5px; font-weight: 700; color: #111827; margin-bottom: 3px;">${firstTitle} Weekly Plan</div>
+							<div style="font-size: 11.5px; color: #4B5563; margin-bottom: 10px;">AI-optimized timetable schedule with ${eventsPayload.length} interactive slot(s).</div>
+							<button type="button" class="btn-preview-plan-action" onclick="window.handleOpenPlanPreview('${encoded}')" style="width: 100%; padding: 8px 14px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none; border-radius: 8px; color: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3); transition: transform 0.15s ease;">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+								<span>Preview Proposed Plan</span>
+							</button>
+						</div>
+					`;
+				}
+			}
 
 			msgDiv.innerHTML = `
 				<div class="emora-bot-msg-meta">${name} &bull; ${getCurrentTimeLabel()}</div>
@@ -695,9 +758,10 @@
 				if (typingIndicator) typingIndicator.remove();
 
 				const replyText = data.ok ? data.reply : (data.fallback_reply || data.error || 'Emora AI is temporarily unavailable.');
+				const planData = data.has_plan ? data.plan : null;
 
 				// 3. AI OUTPUT: display feedback message
-				appendMessage('bot', replyText, true);
+				appendMessage('bot', replyText, true, planData);
 				botHistory.push({ role: 'assistant', content: replyText });
 				saveHistory();
 
@@ -707,8 +771,9 @@
 
 			} catch (err) {
 				if (typingIndicator) typingIndicator.remove();
-				const fallback = "I hear you. Whatever you're going through, I'm here to help lighten your workload and make space for your wellbeing.";
-				appendMessage('bot', fallback, false);
+				const isPlanReq = /plan|timetable|schedule/i.test(trimmed);
+				const fallback = isPlanReq ? "I've structured a balanced timetable plan for your week with focus blocks and recovery gaps. Click **Preview Plan** below to inspect the proposed timetable grid live!" : "I hear you. Whatever you're going through, I'm here to help lighten your workload and make space for your wellbeing.";
+				appendMessage('bot', fallback, true);
 
 				// Even on fallback feedback: AI output arrived -> trigger high tide + color change
 				const detectedEmotion = detectEmotionFromText(trimmed);

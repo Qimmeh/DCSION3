@@ -4,9 +4,22 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>emora | Timetable</title>
+	<script>
+		(function() {
+			try {
+				var t = localStorage.getItem('theme') || localStorage.getItem('emora-theme');
+				if (t === 'night') {
+					document.documentElement.classList.add('night');
+					document.documentElement.style.backgroundColor = '#14100c';
+					document.documentElement.style.colorScheme = 'dark';
+				}
+			} catch (e) {}
+		})();
+	</script>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="sidebar.css">
 	<link rel="stylesheet" href="emora-bot.css">
 	<style>
 		/* --- Design Tokens & Global Reset --- */
@@ -549,8 +562,11 @@
 
 		.day-col-header {
 			display: flex;
+			flex-direction: column;
 			justify-content: center;
 			align-items: center;
+			gap: 4px;
+			padding: 6px 4px 8px;
 			border-right: 1px solid #EAE5DB;
 		}
 
@@ -558,13 +574,40 @@
 			border-right: none;
 		}
 
-		.day-col-header span {
+		.day-col-header .day-name {
 			font-family: 'Inter', sans-serif;
 			font-weight: 600;
-			font-size: 13px;
-			line-height: 1.2;
+			font-size: 11px;
+			line-height: 1;
+			color: var(--text-muted);
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			text-align: center;
+		}
+
+		.day-col-header .day-date {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			font-family: 'Inter', sans-serif;
+			font-weight: 700;
+			font-size: 14px;
+			line-height: 1;
 			color: var(--text-main);
 			text-align: center;
+			transition: background 0.2s ease, color 0.2s ease;
+		}
+
+		.day-col-header.is-today .day-name {
+			color: var(--primary-green);
+		}
+		.day-col-header.is-today .day-date {
+			background: var(--primary-green);
+			color: #fff;
+			box-shadow: 0 2px 8px rgba(243,123,50,0.35);
 		}
 
 		/* Schedule Grid Body */
@@ -662,6 +705,35 @@
 		}
 		.schedule-card.slot-flex { background: var(--primary-green-light); }
 		.schedule-card.slot-gap { background: var(--bg-app); }
+
+		/* Displaced card — yellow/amber, shown when AI moves an existing event */
+		.schedule-card.slot-displaced {
+			background: linear-gradient(135deg, #fffaed 0%, #fff3c0 100%);
+			border: 1.5px dashed #c9a000;
+			position: relative;
+		}
+		body.night .schedule-card.slot-displaced {
+			background: linear-gradient(135deg, #2a2200 0%, #332a00 100%);
+			border-color: #c9a000;
+		}
+		.slot-displaced-badge {
+			position: absolute;
+			top: -8px;
+			left: 4px;
+			background: #c9a000;
+			color: #fff;
+			font-size: 8px;
+			font-weight: 700;
+			letter-spacing: 0.04em;
+			padding: 2px 5px;
+			border-radius: 4px;
+			white-space: nowrap;
+			pointer-events: none;
+		}
+		.legend-rect.displaced {
+			background: linear-gradient(135deg, #fffaed 0%, #fff3c0 100%);
+			border: 1.5px dashed #c9a000;
+		}
 
 		/* Chain-Linked Free Badge - Compact & Non-expanding */
 		.grid-slot-cell.chain-gap-slot {
@@ -1565,15 +1637,6 @@
 			width: calc(100% - 268px);
 			max-width: none;
 			padding: 42px 46px 60px;
-			opacity: 0;
-			transform: translateY(14px);
-			transition: opacity .45s cubic-bezier(.16,1,.3,1), transform .45s cubic-bezier(.16,1,.3,1);
-		}
-		body.page-loaded .content-area { opacity: 1; transform: translateY(0); }
-		body.page-leaving .content-area {
-			opacity: 0;
-			transform: translateY(-10px);
-			transition: opacity .22s ease, transform .22s ease;
 		}
 
 		.header-title,
@@ -1700,7 +1763,7 @@
     letter-spacing: .09em;
     color: #4A4643;
     text-transform: uppercase;
-    margin: 0 12px -10px;
+    margin: 0 12px 10px;
 }
 
 .nav {
@@ -1814,97 +1877,874 @@ body.night .privacy {
 body.night .privacy strong {
     color: #f7ede0 !important;
 }
+
+		/* ===== View Toggle (Week / Month) ===== */
+		.view-toggle-group {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 4px;
+			background: rgba(var(--wave-color-primary), 0.08);
+			border: 1px solid rgba(var(--wave-color-primary), 0.14);
+			border-radius: 10px;
+			padding: 3px;
+			flex-shrink: 0;
+		}
+		body.night .view-toggle-group {
+			background: rgba(243,123,50,0.1);
+			border-color: rgba(243,123,50,0.2);
+		}
+		.view-toggle-btn {
+			padding: 6px 14px;
+			border-radius: 7px;
+			border: none;
+			background: transparent;
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 12px;
+			color: var(--text-muted);
+			cursor: pointer;
+			transition: all 0.18s ease;
+		}
+		.view-toggle-btn.active {
+			background: #fff;
+			color: var(--text-main);
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+		}
+		body.night .view-toggle-btn.active {
+			background: #2a1f16;
+			color: #f0ece6;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+		}
+
+		/* ===== Monthly Calendar View ===== */
+		#monthlyView {
+			display: none;
+			width: 100%;
+			flex-direction: column;
+			gap: 0;
+		}
+		#monthlyView.active { display: flex; }
+
+		.month-nav-bar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0 0 18px 0;
+		}
+		.month-nav-title {
+			font-family: 'Fraunces', serif;
+			font-weight: 600;
+			font-size: 22px;
+			color: var(--text-main);
+		}
+		body.night .month-nav-title { color: #f0ece6; }
+		.month-nav-btn {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 34px;
+			height: 34px;
+			border-radius: 9px;
+			border: 1px solid var(--border-subtle, #ECEAE4);
+			background: #fff;
+			cursor: pointer;
+			transition: all 0.18s ease;
+			color: var(--text-main);
+		}
+		body.night .month-nav-btn {
+			background: #1e1611;
+			border-color: #3a2e24;
+			color: #f0ece6;
+		}
+		.month-nav-btn:hover {
+			border-color: var(--primary-green);
+			color: var(--primary-green);
+			background: var(--primary-green-light, #fff0e6);
+		}
+		.month-nav-btn svg {
+			width: 16px;
+			height: 16px;
+			stroke: currentColor;
+			fill: none;
+			stroke-width: 2;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		.month-calendar-grid {
+			display: grid;
+			grid-template-columns: repeat(7, 1fr);
+			gap: 0;
+			background: rgba(255,255,255,0.94);
+			border: 1px solid rgba(var(--wave-color-primary),0.14);
+			box-shadow: 0 12px 36px rgba(var(--wave-color-primary),0.07), 0 2px 8px rgba(0,0,0,0.03);
+			border-radius: 16px;
+			overflow: hidden;
+		}
+		body.night .month-calendar-grid {
+			background: rgba(26,20,14,0.94);
+			border-color: rgba(243,123,50,0.15);
+		}
+
+		.month-dow-header {
+			display: contents;
+		}
+		.month-dow-cell {
+			padding: 12px 0 10px;
+			text-align: center;
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 11px;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			color: var(--text-muted);
+			border-bottom: 1px solid rgba(var(--wave-color-primary),0.1);
+		}
+		body.night .month-dow-cell { color: #a09d9a; border-bottom-color: rgba(243,123,50,0.12); }
+
+		.month-day-cell {
+			min-height: 96px;
+			padding: 8px 6px 6px;
+			display: flex;
+			flex-direction: column;
+			gap: 3px;
+			border-right: 1px solid rgba(var(--wave-color-primary),0.08);
+			border-bottom: 1px solid rgba(var(--wave-color-primary),0.08);
+			box-sizing: border-box;
+			transition: background 0.15s ease;
+		}
+		.month-day-cell:nth-child(7n) { border-right: none; }
+		body.night .month-day-cell {
+			border-right-color: rgba(243,123,50,0.1);
+			border-bottom-color: rgba(243,123,50,0.1);
+		}
+		.month-day-cell.other-month {
+			background: rgba(var(--wave-color-primary),0.02);
+		}
+		body.night .month-day-cell.other-month { background: rgba(243,123,50,0.02); }
+		.month-day-cell.is-today {
+			background: rgba(243,123,50,0.06);
+		}
+		body.night .month-day-cell.is-today { background: rgba(243,123,50,0.10); }
+
+		.month-day-num {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			font-family: 'Inter', sans-serif;
+			font-weight: 600;
+			font-size: 12px;
+			color: var(--text-main);
+			align-self: flex-end;
+			margin-bottom: 2px;
+		}
+		body.night .month-day-num { color: #f0ece6; }
+		.month-day-cell.other-month .month-day-num { color: var(--text-subtle); opacity: 0.5; }
+		.month-day-cell.is-today .month-day-num {
+			background: var(--primary-green);
+			color: #fff;
+			box-shadow: 0 2px 8px rgba(243,123,50,0.35);
+		}
+
+		.month-event-pill {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			padding: 2px 6px;
+			border-radius: 5px;
+			font-family: 'Inter', sans-serif;
+			font-weight: 500;
+			font-size: 10px;
+			line-height: 1.3;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 100%;
+			width: 100%;
+			box-sizing: border-box;
+		}
+		.month-event-pill.pill-fixed {
+			background: rgba(var(--wave-color-primary),0.13);
+			color: #c96230;
+		}
+		body.night .month-event-pill.pill-fixed {
+			background: rgba(243,123,50,0.18);
+			color: #f0a070;
+		}
+		.month-event-pill.pill-flex {
+			background: rgba(243,123,50,0.18);
+			color: #c96230;
+			font-weight: 700;
+		}
+		body.night .month-event-pill.pill-flex {
+			background: rgba(243,123,50,0.28);
+			color: #f0a070;
+		}
+		.month-event-pill.pill-ai {
+			background: linear-gradient(90deg,#fff3c0,#ffe8a0);
+			color: #8a6800;
+			border: 1px dashed #c9a000;
+		}
+
+		/* ===== AI-Applied Schedule Slot ===== */
+		.slot-ai-suggested {
+			background: linear-gradient(135deg, #fff3e8 0%, #ffe8d4 100%);
+			border: 2px solid #f37b32;
+			box-shadow: 0 0 0 4px rgba(243,123,50,0.12), 0 4px 16px rgba(243,123,50,0.18);
+			border-radius: 10px;
+			position: relative;
+			animation: slot-pulse 1.8s ease-out 0.4s both;
+		}
+		html.night .slot-ai-suggested {
+			background: linear-gradient(135deg, #2b1e12 0%, #3a2410 100%);
+			border-color: #f37b32;
+			box-shadow: 0 0 0 4px rgba(243,123,50,0.18), 0 4px 16px rgba(243,123,50,0.25);
+		}
+		.slot-ai-badge {
+			position: absolute;
+			top: -8px;
+			right: 6px;
+			background: #f37b32;
+			color: #fff;
+			font-size: 9px;
+			font-weight: 700;
+			letter-spacing: 0.04em;
+			padding: 2px 6px;
+			border-radius: 4px;
+			white-space: nowrap;
+		}
+		@keyframes slot-pulse {
+			0% { box-shadow: 0 0 0 0 rgba(243,123,50,0.5); }
+			60% { box-shadow: 0 0 0 10px rgba(243,123,50,0); }
+			100% { box-shadow: 0 0 0 4px rgba(243,123,50,0.12), 0 4px 16px rgba(243,123,50,0.18); }
+		}
+
+		/* ===== Emora Applied Banner ===== */
+		#emoraAppliedBanner {
+			display: none;
+			align-items: center;
+			gap: 12px;
+			background: linear-gradient(90deg, #fff7f0 0%, #fff3e8 100%);
+			border: 1.5px solid #f6daca;
+			border-left: 4px solid #f37b32;
+			border-radius: 12px;
+			padding: 14px 18px;
+			margin: 0 0 20px 0;
+			position: relative;
+			opacity: 0;
+			transform: translateY(-10px);
+			transition: opacity 0.38s ease, transform 0.38s ease;
+			flex-shrink: 0;
+		}
+		#emoraAppliedBanner.visible {
+			opacity: 1;
+			transform: translateY(0);
+		}
+		html.night #emoraAppliedBanner {
+			background: linear-gradient(90deg, #1e1309 0%, #251608 100%);
+			border-color: #3a2410;
+			border-left-color: #f37b32;
+		}
+		.banner-icon {
+			width: 36px;
+			height: 36px;
+			background: linear-gradient(135deg, #f37b32 0%, #e05e18 100%);
+			border-radius: 10px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+		}
+		.banner-icon svg {
+			width: 18px;
+			height: 18px;
+			stroke: #fff;
+			fill: none;
+			stroke-width: 2.5;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+		.banner-text-group {
+			flex: 1;
+			min-width: 0;
+		}
+		.banner-title {
+			font-size: 13.5px;
+			font-weight: 700;
+			color: #2C2A29;
+			margin-bottom: 2px;
+		}
+		html.night .banner-title { color: #f0ece6; }
+		.banner-desc {
+			font-size: 12px;
+			color: #7A7774;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		html.night .banner-desc { color: #a09d9a; }
+		.banner-scroll-btn {
+			background: #f37b32;
+			color: #fff;
+			border: none;
+			border-radius: 8px;
+			padding: 7px 14px;
+			font-size: 12px;
+			font-weight: 600;
+			cursor: pointer;
+			white-space: nowrap;
+			transition: background 0.18s ease, transform 0.15s ease;
+			flex-shrink: 0;
+		}
+		.banner-scroll-btn:hover { background: #e05e18; transform: translateY(-1px); }
+		.banner-dismiss {
+			position: absolute;
+			top: 8px;
+			right: 10px;
+			background: none;
+			border: none;
+			cursor: pointer;
+			color: #a09d9a;
+			font-size: 16px;
+			line-height: 1;
+			padding: 2px 4px;
+			border-radius: 4px;
+			transition: color 0.15s ease;
+		}
+		/* ===== PROPOSED TIMETABLE PREVIEW & GLOWING CARD STYLES ===== */
+		.schedule-card.is-proposed-new {
+			animation: glowPulseGreen 1.8s infinite alternate ease-in-out;
+			z-index: 12 !important;
+			border-radius: 8px !important;
+			transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+			display: flex !important;
+			flex-direction: column !important;
+			align-items: center !important;
+			justify-content: center !important;
+			padding: 4px 6px !important;
+			box-sizing: border-box !important;
+			text-align: center !important;
+			overflow: hidden !important;
+			gap: 2px !important;
+			width: calc(100% - 6px) !important;
+			max-width: calc(100% - 6px) !important;
+		}
+		.schedule-card.is-proposed-new:hover {
+			transform: translateY(-2px) !important;
+		}
+
+		.schedule-card.is-proposed-new .proposed-badge {
+			margin: 0 0 1px 0 !important;
+			max-width: 100% !important;
+			overflow: hidden !important;
+			text-overflow: ellipsis !important;
+			white-space: nowrap !important;
+			flex-shrink: 0 !important;
+		}
+
+		.schedule-card.is-proposed-new .grid-slot-text {
+			width: 100% !important;
+			max-width: 100% !important;
+			overflow: hidden !important;
+			text-overflow: ellipsis !important;
+			white-space: nowrap !important;
+			display: block !important;
+			line-height: 1.25 !important;
+			margin: 0 !important;
+			flex-shrink: 0 !important;
+		}
+
+		.schedule-card.is-proposed-new .preview-location-text {
+			width: 100% !important;
+			max-width: 100% !important;
+			overflow: hidden !important;
+			text-overflow: ellipsis !important;
+			white-space: nowrap !important;
+			display: block !important;
+			line-height: 1.2 !important;
+			margin: 0 !important;
+			flex-shrink: 0 !important;
+		}
+
+		/* Badge Theme 1: Extracted (Emerald) */
+		.schedule-card.is-proposed-new.badge-extracted {
+			border: 2px solid #10B981 !important;
+			background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%) !important;
+			box-shadow: 0 4px 18px rgba(16, 185, 129, 0.25) !important;
+		}
+		.schedule-card.is-proposed-new.badge-extracted .grid-slot-text {
+			color: #064E3B !important;
+			font-weight: 700 !important;
+		}
+		.schedule-card.is-proposed-new.badge-extracted .preview-location-text {
+			color: #047857 !important;
+			font-weight: 600 !important;
+		}
+		.schedule-card.is-proposed-new.badge-extracted .proposed-badge {
+			background: #059669 !important;
+			color: #FFFFFF !important;
+		}
+
+		/* Badge Theme 2: Moved (Indigo) */
+		.schedule-card.is-proposed-new.badge-moved {
+			border: 2px solid #6366F1 !important;
+			background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%) !important;
+			box-shadow: 0 4px 18px rgba(99, 102, 241, 0.25) !important;
+		}
+		.schedule-card.is-proposed-new.badge-moved .grid-slot-text {
+			color: #1E1B4B !important;
+			font-weight: 700 !important;
+		}
+		.schedule-card.is-proposed-new.badge-moved .preview-location-text {
+			color: #3730A3 !important;
+			font-weight: 600 !important;
+		}
+		.schedule-card.is-proposed-new.badge-moved .proposed-badge {
+			background: #4F46E5 !important;
+			color: #FFFFFF !important;
+		}
+
+		/* Badge Theme 3: AI Suggested (Amber) */
+		.schedule-card.is-proposed-new.badge-ai_suggested {
+			border: 2px solid #F59E0B !important;
+			background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%) !important;
+			box-shadow: 0 4px 18px rgba(245, 158, 11, 0.25) !important;
+		}
+		.schedule-card.is-proposed-new.badge-ai_suggested .grid-slot-text {
+			color: #78350F !important;
+			font-weight: 700 !important;
+		}
+		.schedule-card.is-proposed-new.badge-ai_suggested .preview-location-text {
+			color: #92400E !important;
+			font-weight: 600 !important;
+		}
+		.schedule-card.is-proposed-new.badge-ai_suggested .proposed-badge {
+			background: #D97706 !important;
+			color: #FFFFFF !important;
+		}
+
+		/* Night Mode proposed card styles */
+		body.night .schedule-card.is-proposed-new.badge-extracted,
+		html.night .schedule-card.is-proposed-new.badge-extracted {
+			background: linear-gradient(135deg, #064E3B 0%, #047857 100%) !important;
+			border-color: #34D399 !important;
+			box-shadow: 0 4px 20px rgba(52, 211, 153, 0.35) !important;
+		}
+		body.night .schedule-card.is-proposed-new.badge-extracted .grid-slot-text,
+		html.night .schedule-card.is-proposed-new.badge-extracted .grid-slot-text {
+			color: #ECFDF5 !important;
+		}
+		body.night .schedule-card.is-proposed-new.badge-extracted .preview-location-text,
+		html.night .schedule-card.is-proposed-new.badge-extracted .preview-location-text {
+			color: #A7F3D0 !important;
+		}
+
+		body.night .schedule-card.is-proposed-new.badge-moved,
+		html.night .schedule-card.is-proposed-new.badge-moved {
+			background: linear-gradient(135deg, #1E1B4B 0%, #3730A3 100%) !important;
+			border-color: #818CF8 !important;
+			box-shadow: 0 4px 20px rgba(129, 140, 248, 0.35) !important;
+		}
+		body.night .schedule-card.is-proposed-new.badge-moved .grid-slot-text,
+		html.night .schedule-card.is-proposed-new.badge-moved .grid-slot-text {
+			color: #EEF2FF !important;
+		}
+		body.night .schedule-card.is-proposed-new.badge-moved .preview-location-text,
+		html.night .schedule-card.is-proposed-new.badge-moved .preview-location-text {
+			color: #C7D2FE !important;
+		}
+
+		body.night .schedule-card.is-proposed-new.badge-ai_suggested,
+		html.night .schedule-card.is-proposed-new.badge-ai_suggested {
+			background: linear-gradient(135deg, #78350F 0%, #92400E 100%) !important;
+			border-color: #FBBF24 !important;
+			box-shadow: 0 4px 20px rgba(251, 191, 36, 0.35) !important;
+		}
+		body.night .schedule-card.is-proposed-new.badge-ai_suggested .grid-slot-text,
+		html.night .schedule-card.is-proposed-new.badge-ai_suggested .grid-slot-text {
+			color: #FEF3C7 !important;
+		}
+		body.night .schedule-card.is-proposed-new.badge-ai_suggested .preview-location-text,
+		html.night .schedule-card.is-proposed-new.badge-ai_suggested .preview-location-text {
+			color: #FDE68A !important;
+		}
+
+		@keyframes glowPulseGreen {
+			0% { transform: translateY(0); }
+			100% { transform: translateY(-1.5px); }
+		}
+
+		.preview-modal-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(18, 17, 16, 0.72);
+			backdrop-filter: blur(8px);
+			z-index: 800;
+			display: none;
+			opacity: 0;
+			transition: opacity 0.25s ease;
+		}
+		.preview-modal-overlay.open {
+			display: block;
+			opacity: 1;
+		}
+
+		.preview-modal-window {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%) scale(0.96);
+			width: 95vw;
+			max-width: 1380px;
+			height: 92vh;
+			background: var(--bg-surface, #FAF9F6);
+			border-radius: 20px;
+			border: 1px solid rgba(216, 210, 197, 0.8);
+			box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
+			z-index: 810;
+			display: none;
+			flex-direction: column;
+			overflow: hidden;
+			transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+			opacity: 0;
+		}
+		.preview-modal-window.open {
+			display: flex;
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+		}
+
+		.preview-header-bar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 18px 26px;
+			background: linear-gradient(180deg, #FFFFFF 0%, #FAF9F6 100%);
+			border-bottom: 1px solid #EAE5DB;
+			flex-shrink: 0;
+		}
+		html.night .preview-header-bar {
+			background: linear-gradient(180deg, #241d16 0%, #1d160f 100%);
+			border-color: #3c2f21;
+		}
+		.preview-main-title {
+			font-family: 'Fraunces', serif;
+			font-size: 22px;
+			font-weight: 700;
+			color: var(--text-main);
+			margin: 0;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.preview-title-row {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+		.preview-status-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			background: rgba(16, 185, 129, 0.12);
+			border: 1px solid rgba(16, 185, 129, 0.35);
+			padding: 4px 12px;
+			border-radius: 14px;
+			font-size: 11.5px;
+			font-weight: 700;
+			color: #047857;
+			box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1);
+		}
+		html.night .preview-status-pill {
+			background: rgba(52, 211, 153, 0.18);
+			border-color: rgba(52, 211, 153, 0.4);
+			color: #6EE7B7;
+		}
+		.preview-status-dot {
+			width: 7px;
+			height: 7px;
+			border-radius: 50%;
+			background: #10B981;
+			box-shadow: 0 0 8px #10B981;
+			animation: dotPulse 1.2s infinite ease-in-out;
+		}
+		.preview-subtext {
+			font-size: 12.5px;
+			color: var(--text-muted);
+			margin: 4px 0 0 0;
+		}
+		.preview-close-btn {
+			background: rgba(0,0,0,0.04);
+			border: 1px solid rgba(0,0,0,0.08);
+			cursor: pointer;
+			padding: 8px;
+			border-radius: 10px;
+			color: var(--text-muted);
+			transition: all 0.18s ease;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.preview-close-btn:hover {
+			background: rgba(220, 38, 38, 0.1);
+			color: #DC2626;
+			border-color: rgba(220, 38, 38, 0.25);
+			transform: scale(1.05);
+		}
+
+		.preview-refine-box {
+			padding: 14px 26px;
+			background: #FFFFFF;
+			border-bottom: 1px solid #EAE5DB;
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			flex-shrink: 0;
+		}
+		html.night .preview-refine-box {
+			background: #241f1a;
+			border-color: #3c2f21;
+		}
+		.preview-refine-form {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			width: 100%;
+		}
+		.preview-prompt-field {
+			flex: 1;
+			height: 44px;
+			border-radius: 12px;
+			border: 1px solid #D8D2C6;
+			background: #FAF9F6;
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			color: var(--text-main);
+			transition: all 0.18s ease;
+		}
+		.preview-prompt-field:focus {
+			outline: none;
+			border-color: #f37b32;
+			background: #FFFFFF;
+			box-shadow: 0 0 0 3px rgba(243, 123, 50, 0.2);
+		}
+		.preview-refine-btn {
+			height: 44px;
+			padding: 0 22px;
+			background: linear-gradient(135deg, #f37b32 0%, #e05e18 100%);
+			border: none;
+			border-radius: 12px;
+			color: #FFFFFF;
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			font-weight: 700;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			gap: 7px;
+			box-shadow: 0 4px 14px rgba(243, 123, 50, 0.3);
+			transition: all 0.18s ease;
+			white-space: nowrap;
+		}
+		.preview-refine-btn:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 6px 18px rgba(243, 123, 50, 0.42);
+		}
+		.preview-chips-row {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			overflow-x: auto;
+		}
+		.preview-chips-label {
+			font-size: 11.5px;
+			font-weight: 700;
+			color: var(--text-muted);
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+		}
+		.preview-chip-pill {
+			background: rgba(var(--wave-color-primary), 0.05);
+			border: 1px solid rgba(var(--wave-color-primary), 0.16);
+			padding: 5px 13px;
+			border-radius: 16px;
+			font-size: 11.5px;
+			font-weight: 600;
+			color: var(--text-main);
+			cursor: pointer;
+			transition: all 0.18s ease;
+			white-space: nowrap;
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+		}
+		.preview-chip-pill:hover {
+			border-color: #f37b32;
+			background: rgba(243, 123, 50, 0.1);
+			color: #f37b32;
+			transform: translateY(-1px);
+		}
+
+		.preview-grid-body {
+			flex: 1;
+			overflow-y: auto;
+			padding: 20px 26px;
+			background: var(--bg-app);
+		}
+
+		.preview-footer-bar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 16px 26px;
+			background: #FFFFFF;
+			border-top: 1px solid #EAE5DB;
+			flex-shrink: 0;
+		}
+		html.night .preview-footer-bar {
+			background: #1d160f;
+			border-color: #3c2f21;
+		}
+		.preview-legend-guide {
+			display: flex;
+			align-items: center;
+			gap: 18px;
+			font-size: 12px;
+			color: var(--text-muted);
+		}
+		.preview-legend-item {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			font-weight: 600;
+		}
+		.preview-footer-buttons {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+		.btn-deny-proposal {
+			padding: 11px 20px;
+			background: #FFFFFF;
+			border: 1.5px solid #FCA5A5;
+			border-radius: 10px;
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			font-weight: 600;
+			color: #DC2626;
+			cursor: pointer;
+			transition: all 0.18s ease;
+		}
+		.btn-deny-proposal:hover {
+			background: #FEF2F2;
+			border-color: #EF4444;
+			color: #B91C1C;
+			transform: translateY(-1px);
+		}
+		.btn-accept-proposal {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 11px 24px;
+			background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+			border: none;
+			border-radius: 10px;
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			font-weight: 700;
+			color: #FFFFFF;
+			cursor: pointer;
+			box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+			transition: all 0.18s ease;
+		}
+		.btn-accept-proposal:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+		}
+		.btn-deny-proposal:hover {
+			background: #FDF2F0;
+			border-color: #F1B4AB;
+		}
+		.btn-accept-proposal {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 22px;
+			background: var(--primary-green);
+			border: none;
+			border-radius: 10px;
+			font-family: 'Inter', sans-serif;
+			font-size: 13px;
+			font-weight: 600;
+			color: #FFFFFF;
+			cursor: pointer;
+			box-shadow: 0 4px 12px rgba(74, 107, 93, 0.25);
+			transition: all 0.15s ease;
+		}
+		.btn-accept-proposal:hover {
+			background: #3A5549;
+			transform: translateY(-1px);
+			box-shadow: 0 6px 16px rgba(74, 107, 93, 0.35);
+		}
 	</style>
 </head>
-<body>
-	<button class="hamburger-btn" id="hamburgerBtn" aria-label="Open navigation menu" title="Open navigation">☰</button>
-	<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
+<body data-page="timetable">
+	<script>if (document.documentElement.classList.contains('night')) document.body.classList.add('night');</script>
 	<div class="screen-timetable">
-		<!-- sidebar -->
-<aside class="sidebar" id="sidebar">
-    <div class="sidebar-top">
-        <div class="brand">
-            <div class="brand-left">
-                <div class="brand-mark">e</div>
-                <div class="brand-name">emora <span>Wellbeing &amp; Work</span></div>
-            </div>
-            <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close navigation">✕</button>
-        </div>
-
-        <span class="nav-label">YOUR SPACE</span>
-
-        <nav class="nav" aria-label="Sidebar navigation">
-            <button class="tab-item" data-page="home" type="button">
-                <span class="nav-icon">⌂</span>
-                <span>Home</span>
-            </button>
-            <button class="tab-item active" data-page="timetable" type="button">
-                <span class="nav-icon">◫</span>
-                <span>Timetable</span>
-            </button>
-            <button class="tab-item" data-page="ai" type="button">
-                <span class="nav-icon">✦</span>
-                <span>AI Assistant</span>
-            </button>
-            <button class="tab-item" data-page="journal" type="button">
-                <span class="nav-icon">▣</span>
-                <span>Journal</span>
-            </button>
-            <button class="tab-item" data-page="insights" type="button">
-                <span class="nav-icon">▤</span>
-                <span>Insights</span>
-            </button>
-        </nav>
-    </div>
-
-    <div class="sidebar-bottom">
-        <div class="profile-card">
-            <div class="profile-box">
-                <div class="profile-avatar">CJ</div>
-                <div class="profile-meta">
-                    <div class="profile-name">Clara Jensen</div>
-                    <div class="profile-email">clara@university.edu</div>
-                </div>
-            </div>
-            <div class="privacy">
-                <div>
-                    <strong>Focused mode</strong>
-                    On • Recovery-first schedule
-                </div>
-            </div>
-        </div>
-
-        <button class="theme-toggle" id="themeToggle" type="button">◐ Switch to night mode</button>
-    </div>
-</aside>
+		<div id="sidebar-container"></div>
 
 		<!-- content-area -->
-		<main class="content-area">
+		<main class="content-area" id="prototypeTimetable">
+			<!-- Emora AI Applied Banner -->
+			<div id="emoraAppliedBanner" role="status" aria-live="polite">
+				<div class="banner-icon">
+					<svg viewBox="0 0 24 24"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/></svg>
+				</div>
+				<div class="banner-text-group">
+					<div class="banner-title">Emora applied a schedule change ✦</div>
+					<div class="banner-desc" id="bannerDesc">Writing Block added to Thursday 3:00 PM · -28% Wednesday workload peak</div>
+				</div>
+				<button class="banner-scroll-btn" id="bannerScrollBtn" type="button">View in Timetable</button>
+				<button class="banner-dismiss" id="bannerDismissBtn" type="button" title="Dismiss" aria-label="Dismiss banner">&times;</button>
+			</div>
+
 			<!-- header-row -->
 			<header class="header-row">
 				<div class="header-title-frame">
 					<h1 class="header-title">Your Timetable Workspace</h1>
-					<p class="header-desc">Configure fixed commitments and flexible workflow allocations seamlessly.</p>
+					<p class="header-desc" id="timetableWeekLabel">Configure fixed commitments and flexible workflow allocations seamlessly.</p>
 				</div>
 
 				<div class="header-right-group">
+					<!-- View Toggle -->
+					<div class="view-toggle-group" role="group" aria-label="View mode">
+						<button class="view-toggle-btn active" id="btnViewWeek" type="button">Week</button>
+						<button class="view-toggle-btn" id="btnViewMonth" type="button">Month</button>
+					</div>
+
 					<!-- Legend row -->
 					<div class="schedule-legend-frame">
 						<!-- Fixed Schedule -->
 						<div class="legend-item">
 							<div class="legend-rect fixed"></div>
-							<span class="legend-label">Fixed Schedule</span>
+							<span class="legend-label">Fixed</span>
 						</div>
 						<!-- Non-Fixed -->
 						<div class="legend-item">
 							<div class="legend-rect flexible"></div>
-							<span class="legend-label">Non-Fixed (Flexible)</span>
+							<span class="legend-label">Flexible</span>
 						</div>
 						<!-- Chain-Linked Free Gap -->
 						<div class="legend-item">
 							<div class="legend-rect gap-striped"></div>
-							<span class="legend-label">Free Time (Linked)</span>
+							<span class="legend-label">Free Time Chain</span>
 						</div>
 					</div>
 
@@ -1920,10 +2760,11 @@ body.night .privacy strong {
 
 			<!-- import-window modal -->
 			<div class="import-window" id="importPopover" role="dialog" aria-labelledby="popoverHeading">
+				<input type="file" id="timetableFileInput" accept=".pdf,.csv,.ics,.png,.jpg,.jpeg,.json,.txt" style="display:none;">
 				<div class="popover-header-row">
 					<h2 class="popover-title" id="popoverHeading">Import timetable</h2>
 					<div class="popover-static-tag">
-						<span class="popover-tag-text">Static state</span>
+						<span class="popover-tag-text">AI Parser</span>
 					</div>
 				</div>
 				<p class="popover-intro">Bring in recurring classes, course outlines, or describe your schedule in plain text.</p>
@@ -1931,7 +2772,7 @@ body.night .privacy strong {
 				<!-- Options List -->
 				<div class="popover-options-list">
 					<!-- Option 1: Google Calendar -->
-					<div class="popover-option-item">
+					<div class="popover-option-item" id="optionGoogleCalSync" style="cursor: pointer;">
 						<div class="popover-opt-icon green">
 							<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
 						</div>
@@ -1942,22 +2783,22 @@ body.night .privacy strong {
 					</div>
 
 					<!-- Option 2: Upload Outline -->
-					<div class="popover-option-item">
+					<div class="popover-option-item" id="optionFileUpload" style="cursor: pointer;">
 						<div class="popover-opt-icon orange">
 							<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
 						</div>
 						<div class="popover-opt-text">
 							<div class="popover-opt-title">Timetable / course-outline upload</div>
-							<div class="popover-opt-desc">Upload PDF, CSV, or course schedule files</div>
+							<div class="popover-opt-desc">Upload PDF, CSV, ICS, Image or schedule file</div>
 						</div>
 					</div>
 				</div>
 
 				<!-- Textarea Frame -->
 				<div class="popover-textarea-frame">
-					<label class="popover-textarea-label" for="scheduleText">Describe schedule in text</label>
-					<div class="popover-text-box">
-						<p class="popover-sample-text">Mon 9-11 AM &middot; LIT 302 class<br>Tue 2-4 PM &middot; Chemistry lab<br>Wed 7-9 PM &middot; Essay writing block<br>Fri 4-5 PM &middot; Final review</p>
+					<label class="popover-textarea-label" for="scheduleTextInput">Describe schedule in text</label>
+					<div class="popover-text-box" style="padding: 4px;">
+						<textarea id="scheduleTextInput" class="popover-textarea" style="width: 100%; min-height: 72px; border: none; background: transparent; font-family: 'Inter', sans-serif; font-size: 12.5px; color: var(--text-main); outline: none; resize: vertical;" placeholder="Mon 9-11 AM · LIT 302 class&#10;Tue 2-4 PM · Chemistry lab&#10;Wed 7-9 PM · Essay writing block"></textarea>
 					</div>
 					<span class="popover-footnote">We'll parse recurring patterns and create linked sessions automatically.</span>
 				</div>
@@ -1980,13 +2821,13 @@ body.night .privacy strong {
 					<!-- Days Header Row -->
 					<div class="days-header-row">
 						<div class="days-spacer"></div>
-						<div class="day-col-header"><span>Mon</span></div>
-						<div class="day-col-header"><span>Tue</span></div>
-						<div class="day-col-header"><span>Wed</span></div>
-						<div class="day-col-header"><span>Thu</span></div>
-						<div class="day-col-header"><span>Fri</span></div>
-						<div class="day-col-header"><span>Sat</span></div>
-						<div class="day-col-header"><span>Sun</span></div>
+						<div class="day-col-header" data-dow="1"><span class="day-name">Mon</span><span class="day-date" id="dateMon">—</span></div>
+						<div class="day-col-header" data-dow="2"><span class="day-name">Tue</span><span class="day-date" id="dateTue">—</span></div>
+						<div class="day-col-header" data-dow="3"><span class="day-name">Wed</span><span class="day-date" id="dateWed">—</span></div>
+						<div class="day-col-header" data-dow="4"><span class="day-name">Thu</span><span class="day-date" id="dateThu">—</span></div>
+						<div class="day-col-header" data-dow="5"><span class="day-name">Fri</span><span class="day-date" id="dateFri">—</span></div>
+						<div class="day-col-header" data-dow="6"><span class="day-name">Sat</span><span class="day-date" id="dateSat">—</span></div>
+						<div class="day-col-header" data-dow="0"><span class="day-name">Sun</span><span class="day-date" id="dateSun">—</span></div>
 					</div>
 
 					<!-- Schedule Grid Rows -->
@@ -2116,7 +2957,13 @@ body.night .privacy strong {
 							<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>
 							<div class="grid-slot-cell"></div>
 							<div class="grid-slot-cell"><div class="schedule-card slot-fixed has-chain-top has-chain-bottom"><span class="grid-slot-text">Library Assistant Shift</span></div></div>
-							<div class="grid-slot-cell"></div>
+							<!-- Thu 3PM: AI-suggested Writing Block -->
+							<div class="grid-slot-cell" id="aiSlotThu3pm">
+								<div class="schedule-card slot-flex slot-ai-suggested" id="aiWritingBlock" style="display:none">
+									<span class="slot-ai-badge">✦ AI Suggested</span>
+									<span class="grid-slot-text bold-orange">Writing Block</span>
+								</div>
+							</div>
 							<div class="grid-slot-cell"><div class="schedule-card slot-flex has-chain-top"><span class="grid-slot-text bold-orange">Final Review (Essay)</span></div></div>
 							<div class="grid-slot-cell"></div>
 							<div class="grid-slot-cell"></div>
@@ -2248,88 +3095,366 @@ body.night .privacy strong {
 					</article>
 				</aside>
 			</div>
+
+			<!-- ===== Monthly Calendar View ===== -->
+			<section id="monthlyView">
+				<div class="month-nav-bar">
+					<button class="month-nav-btn" id="btnMonthPrev" title="Previous month">
+						<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+					</button>
+					<span class="month-nav-title" id="monthNavTitle">September 2026</span>
+					<button class="month-nav-btn" id="btnMonthNext" title="Next month">
+						<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+					</button>
+				</div>
+				<div class="month-calendar-grid" id="monthCalendarGrid">
+					<!-- Generated by JS -->
+				</div>
+			</section>
+
 		</main>
 	</div>
 
+	<!-- Proposed Timetable Preview Modal Window (Prototype UI) -->
+	<div class="preview-modal-overlay" id="previewModalOverlay"></div>
+	<div class="preview-modal-window" id="previewWindowModal" role="dialog" aria-labelledby="previewMainTitle" aria-modal="true">
+		<!-- Preview Header Bar -->
+		<div class="preview-header-bar">
+			<div class="preview-title-group">
+				<div class="preview-title-row">
+					<h2 class="preview-main-title" id="previewMainTitle">Proposed Timetable Preview</h2>
+					<span class="preview-status-pill" id="previewPillCount">
+						<span class="preview-status-dot"></span>
+						<span id="previewPillText">0 Proposed Additions</span>
+					</span>
+				</div>
+				<p class="preview-subtext">Review AI-extracted commitments before accepting. Newly added cards feature a glowing green outline.</p>
+			</div>
+			<button class="preview-close-btn" id="closePreviewBtn" type="button" aria-label="Close preview">
+				<svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; stroke-width:2.2; fill:none;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+			</button>
+		</div>
+
+		<!-- AI Refinement Prompt Bar inside Preview -->
+		<div class="preview-refine-box">
+			<form class="preview-refine-form" id="previewRefineForm">
+				<div class="preview-input-container" style="position:relative; flex:1; display:flex; align-items:center;">
+					<svg style="position:absolute; left:14px; width:16px; height:16px; color:#7A7269; pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+					<input class="preview-prompt-field" id="previewPromptInput" type="text" style="padding-left:38px; padding-right:85px; width:100%;" placeholder="Prompt Emora AI for schedule adjustments (e.g. 'Move Friday lecture to 10 AM', 'Make Tuesday tutorial 1 hr')..." />
+					<span style="position:absolute; right:12px; font-size:11px; color:#8C8377; background:#EFEAE2; border:1px solid #D8D2C6; padding:2px 7px; border-radius:4px; pointer-events:none; font-family:'Inter',sans-serif; font-weight:500;">Enter ↵</span>
+				</div>
+				<button class="preview-refine-btn" id="previewSendBtn" type="submit" title="Send prompt to Emora AI">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+					<span style="font-weight:600; font-size:13px;">Send</span>
+				</button>
+			</form>
+			<div class="preview-chips-row">
+				<span class="preview-chips-label">Quick adjustments:</span>
+				<button type="button" class="preview-chip-pill" data-prompt="Move Thursday tutorial to 2 PM">⇄ Move Thu tutorial to 2 PM</button>
+				<button type="button" class="preview-chip-pill" data-prompt="Make Tuesday lecture 1 hour">⏱ Make Tue lecture 1 hr</button>
+				<button type="button" class="preview-chip-pill" data-prompt="Shift Friday lecture to morning 10 AM">🌅 Move Friday lecture to morning</button>
+			</div>
+		</div>
+
+		<!-- Timetable Grid Preview Body -->
+		<div class="preview-grid-body">
+			<div class="timetable-grid-card">
+				<div class="days-header-row">
+					<div class="days-spacer"></div>
+					<div class="day-col-header" data-dow="1"><span class="day-name">Mon</span><span class="day-date" id="previewDateMon">—</span></div>
+					<div class="day-col-header" data-dow="2"><span class="day-name">Tue</span><span class="day-date" id="previewDateTue">—</span></div>
+					<div class="day-col-header" data-dow="3"><span class="day-name">Wed</span><span class="day-date" id="previewDateWed">—</span></div>
+					<div class="day-col-header" data-dow="4"><span class="day-name">Thu</span><span class="day-date" id="previewDateThu">—</span></div>
+					<div class="day-col-header" data-dow="5"><span class="day-name">Fri</span><span class="day-date" id="previewDateFri">—</span></div>
+					<div class="day-col-header" data-dow="6"><span class="day-name">Sat</span><span class="day-date" id="previewDateSat">—</span></div>
+					<div class="day-col-header" data-dow="0"><span class="day-name">Sun</span><span class="day-date" id="previewDateSun">—</span></div>
+				</div>
+				<div class="schedule-rows-frame" id="previewScheduleRows"></div>
+			</div>
+		</div>
+
+		<!-- Preview Footer Action Bar -->
+		<div class="preview-footer-bar">
+			<div class="preview-legend-guide">
+				<div class="preview-legend-item">
+					<div class="legend-swatch existing" style="width:12px; height:12px; border-radius:3px; background:rgba(var(--wave-color-primary), 0.12); border:1px solid #D8D2C6;"></div>
+					<span>Existing Schedule</span>
+				</div>
+				<div class="preview-legend-item" style="display:flex; align-items:center; gap:6px;">
+					<span style="display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; background:#ECFDF5; border:1px solid #10B981; color:#064E3B;">✦ Extracted</span>
+				</div>
+				<div class="preview-legend-item" style="display:flex; align-items:center; gap:6px;">
+					<span style="display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; background:#EEF2FF; border:1px solid #6366F1; color:#1E1B4B;">⇄ Moved</span>
+				</div>
+				<div class="preview-legend-item" style="display:flex; align-items:center; gap:6px;">
+					<span style="display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; background:#FFF1F2; border:1px dashed #F43F5E; color:#9F1239;">📍 Old Location</span>
+				</div>
+				<div class="preview-legend-item" style="display:flex; align-items:center; gap:6px;">
+					<span style="display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; background:#FEF3C7; border:1px solid #F59E0B; color:#78350F;">★ AI Suggested</span>
+				</div>
+			</div>
+			<div class="preview-footer-buttons">
+				<button class="btn-deny-proposal" id="denyProposalBtn" type="button">Deny &amp; Discard</button>
+				<button class="btn-accept-proposal" id="acceptProposalBtn" type="button">
+					<svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:#fff; fill:none; stroke-width:2.5;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+					<span>Accept &amp; Apply Timetable</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
 	<script>
-		const body = document.body;
 
-		// Page enter animation
-		requestAnimationFrame(() => {
-			requestAnimationFrame(() => body.classList.add('page-loaded'));
-		});
+		/* ===== Week date headers ===== */
+		(function() {
+			const today = new Date();
+			const todayDow = today.getDay(); // 0=Sun…6=Sat
+			// Get Monday of the current week
+			const monday = new Date(today);
+			const diffToMon = (todayDow === 0) ? -6 : 1 - todayDow;
+			monday.setDate(today.getDate() + diffToMon);
 
-		// Re-trigger the enter animation when restored from bfcache (browser back/forward)
-		window.addEventListener('pageshow', (e) => {
-			if (e.persisted) {
-				body.classList.remove('page-leaving');
-				requestAnimationFrame(() => body.classList.add('page-loaded'));
-			}
-		});
+			const dowIds = ['dateMon','dateTue','dateWed','dateThu','dateFri','dateSat','dateSun'];
+			const previewDowIds = ['previewDateMon','previewDateTue','previewDateWed','previewDateThu','previewDateFri','previewDateSat','previewDateSun'];
+			// DOW for header order: Mon=1,Tue=2,Wed=3,Thu=4,Fri=5,Sat=6,Sun=0
+			const dowOrder = [1,2,3,4,5,6,0];
 
-		// Navigate with a fade/slide exit animation first
-		function goToPage(url) {
-			body.classList.remove('page-loaded');
-			body.classList.add('page-leaving');
-			setTimeout(() => { window.location.href = url; }, 220);
-		}
+			const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+			let weekStartMonth = null, weekEndMonth = null;
 
-		const hamburgerBtn = document.getElementById('hamburgerBtn');
-		const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
-		const sidebarOverlay = document.getElementById('sidebarOverlay');
-		const themeToggle = document.getElementById('themeToggle');
+			for (let i = 0; i < 7; i++) {
+				const d = new Date(monday);
+				d.setDate(monday.getDate() + i);
 
-		function openSidebar() { body.classList.add('sidebar-open'); }
-		function closeSidebar() { body.classList.remove('sidebar-open'); }
+				const el = document.getElementById(dowIds[i]);
+				if (el) el.textContent = d.getDate();
 
-		if (hamburgerBtn) hamburgerBtn.addEventListener('click', openSidebar);
-		if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeSidebar);
-		if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape') closeSidebar();
-		});
+				const previewEl = document.getElementById(previewDowIds[i]);
+				if (previewEl) previewEl.textContent = d.getDate();
 
-		function updateThemeButtonLabel() {
-			if (!themeToggle) return;
-			const isNight = body.classList.contains('night');
-			themeToggle.textContent = isNight ? '☀ Switch to day mode' : '◐ Switch to night mode';
-		}
+				if (i === 0) weekStartMonth = monthNames[d.getMonth()];
+				if (i === 6) weekEndMonth = monthNames[d.getMonth()];
 
-		if (themeToggle) {
-			themeToggle.addEventListener('click', () => {
-				body.classList.toggle('night');
-				updateThemeButtonLabel();
-			});
-		}
+				// highlight today
+				if (d.toDateString() === today.toDateString()) {
+					const header = el && el.closest('.day-col-header');
+					if (header) header.classList.add('is-today');
 
-		updateThemeButtonLabel();
-
-		// Tab Navigation Routing
-		const NAV_PAGES = {
-			home: 'index.html',
-			timetable: 'timetable.html',
-			ai: 'ai.html',
-			tasks: 'ai.html',
-			journal: 'journal.html',
-			insights: 'insights.html',
-			insight: 'insights.html'
-		};
-
-		document.querySelectorAll('[data-page]').forEach((btn) => {
-			btn.addEventListener('click', () => {
-				const target = NAV_PAGES[btn.dataset.page];
-				if (target && !btn.classList.contains('active')) {
-					closeSidebar();
-					goToPage(target);
+					const prevHeader = previewEl && previewEl.closest('.day-col-header');
+					if (prevHeader) prevHeader.classList.add('is-today');
 				}
+			}
+
+			// Update subtitle with week range
+			const label = document.getElementById('timetableWeekLabel');
+			if (label) {
+				const sunDate = new Date(monday);
+				sunDate.setDate(monday.getDate() + 6);
+				const weekStr = weekStartMonth + ' ' + monday.getDate() + ' – ' + (weekStartMonth !== weekEndMonth ? weekEndMonth + ' ' : '') + sunDate.getDate() + ', ' + today.getFullYear();
+				label.textContent = 'Week of ' + weekStr;
+			}
+		})();
+
+		/* ===== Monthly Calendar Engine ===== */
+		const MONTH_EVENTS = [
+			// dow: 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+			// recurring weekly events
+			{ dow: 1, label: 'LIT 302 Class', type: 'fixed' },
+			{ dow: 1, label: 'Cognitive Science', type: 'fixed' },
+			{ dow: 1, label: 'Research Session', type: 'flex' },
+			{ dow: 2, label: 'Lab Session', type: 'fixed' },
+			{ dow: 3, label: 'LIT 302 Class', type: 'fixed' },
+			{ dow: 3, label: 'Design Studio', type: 'fixed' },
+			{ dow: 3, label: 'Lib. Assistant Shift', type: 'fixed' },
+			{ dow: 3, label: 'Essay Writing', type: 'flex' },
+			{ dow: 4, label: 'Lib. Assistant Shift', type: 'fixed' },
+			{ dow: 4, label: 'Writing Block', type: 'ai' },
+			{ dow: 5, label: 'Chemistry Seminar', type: 'fixed' },
+			{ dow: 5, label: 'Lab Review', type: 'fixed' },
+			{ dow: 5, label: 'Final Review', type: 'flex' },
+		];
+
+		const MONTH_NAMES_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+		let calYear, calMonth;
+
+		function renderMonthView(year, month) {
+			calYear = year;
+			calMonth = month;
+
+			const titleEl = document.getElementById('monthNavTitle');
+			if (titleEl) titleEl.textContent = MONTH_NAMES_LONG[month] + ' ' + year;
+
+			const grid = document.getElementById('monthCalendarGrid');
+			if (!grid) return;
+			grid.innerHTML = '';
+
+			const DOW_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+			DOW_LABELS.forEach(d => {
+				const cell = document.createElement('div');
+				cell.className = 'month-dow-cell';
+				cell.textContent = d;
+				grid.appendChild(cell);
 			});
+
+			// First day of month, adjusted so Mon=0
+			const firstDay = new Date(year, month, 1);
+			let startDow = firstDay.getDay(); // 0=Sun…6=Sat
+			startDow = (startDow === 0) ? 6 : startDow - 1; // Mon-based offset
+
+			const daysInMonth = new Date(year, month + 1, 0).getDate();
+			const prevDays = new Date(year, month, 0).getDate();
+			const today = new Date();
+
+			const totalCells = Math.ceil((startDow + daysInMonth) / 7) * 7;
+
+			for (let i = 0; i < totalCells; i++) {
+				const cell = document.createElement('div');
+				cell.className = 'month-day-cell';
+
+				let dayNum, cellDate;
+				if (i < startDow) {
+					dayNum = prevDays - startDow + 1 + i;
+					cellDate = new Date(year, month - 1, dayNum);
+					cell.classList.add('other-month');
+				} else if (i >= startDow + daysInMonth) {
+					dayNum = i - startDow - daysInMonth + 1;
+					cellDate = new Date(year, month + 1, dayNum);
+					cell.classList.add('other-month');
+				} else {
+					dayNum = i - startDow + 1;
+					cellDate = new Date(year, month, dayNum);
+				}
+
+				if (cellDate.toDateString() === today.toDateString()) {
+					cell.classList.add('is-today');
+				}
+
+				const numEl = document.createElement('div');
+				numEl.className = 'month-day-num';
+				numEl.textContent = dayNum;
+				cell.appendChild(numEl);
+
+				// Add event pills for this day-of-week
+				const cellDow = cellDate.getDay(); // 0=Sun…6=Sat
+				const eventsForDay = MONTH_EVENTS.filter(e => e.dow === cellDow && !cell.classList.contains('other-month'));
+				const maxPills = 3;
+				eventsForDay.slice(0, maxPills).forEach(ev => {
+					const pill = document.createElement('div');
+					pill.className = 'month-event-pill pill-' + ev.type;
+					pill.textContent = ev.label;
+					cell.appendChild(pill);
+				});
+				if (eventsForDay.length > maxPills) {
+					const more = document.createElement('div');
+					more.className = 'month-event-pill pill-fixed';
+					more.style.opacity = '0.6';
+					more.textContent = '+' + (eventsForDay.length - maxPills) + ' more';
+					cell.appendChild(more);
+				}
+
+				grid.appendChild(cell);
+			}
+		}
+
+		/* ===== View Toggle ===== */
+		const btnViewWeek = document.getElementById('btnViewWeek');
+		const btnViewMonth = document.getElementById('btnViewMonth');
+		const weeklySection = document.querySelector('.grid-and-sidebar');
+		const monthlySection = document.getElementById('monthlyView');
+
+		function switchToWeek() {
+			if (weeklySection) weeklySection.style.display = '';
+			if (monthlySection) monthlySection.classList.remove('active');
+			btnViewWeek.classList.add('active');
+			btnViewMonth.classList.remove('active');
+		}
+
+		function switchToMonth() {
+			if (weeklySection) weeklySection.style.display = 'none';
+			if (monthlySection) monthlySection.classList.add('active');
+			btnViewWeek.classList.remove('active');
+			btnViewMonth.classList.add('active');
+			const now = new Date();
+			renderMonthView(now.getFullYear(), now.getMonth());
+		}
+
+		if (btnViewWeek) btnViewWeek.addEventListener('click', switchToWeek);
+		if (btnViewMonth) btnViewMonth.addEventListener('click', switchToMonth);
+
+		const btnMonthPrev = document.getElementById('btnMonthPrev');
+		const btnMonthNext = document.getElementById('btnMonthNext');
+		if (btnMonthPrev) btnMonthPrev.addEventListener('click', () => {
+			let m = calMonth - 1, y = calYear;
+			if (m < 0) { m = 11; y--; }
+			renderMonthView(y, m);
+		});
+		if (btnMonthNext) btnMonthNext.addEventListener('click', () => {
+			let m = calMonth + 1, y = calYear;
+			if (m > 11) { m = 0; y++; }
+			renderMonthView(y, m);
 		});
 
-		// Import Popover toggle
+		// Helper to render imported events directly into the weekly schedule grid
+		function applyEventsToWeeklyGrid(events) {
+			if (!events || !events.length) return;
+
+			const dayMap = {
+				'mon': 1, 'monday': 1,
+				'tue': 2, 'tuesday': 2,
+				'wed': 3, 'wednesday': 3,
+				'thu': 4, 'thursday': 4,
+				'fri': 5, 'friday': 5,
+				'sat': 6, 'saturday': 6,
+				'sun': 0, 'sunday': 0
+			};
+
+			const timeRows = document.querySelectorAll('.schedule-rows-frame .schedule-time-row');
+
+			events.forEach(evt => {
+				const dow = dayMap[(evt.day || '').toLowerCase()];
+				if (dow === undefined) return;
+				const colIdx = dow === 0 ? 6 : (dow - 1);
+
+				const startStr = (evt.start || '9:00 AM').toUpperCase().trim();
+
+				timeRows.forEach(row => {
+					const label = row.querySelector('.time-col-label');
+					if (!label) return;
+					const labelText = label.textContent.trim().toUpperCase();
+
+					const isMatch = labelText.includes(startStr) ||
+						startStr.includes(labelText.replace(':00', '')) ||
+						(startStr.includes('9') && labelText.includes('9:00')) ||
+						(startStr.includes('10') && labelText.includes('10:00')) ||
+						(startStr.includes('11') && labelText.includes('11:00')) ||
+						(startStr.includes('2') && labelText.includes('2:00')) ||
+						(startStr.includes('4') && labelText.includes('4:00'));
+
+					if (isMatch) {
+						const cells = row.querySelectorAll('.grid-slot-cell');
+						if (cells && cells[colIdx]) {
+							const cell = cells[colIdx];
+							cell.innerHTML = `
+								<div class="schedule-card slot-fixed" style="animation: slot-pulse 1.2s ease-out both; background: rgba(var(--wave-color-primary), 0.14); border: 1px solid rgba(var(--wave-color-primary), 0.3); border-radius: 8px; padding: 6px;">
+									<span class="grid-slot-text" style="font-weight: 700;">${evt.title}</span>
+								</div>
+							`;
+						}
+					}
+				});
+			});
+		}
+		window.applyEventsToWeeklyGrid = applyEventsToWeeklyGrid;
+
+		// Import Popover toggle & interactive API handlers
 		const toggleImportBtn = document.getElementById('toggleImportBtn');
 		const importPopover = document.getElementById('importPopover');
 		const closeImportBtn = document.getElementById('closeImportBtn');
 		const confirmImportBtn = document.getElementById('confirmImportBtn');
+		const optionGoogleCalSync = document.getElementById('optionGoogleCalSync');
+		const optionFileUpload = document.getElementById('optionFileUpload');
+		const timetableFileInput = document.getElementById('timetableFileInput');
+		const scheduleTextInput = document.getElementById('scheduleTextInput');
 
 		if (toggleImportBtn && importPopover) {
 			toggleImportBtn.addEventListener('click', (e) => {
@@ -2337,21 +3462,657 @@ body.night .privacy strong {
 				importPopover.classList.toggle('open');
 			});
 
-			closeImportBtn.addEventListener('click', () => {
-				importPopover.classList.remove('open');
-			});
+			if (closeImportBtn) {
+				closeImportBtn.addEventListener('click', () => {
+					importPopover.classList.remove('open');
+				});
+			}
 
-			confirmImportBtn.addEventListener('click', () => {
-				importPopover.classList.remove('open');
-			});
+			// Option 1: Google Calendar Sync
+			if (optionGoogleCalSync) {
+				optionGoogleCalSync.addEventListener('click', () => {
+					importPopover.classList.remove('open');
+					const refreshLink = document.querySelector('[data-timetable-refresh]');
+					if (refreshLink) {
+						refreshLink.click();
+					} else {
+						window.location.href = '/api/v1/calendar/oauth/start';
+					}
+				});
+			}
+
+			// Option 2: Timetable / Course-outline File Upload
+			if (optionFileUpload && timetableFileInput) {
+				optionFileUpload.addEventListener('click', () => {
+					timetableFileInput.click();
+				});
+
+				timetableFileInput.addEventListener('change', async () => {
+					if (!timetableFileInput.files || !timetableFileInput.files.length) return;
+					const file = timetableFileInput.files[0];
+					const formData = new FormData();
+					formData.append('file', file);
+
+					if (confirmImportBtn) confirmImportBtn.innerHTML = '<span>Uploading...</span>';
+					try {
+						const response = await fetch('/api/v1/timetable/upload', {
+							method: 'POST',
+							body: formData
+						});
+						const data = await response.json();
+						importPopover.classList.remove('open');
+						if (response.ok && data.timetable) {
+							openPrototypePreviewModal(data.timetable);
+						} else {
+							alert(data.error || 'Failed to upload timetable');
+						}
+					} catch (err) {
+						console.error('File upload error:', err);
+						alert('Upload failed. Please ensure backend server is running.');
+					} finally {
+						if (confirmImportBtn) confirmImportBtn.innerHTML = '<span>Import</span>';
+					}
+				});
+			}
+
+			// Confirm button for text input description
+			if (confirmImportBtn) {
+				confirmImportBtn.addEventListener('click', async () => {
+					const text = scheduleTextInput ? scheduleTextInput.value.trim() : '';
+					if (!text) {
+						importPopover.classList.remove('open');
+						return;
+					}
+					confirmImportBtn.innerHTML = '<span>Parsing...</span>';
+					try {
+						const response = await fetch('/api/v1/timetable/parse-text', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ text: text })
+						});
+						const data = await response.json();
+						importPopover.classList.remove('open');
+						if (response.ok && data.timetable) {
+							openPrototypePreviewModal(data.timetable);
+						}
+					} catch (e) {
+						console.error('Parse text error:', e);
+					} finally {
+						confirmImportBtn.innerHTML = '<span>Import</span>';
+					}
+				});
+			}
 
 			document.addEventListener('click', (e) => {
-				if (!importPopover.contains(e.target) && e.target !== toggleImportBtn) {
+				if (!importPopover.contains(e.target) && e.target !== toggleImportBtn && !timetableFileInput.contains(e.target)) {
 					importPopover.classList.remove('open');
 				}
 			});
 		}
+
+		/* ===== PROPOSED TIMETABLE PREVIEW MODAL WINDOW ENGINE (PROTOTYPE UI) ===== */
+		let pendingProposedEvents = [];
+
+		function getDefaultProposal() {
+			return [];
+		}
+
+		function normalizeProposedEvents(events) {
+			if (!events || !Array.isArray(events) || events.length === 0) {
+				return [];
+			}
+
+			const dayMap = {
+				'mon': 'Mon', 'monday': 'Mon',
+				'tue': 'Tue', 'tuesday': 'Tue',
+				'wed': 'Wed', 'wednesday': 'Wed',
+				'thu': 'Thu', 'thursday': 'Thu',
+				'fri': 'Fri', 'friday': 'Fri',
+				'sat': 'Sat', 'saturday': 'Sat',
+				'sun': 'Sun', 'sunday': 'Sun'
+			};
+
+			return events.map((ev, idx) => {
+				const rawDay = (ev.day || 'Mon').toString().toLowerCase().trim();
+				const day = dayMap[rawDay] || 'Mon';
+
+				let startH = 10;
+				if (typeof ev.startHour === 'number' && !isNaN(ev.startHour)) {
+					startH = ev.startHour;
+				} else if (ev.start) {
+					const timeStr = ev.start.toString().toUpperCase();
+					const match = timeStr.match(/(\d{1,2})/);
+					if (match) {
+						startH = parseInt(match[1], 10);
+						if (timeStr.includes('PM') && startH < 12) startH += 12;
+						if (timeStr.includes('AM') && startH === 12) startH = 0;
+					}
+				}
+
+				let dur = 2;
+				if (typeof ev.duration === 'number' && !isNaN(ev.duration)) {
+					dur = ev.duration;
+				} else if (ev.end && ev.start) {
+					const endMatch = ev.end.toString().toUpperCase().match(/(\d{1,2})/);
+					if (endMatch) {
+						let endH = parseInt(endMatch[1], 10);
+						if (ev.end.toString().toUpperCase().includes('PM') && endH < 12) endH += 12;
+						dur = Math.max(1, endH - startH);
+					}
+				}
+
+				const bType = ev.badgeType || 'extracted';
+				const bText = ev.badgeText || (bType === 'moved' ? '⇄ Moved' : (bType === 'ai_suggested' ? '★ AI Suggested' : '✦ Extracted'));
+
+				const title = ev.title || `Class Session ${idx + 1}`;
+
+				const originD = ev.originDay || (bType === 'moved' ? 'Wed' : undefined);
+				const originH = (typeof ev.originStartHour === 'number' && !isNaN(ev.originStartHour)) ? ev.originStartHour : (bType === 'moved' ? 19 : undefined);
+				const originT = ev.originTitle || (bType === 'moved' ? 'Essay Writing' : undefined);
+
+				return {
+					id: ev.id || `prop_evt_${idx}_${Date.now()}`,
+					title: title,
+					day: day,
+					startHour: startH,
+					duration: dur,
+					type: ev.type || 'fixed',
+					code: ev.code || 'COURSE',
+					badgeType: bType,
+					badgeText: bText,
+					location: ev.location || 'Room: Campus Building',
+					desc: ev.desc || `${title} extracted by Emora AI.`,
+					tags: ev.tags || [bText, title],
+					originDay: originD,
+					originStartHour: originH,
+					originTitle: originT
+				};
+			});
+		}
+
+		function openPrototypePreviewModal(events) {
+			pendingProposedEvents = normalizeProposedEvents(events);
+
+			const pillText = document.getElementById('previewPillText');
+			if (pillText) {
+				pillText.textContent = `${pendingProposedEvents.length} Proposed Addition${pendingProposedEvents.length > 1 ? 's' : ''}`;
+			}
+
+			renderPreviewGridRows(pendingProposedEvents);
+
+			const modalWindow = document.getElementById('previewWindowModal');
+			const overlay = document.getElementById('previewModalOverlay');
+			if (modalWindow && overlay) {
+				modalWindow.classList.add('open');
+				overlay.classList.add('open');
+
+				setTimeout(() => {
+					const targetCard = document.querySelector('.schedule-card.badge-moved') || document.querySelector('.origin-moved-card') || document.querySelector('.schedule-card.is-proposed-new');
+					if (targetCard) {
+						targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+					}
+				}, 150);
+			}
+		}
+		window.openPrototypePreviewModal = openPrototypePreviewModal;
+		window.showProposedTimetablePreviewModal = openPrototypePreviewModal;
+
+		function closePrototypePreviewModal() {
+			try { localStorage.removeItem('emora_pending_preview_plan'); } catch(e) {}
+			const modalWindow = document.getElementById('previewWindowModal');
+			const overlay = document.getElementById('previewModalOverlay');
+			if (modalWindow && overlay) {
+				modalWindow.classList.remove('open');
+				overlay.classList.remove('open');
+			}
+		}
+
+		function getCurrentTimetableEvents() {
+			let baseEvents = [
+				{ id: "curr-1", title: "LIT 302 Class", day: "Mon", startHour: 9, duration: 1 },
+				{ id: "curr-2", title: "Cognitive Science", day: "Mon", startHour: 11, duration: 1 },
+				{ id: "curr-3", title: "Research Session", day: "Mon", startHour: 17, duration: 1 },
+				{ id: "curr-4", title: "Chemistry Study Lab", day: "Tue", startHour: 13, duration: 1 },
+				{ id: "curr-5", title: "LIT 302 Class", day: "Wed", startHour: 9, duration: 1 },
+				{ id: "curr-6", title: "Design Studio", day: "Wed", startHour: 11, duration: 1 },
+				{ id: "curr-7", title: "Library Assistant Shift", day: "Wed", startHour: 15, duration: 1 },
+				{ id: "curr-8", title: "Essay Writing", day: "Wed", startHour: 19, duration: 1 },
+				{ id: "curr-9", title: "Chemistry Seminar", day: "Fri", startHour: 11, duration: 1 },
+				{ id: "curr-10", title: "Lab Review / Prep", day: "Fri", startHour: 13, duration: 1 },
+				{ id: "curr-11", title: "Final Review (Essay)", day: "Fri", startHour: 15, duration: 1 },
+				{ id: "curr-12", title: "Outdoor Hike / Personal", day: "Sat", startHour: 13, duration: 1 }
+			];
+
+			try {
+				const storedAccepted = localStorage.getItem('emora_accepted_timetable');
+				if (storedAccepted) {
+					const parsed = JSON.parse(storedAccepted);
+					if (Array.isArray(parsed) && parsed.length > 0) {
+						baseEvents = [...baseEvents, ...normalizeProposedEvents(parsed)];
+					}
+				}
+			} catch(e) {}
+
+			return baseEvents;
+		}
+
+		function getPreviewGapsForDay(day, allEvents) {
+			const dayEvents = (allEvents || []).filter(e => e.day === day).sort((a, b) => a.startHour - b.startHour);
+			const gapMap = {};
+			if (dayEvents.length < 2) return gapMap;
+
+			for (let i = 0; i < dayEvents.length - 1; i++) {
+				const endPrev = dayEvents[i].startHour + (dayEvents[i].duration || 1);
+				const startNext = dayEvents[i + 1].startHour;
+				const gapLen = startNext - endPrev;
+
+				if (gapLen > 0) {
+					const midHour = Math.floor(endPrev + (gapLen - 1) / 2);
+					for (let h = endPrev; h < startNext; h++) {
+						if (h === midHour) {
+							gapMap[h] = { type: 'gap', label: `${gapLen}h Free` };
+						} else {
+							gapMap[h] = { type: 'stem' };
+						}
+					}
+				}
+			}
+			return gapMap;
+		}
+
+		function handleMovedCardClick(cardEl) {
+			const originCard = document.querySelector('.origin-moved-card');
+			if (originCard) {
+				originCard.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease';
+				originCard.style.transform = 'scale(1.12)';
+				originCard.style.boxShadow = '0 0 0 4px #F43F5E, 0 8px 24px rgba(244, 63, 94, 0.4)';
+				setTimeout(() => {
+					originCard.style.transform = 'scale(1)';
+					originCard.style.boxShadow = 'none';
+				}, 2200);
+			}
+			const toast = document.createElement('div');
+			toast.className = 'gap-toast-notification visible';
+			toast.style.cssText = 'position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #1E1B4B; color: #EEF2FF; padding: 10px 20px; border-radius: 20px; font-weight: 700; font-size: 13px; box-shadow: 0 8px 24px rgba(79, 70, 229, 0.4); z-index: 10000; border: 1.5px solid #6366F1; display: flex; align-items: center; gap: 8px;';
+			toast.innerHTML = '<span style="font-size: 14px;">⇄</span> Moved from Wednesday 7:00 PM → Thursday 3:00 PM (-28% Wed workload peak)';
+			document.body.appendChild(toast);
+			setTimeout(() => toast.remove(), 3500);
+		}
+		window.handleMovedCardClick = handleMovedCardClick;
+
+		function handleOriginCardClick(cardEl) {
+			const targetId = cardEl.dataset.targetId;
+			const targetCard = document.querySelector(`.schedule-card[data-id="${targetId}"]`) || document.querySelector('.schedule-card.badge-moved');
+			if (targetCard) {
+				targetCard.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease';
+				targetCard.style.transform = 'scale(1.12)';
+				targetCard.style.boxShadow = '0 0 0 4px #6366F1, 0 8px 24px rgba(99, 102, 241, 0.4)';
+				setTimeout(() => {
+					targetCard.style.transform = 'scale(1)';
+					targetCard.style.boxShadow = 'none';
+				}, 2200);
+			}
+			const toast = document.createElement('div');
+			toast.className = 'gap-toast-notification visible';
+			toast.style.cssText = 'position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #9F1239; color: #FFF1F2; padding: 10px 20px; border-radius: 20px; font-weight: 700; font-size: 13px; box-shadow: 0 8px 24px rgba(225, 29, 72, 0.4); z-index: 10000; border: 1.5px solid #F43F5E; display: flex; align-items: center; gap: 8px;';
+			toast.innerHTML = '<span style="font-size: 14px;">📍</span> Original Location — Moved to Thursday 3:00 PM (-28% Wed workload peak)';
+			document.body.appendChild(toast);
+			setTimeout(() => toast.remove(), 3500);
+		}
+		window.handleOriginCardClick = handleOriginCardClick;
+
+		function formatHour(h) {
+			if (h === null || h === undefined || isNaN(h)) return '';
+			const num = parseInt(h, 10);
+			if (num === 0) return '12:00 AM';
+			if (num === 12) return '12:00 PM';
+			if (num > 12) return `${num - 12}:00 PM`;
+			return `${num}:00 AM`;
+		}
+
+		function renderPreviewGridRows(proposedList) {
+			const container = document.getElementById('previewScheduleRows');
+			if (!container) return;
+
+			let existingEvents = getCurrentTimetableEvents();
+			const combinedEvents = [...existingEvents, ...(proposedList || [])];
+			const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+			const dayGaps = {};
+			days.forEach(d => {
+				dayGaps[d] = getPreviewGapsForDay(d, combinedEvents);
+			});
+
+			const hours = [
+				{ label: "9:00 AM", start: 9 },
+				{ label: "10:00 AM", start: 10 },
+				{ label: "11:00 AM", start: 11 },
+				{ label: "12:00 PM", start: 12 },
+				{ label: "1:00 PM", start: 13 },
+				{ label: "2:00 PM", start: 14 },
+				{ label: "3:00 PM", start: 15 },
+				{ label: "4:00 PM", start: 16 },
+				{ label: "5:00 PM", start: 17 },
+				{ label: "6:00 PM", start: 18 },
+				{ label: "7:00 PM", start: 19 }
+			];
+
+			const occupied = {};
+
+			let html = '';
+			hours.forEach(h => {
+				html += `<div class="schedule-time-row" data-hour="${h.start}">
+					<div class="time-col-label"><span>${h.label}</span></div>`;
+
+				days.forEach((day) => {
+					const key = `${day}_${h.start}`;
+					if (occupied[key]) {
+						html += `<div class="grid-slot-cell" style="border-top: none;"></div>`;
+						return;
+					}
+
+					const matchedProposed = (proposedList || []).find(p => p.day === day && p.startHour === h.start);
+					const matchedMovedOrigin = (proposedList || []).find(p => (p.badgeType === 'moved' || p.originDay) && p.originDay === day && p.originStartHour === h.start);
+					const matchedExisting = (existingEvents || []).find(e => e.day === day && e.startHour === h.start);
+
+					if (matchedProposed) {
+						const duration = Math.max(1, matchedProposed.duration || 1);
+						for (let d = 1; d < duration; d++) {
+							occupied[`${day}_${h.start + d}`] = true;
+						}
+
+						const cardHeight = `height: calc(56px * ${duration} - 6px);`;
+						const bType = matchedProposed.badgeType || 'extracted';
+						const bText = matchedProposed.badgeText || (bType === 'moved' ? '⇄ Moved' : (bType === 'ai_suggested' ? '★ AI Suggested' : '✦ Extracted'));
+
+						let badgeBg = '#10B981';
+						if (bType === 'moved') badgeBg = '#4F46E5';
+						if (bType === 'ai_suggested') badgeBg = '#D97706';
+
+						const rawLoc = matchedProposed.location || '';
+						const cleanLoc = rawLoc.replace(/^Room:\s*/i, '').replace(/\s*\([^)]*\)/g, '').trim() || rawLoc;
+						const originInfoStr = matchedProposed.originDay ? `From: ${matchedProposed.originDay} ${formatHour(matchedProposed.originStartHour)}` : '';
+
+						html += `
+							<div class="grid-slot-cell" style="position: relative;">
+								<div class="schedule-card slot-fixed is-proposed-new badge-${bType}" 
+									 data-id="${matchedProposed.id}"
+									 data-origin-day="${matchedProposed.originDay || ''}"
+									 data-origin-hour="${matchedProposed.originStartHour || ''}"
+									 onclick="handleMovedCardClick(this)"
+									 style="${cardHeight} z-index: 10; position: absolute; left: 3px; right: 3px; top: 3px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 6px; border-radius: 10px; cursor: pointer;"
+									 title="${bText}: ${matchedProposed.title}${matchedProposed.originDay ? ' (Moved from ' + matchedProposed.originDay + ' ' + formatHour(matchedProposed.originStartHour) + ')' : ''}">
+									<span class="proposed-badge badge-${bType}" style="font-size: 9.5px; background: ${badgeBg}; color: #FFFFFF; padding: 2px 7px; border-radius: 6px; font-weight: 700; display: inline-block;">${bText}</span>
+									<span class="grid-slot-text" style="font-weight: 700; font-size: 11.5px; margin-top: 3px; line-height: 1.2;">${matchedProposed.title}</span>
+									${originInfoStr ? `<span style="font-size: 9.5px; font-weight: 600; color: #3730A3; opacity: 0.9; margin-top: 1px;">${originInfoStr}</span>` : (cleanLoc ? `<span class="preview-location-text" style="font-size: 10px; opacity: 0.85; margin-top: 1px;">${cleanLoc}</span>` : '')}
+								</div>
+							</div>
+						`;
+					} else if (matchedMovedOrigin) {
+						const duration = 1;
+						const cardHeight = `height: calc(56px * ${duration} - 6px);`;
+						const destTime = formatHour(matchedMovedOrigin.startHour);
+						html += `
+							<div class="grid-slot-cell" style="position: relative;">
+								<div class="schedule-card slot-displaced origin-moved-card" 
+									 data-target-id="${matchedMovedOrigin.id}"
+									 onclick="handleOriginCardClick(this)"
+									 style="${cardHeight} z-index: 8; position: absolute; left: 3px; right: 3px; top: 3px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 6px; background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%); border: 1.5px dashed #F43F5E; border-radius: 8px; cursor: pointer; text-align: center;"
+									 title="Old Location of ${matchedMovedOrigin.originTitle || 'Essay Writing'} — Moved to ${matchedMovedOrigin.day} ${destTime}">
+									<span style="font-size: 9px; background: #E11D48; color: #FFFFFF; padding: 1.5px 6px; border-radius: 5px; font-weight: 700; letter-spacing: 0.02em;">📍 Old Location</span>
+									<span class="grid-slot-text" style="font-weight: 700; font-size: 11px; color: #9F1239; text-decoration: line-through; margin-top: 2.5px; line-height: 1.1;">${matchedMovedOrigin.originTitle || 'Essay Writing'}</span>
+									<span style="font-size: 9px; font-weight: 600; color: #BE123C; margin-top: 2px;">→ ${matchedMovedOrigin.day} ${destTime}</span>
+								</div>
+							</div>
+						`;
+					} else if (matchedExisting) {
+						const duration = Math.max(1, matchedExisting.duration || 1);
+						for (let d = 1; d < duration; d++) {
+							occupied[`${day}_${h.start + d}`] = true;
+						}
+
+						const cardHeight = `height: calc(56px * ${duration} - 6px);`;
+						const rawLoc = matchedExisting.location || '';
+						const cleanLoc = rawLoc.replace(/^Room:\s*/i, '').replace(/\s*\([^)]*\)/g, '').trim() || rawLoc;
+
+						html += `
+							<div class="grid-slot-cell" style="position: relative;">
+								<div class="schedule-card slot-fixed" 
+									 data-id="${matchedExisting.id}"
+									 style="${cardHeight} z-index: 5; position: absolute; left: 3px; right: 3px; top: 3px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 6px; background: rgba(var(--wave-color-primary), 0.08); border: 1px solid rgba(var(--wave-color-primary), 0.16); border-radius: 8px;"
+									 title="${matchedExisting.title}">
+									<span class="grid-slot-text" style="font-family: 'Inter', sans-serif; font-weight: 600; font-size: 11.5px; color: var(--text-main); line-height: 1.2;">${matchedExisting.title}</span>
+									${cleanLoc ? `<span class="preview-location-text" style="font-size: 9.5px; color: var(--text-muted); margin-top: 2px;">${cleanLoc}</span>` : ''}
+								</div>
+							</div>
+						`;
+					} else {
+						const gapInfo = dayGaps[day]?.[h.start];
+						if (gapInfo && gapInfo.type === 'gap') {
+							html += `
+								<div class="grid-slot-cell chain-gap-slot" title="${gapInfo.label}">
+									<div class="chain-connector-full"></div>
+									<div class="chain-gap-card">
+										<svg class="chain-svg-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+										<span class="chain-gap-title">${gapInfo.label}</span>
+									</div>
+								</div>
+							`;
+						} else if (gapInfo && gapInfo.type === 'stem') {
+							html += `<div class="grid-slot-cell chain-stem-slot"><div class="chain-connector-full"></div></div>`;
+						} else {
+							html += `<div class="grid-slot-cell"></div>`;
+						}
+					}
+				});
+
+				html += `</div>`;
+			});
+
+			container.innerHTML = html;
+		}
+
+		function refineProposalWithPrompt(promptText) {
+			if (!promptText || !pendingProposedEvents) return;
+			const pLower = promptText.toLowerCase().trim();
+
+			// Dynamic Natural Language Day Detection
+			const dayMap = {
+				'mon': 'Mon', 'monday': 'Mon',
+				'tue': 'Tue', 'tuesday': 'Tue',
+				'wed': 'Wed', 'wednesday': 'Wed',
+				'thu': 'Thu', 'thursday': 'Thu',
+				'fri': 'Fri', 'friday': 'Fri',
+				'sat': 'Sat', 'saturday': 'Sat',
+				'sun': 'Sun', 'sunday': 'Sun'
+			};
+			let targetDay = null;
+			for (const [k, v] of Object.entries(dayMap)) {
+				if (new RegExp('\\b' + k + '\\b').test(pLower)) {
+					targetDay = v;
+					break;
+				}
+			}
+
+			// Dynamic Start Hour Detection (9 AM to 5 PM)
+			let newStartHour = null;
+			if (pLower.includes('morning')) newStartHour = 10;
+			if (pLower.includes('afternoon')) newStartHour = 14;
+
+			const timeMatch = pLower.match(/(\d{1,2})\s*(am|pm)?/i);
+			if (timeMatch) {
+				let val = parseInt(timeMatch[1], 10);
+				const meridiem = (timeMatch[2] || '').toLowerCase();
+				if (meridiem === 'pm' && val < 12) val += 12;
+				if (meridiem === 'am' && val === 12) val = 9;
+				if (val >= 8 && val <= 18) {
+					newStartHour = val;
+				}
+			}
+
+			// Dynamic Duration Detection
+			let newDuration = null;
+			const durMatch = pLower.match(/(\d)\s*(hr|hour|h)/i);
+			if (durMatch) {
+				newDuration = parseInt(durMatch[1], 10);
+			}
+
+			let handled = false;
+			let targetEvent = null;
+			if (targetDay) {
+				targetEvent = pendingProposedEvents.find(e => e.day === targetDay);
+			}
+			if (!targetEvent && pendingProposedEvents.length > 0) {
+				targetEvent = pendingProposedEvents[0];
+			}
+
+			if (targetEvent) {
+				if (newStartHour !== null) {
+					targetEvent.startHour = newStartHour;
+					targetEvent.badgeType = 'moved';
+					targetEvent.badgeText = '⇄ Moved';
+					handled = true;
+				}
+				if (targetDay && targetEvent.day !== targetDay) {
+					targetEvent.day = targetDay;
+					targetEvent.badgeType = 'moved';
+					targetEvent.badgeText = '⇄ Moved';
+					handled = true;
+				}
+				if (newDuration !== null) {
+					targetEvent.duration = newDuration;
+					targetEvent.badgeType = 'moved';
+					targetEvent.badgeText = '⇄ Moved';
+					handled = true;
+				}
+			}
+
+			if (!handled && (pLower.includes('add') || pLower.includes('create') || pLower.includes('study') || pLower.includes('block') || pLower.includes('session'))) {
+				pendingProposedEvents.push({
+					id: `prop-ai-suggest-${Date.now()}`,
+					title: 'AI Suggested Study Block',
+					day: targetDay || 'Wed',
+					startHour: newStartHour || 14,
+					duration: newDuration || 2,
+					type: 'flex',
+					badgeType: 'ai_suggested',
+					badgeText: '★ AI Suggested',
+					code: 'EMORA-AI',
+					location: 'Campus Library / Focus Space',
+					desc: 'AI Suggested focused study block.',
+					tags: ['AI Suggested', 'Study']
+				});
+			}
+
+			const pillText = document.getElementById('previewPillText');
+			if (pillText) {
+				pillText.textContent = `${pendingProposedEvents.length} Proposed Addition${pendingProposedEvents.length > 1 ? 's' : ''}`;
+			}
+
+			renderPreviewGridRows(pendingProposedEvents);
+		}
+
+		// Preview Modal Event Listeners
+		document.getElementById('closePreviewBtn')?.addEventListener('click', closePrototypePreviewModal);
+		document.getElementById('previewModalOverlay')?.addEventListener('click', closePrototypePreviewModal);
+
+		document.getElementById('denyProposalBtn')?.addEventListener('click', () => {
+			pendingProposedEvents = [];
+			closePrototypePreviewModal();
+		});
+
+		function applyEventsToWeeklyGrid(events) {
+			if (!events || !events.length) return;
+			try {
+				const existing = JSON.parse(localStorage.getItem('emora_accepted_timetable') || '[]');
+				const merged = [...existing, ...events];
+				localStorage.setItem('emora_accepted_timetable', JSON.stringify(merged));
+			} catch (e) { console.warn('Failed saving accepted events:', e); }
+
+			let movedDesc = '';
+			events.forEach(ev => {
+				if (ev.badgeType === 'moved' || ev.originDay) {
+					// 1. Reveal Thursday 3:00 PM AI Writing Block on main timetable grid
+					const aiWritingBlock = document.getElementById('aiWritingBlock');
+					if (aiWritingBlock) {
+						aiWritingBlock.style.display = 'block';
+					}
+					// 2. Hide Wednesday 7:00 PM slot on main timetable grid
+					const wed7pmRow = document.querySelector('.schedule-time-row[data-hour="19"]');
+					if (wed7pmRow) {
+						const cells = wed7pmRow.querySelectorAll('.grid-slot-cell');
+						if (cells.length >= 3 && cells[2]) {
+							cells[2].innerHTML = '';
+						}
+					}
+					movedDesc = 'Moved Essay Writing from Wednesday 7:00 PM → Thursday 3:00 PM';
+				}
+			});
+
+			const count = events.length;
+			const toast = document.createElement('div');
+			toast.className = 'gap-toast-notification visible';
+			toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; background: rgba(46,125,90,0.95); color: #fff; padding: 14px 22px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 8px 28px rgba(0,0,0,0.3); z-index: 10000; backdrop-filter: blur(8px); border: 1.5px solid rgba(255,255,255,0.25); display: flex; align-items: center; gap: 8px;';
+			toast.innerHTML = `<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>${movedDesc ? 'Accepted! ' + movedDesc + ' (-28% Wed workload peak).' : 'Accepted! Added ' + count + ' new commitment' + (count > 1 ? 's' : '') + ' to your timetable.'}</span>`;
+			document.body.appendChild(toast);
+			setTimeout(() => { toast.remove(); }, 4000);
+		}
+
+		document.getElementById('acceptProposalBtn')?.addEventListener('click', () => {
+			if (pendingProposedEvents && pendingProposedEvents.length) {
+				applyEventsToWeeklyGrid(pendingProposedEvents);
+			}
+			closePrototypePreviewModal();
+		});
+
+		// Prompt Refinement Form Submit inside Preview Window
+		document.getElementById('previewRefineForm')?.addEventListener('submit', (e) => {
+			e.preventDefault();
+			const inputEl = document.getElementById('previewPromptInput');
+			const prompt = inputEl ? inputEl.value.trim() : '';
+			if (!prompt) return;
+			inputEl.value = '';
+			refineProposalWithPrompt(prompt);
+		});
+
+		// Quick Refinement Chips inside Preview Window
+		document.querySelectorAll('.preview-chip-pill').forEach(chip => {
+			chip.addEventListener('click', () => {
+				const prompt = chip.dataset.prompt;
+				if (prompt) {
+					const inputEl = document.getElementById('previewPromptInput');
+					if (inputEl) inputEl.value = prompt;
+					refineProposalWithPrompt(prompt);
+				}
+			});
+		});
+
+		/* ===== Emora AI Proposed Timetable Plan Preview Auto-Open (Explicit Action/Modal Request Only) ===== */
+		(function() {
+			try {
+				const params = new URLSearchParams(window.location.search);
+				if (params.get('modal') === '1' || params.get('preview') === '1' || params.get('applied') === '1') {
+					const stored = localStorage.getItem('emora_pending_preview_plan');
+					let events = null;
+					if (stored) {
+						try { events = JSON.parse(stored); } catch(e) {}
+					}
+					// Clean URL query params immediately so refreshing page won't re-trigger
+					if (window.history && window.history.replaceState) {
+						window.history.replaceState({}, '', window.location.pathname);
+					}
+					if (events && Array.isArray(events) && events.length > 0) {
+						setTimeout(() => {
+							if (typeof window.showProposedTimetablePreviewModal === 'function') {
+								window.showProposedTimetablePreviewModal(events);
+							}
+						}, 150);
+					}
+				}
+			} catch(e) {}
+		})();
 	</script>
+	<script src="timetable.js"></script>
+	<script src="sidebar.js"></script>
 	<script src="config.js"></script>
 	<script src="emora-bot.js"></script>
 </body>
