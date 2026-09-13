@@ -2,8 +2,9 @@
  * DCSION3 - Central Environment & API Configuration
  *
  * Automatically resolves the backend API endpoint:
- * - In Native Mobile (Capacitor Android): Targets the live cloud backend.
- * - In Web Browser (Localhost / Vercel): Uses standard relative paths.
+ * - Native Mobile (Capacitor Android): Targets Google Cloud Run backend.
+ * - Vercel / Web Production: Targets Google Cloud Run backend.
+ * - Web Browser (Localhost): Uses local Flask server on port 5000.
  */
 (function() {
     const isNativeMobile = !!(
@@ -12,19 +13,18 @@
         window.Capacitor.isNativePlatform()
     );
 
-    // Google Cloud Run backend URL
+    // Google Cloud Run production backend URL
     const PRODUCTION_CLOUD_BACKEND = 'https://dcsion3-git-232142192878.europe-west1.run.app';
 
     // Auto-detect environment:
     let apiBase = '';
-    if (isNativeMobile) {
+    if (isNativeMobile || window.location.hostname.includes('vercel.app')) {
         apiBase = PRODUCTION_CLOUD_BACKEND;
     } else if (
         window.location.protocol === 'file:' ||
         ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
          window.location.port !== '5000' && window.location.port !== '')
     ) {
-        // When running on a separate static dev server (like VS Code Live Server port 5500, Vite, etc.)
         apiBase = 'http://localhost:5000';
     }
 
